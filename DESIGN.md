@@ -113,6 +113,31 @@ mesin, hover melihat isi mesin, drag komponen). Academy tidak mewajibkan iOS/iPa
 
 Godot yang dipakai: build STANDAR (bukan .NET), karena bahasanya GDScript.
 
+
+## Konvensi posisi & okupansi (dikunci 3 September 2026)
+
+**Posisi pecahan, okupansi biner.** Musuh boleh berada di antara dua petak.
+Kalau badannya menyentuh sebuah petak — seberapa pun sedikitnya — dia dianggap
+berada di petak itu. Tidak ada perhitungan persentase. Model Growtopia: lava
+kena walaupun badan cuma 5% di dalam.
+
+- `Position` = **pojok kiri-atas** entity, dalam satuan petak, `{"x": float, "y": float}`
+- `Size` opsional, `{"w": float, "h": float}`, **default 1x1**
+- Petak yang tersentuh = dari `floori(x)` sampai `ceili(x + w) - 1`, begitu juga sumbu y
+
+Efek ganda tidak jadi masalah: system kontak hanya MENEMPELKAN komponen
+(`Burn`), dan menempelkan komponen dua kali sama saja dengan sekali. Dedupe
+gratis dari model komponen itu sendiri.
+
+**Aturan wajib:** logika "entity ini menyentuh petak mana saja" hidup di SATU
+fungsi terpisah, bukan tersebar di banyak system. Kalau suatu saat posisi
+pecahan terasa merepotkan, cukup ganti isi fungsi itu — keputusan ini jadi
+bisa dibalik dalam 10 menit, bukan sekali seumur hidup.
+
+Alasan memilih pecahan (bukan per petak): dorongan dari angin/gaya bikin
+posisi tidak pernah sesederhana v*t, dan okupansi biner menghilangkan
+pertanyaan "kena berapa persen" yang bikin fuzzy.
+
 ## Batas scope (jangan dilanggar tanpa alasan kuat)
 
 - 5 komponen. Bukan lebih.

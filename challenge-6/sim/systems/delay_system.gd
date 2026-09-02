@@ -9,7 +9,6 @@ static func process(world: World, delta: float) -> void:
 	for e in entities:
 		var comp: Dictionary = world.get_component_value(Comp.DELAY, e)
 		comp["elapsed"] += delta
-		print(str(comp["elapsed"]) + " from e" + str(e))
 		if comp["elapsed"] >= comp["duration"]:
 			world.detach_component(Comp.DELAY, e)
  

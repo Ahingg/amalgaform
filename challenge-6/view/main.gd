@@ -20,7 +20,8 @@ func _ready() -> void:
 	world.attach_component(Comp.WATER, e3)
 	
 	world.attach_component(Comp.DELAY, e1, Make.delay(2.0))
-	world.attach_component(Comp.DELAY, e2, Make.delay(3.0))
+	world.attach_component(Comp.POSITION, e1, Make.position(0.5, 1.5))
+	world.attach_component(Comp.VELOCITY, e1, Make.velocity(1.0, 0))
 	
 	#var result: Dictionary =  world.get_component_value(Comp.FIRE, e1)
 	#for key in result:
