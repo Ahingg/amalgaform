@@ -33,6 +33,11 @@ func _ready() -> void:
 	#print(world.entity_have_component(Comp.WIND, e1))
 
 
+	# Lapisan tampilan. Ditambahkan dari kode biar scene-nya tetap sederhana.
+	# renderer.gd cuma BACA world, gak pernah nulis apa pun ke sim/.
+	add_child(WorldRenderer.new())
+
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta: float) -> void:
 	# panggil middle.process untuk process setiap system yang ada.
