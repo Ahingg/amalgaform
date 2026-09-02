@@ -11,3 +11,5 @@ const SIZE := "Size"
 const HEALTH := "Health"
 
 const BURN := "Burn"
+const INVULNERABLE := "Invulnerable"
+const DAMAGED := "Damaged"

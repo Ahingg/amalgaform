@@ -1,7 +1,7 @@
 class_name FireContactSystem
 extends RefCounted
 
-static func process(world: World, delta: float) -> void:
+static func process(world: World, _delta: float) -> void:
 	var fires := world.get_entities_with_comp([Comp.FIRE, Comp.SIZE, Comp.POSITION])
 	var targets := world.get_entities_with_comp([Comp.HEALTH, Comp.SIZE, Comp.POSITION])
 	

@@ -20,6 +20,8 @@ extends Node2D
 const COMP_POSITION := "Position"
 const COMP_SIZE := "Size"
 const COMP_DELAY := "Delay"
+const COMP_INVULNERABLE := "Invulnerable"
+const COMP_HEALTH := "Health"
 
 # Order matters: the first matching component wins the color.
 const COMPONENT_COLORS := {
@@ -35,7 +37,7 @@ const COMPONENT_COLORS := {
 # entity currently has. This is the most useful ECS debugging tool here.
 const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
-	"Burn", "Damaged", "Health",
+	"Burn", "Damaged", "Health", "Invulnerable",
 ]
 
 @export var grid_width: int = 12
@@ -127,7 +129,16 @@ func _draw_entity(world, id: int) -> void:
 	# Highlighted faintly so you can see when one entity straddles two tiles.
 	_highlight_occupied_tiles(px, py, w, h, color)
 
-	draw_rect(rect, Color(color.r, color.g, color.b, 0.85), true)
+	# While the i-frame window is open the entity blinks, so you can see exactly
+	# when it can be hurt again. Blink is driven by the component's own elapsed
+	# value, not by wall-clock time, so it stays in step with the simulation.
+	var alpha := 0.85
+	if world.entity_have_component(COMP_INVULNERABLE, id):
+		var inv: Dictionary = world.get_component_value(COMP_INVULNERABLE, id)
+		var t: float = float(inv.get("elapsed", 0.0))
+		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
+
+	draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
 	draw_rect(rect, Color(1, 1, 1, 0.5), false, 1.5)
 
 	# Delay is drawn as a progress bar above the entity.
@@ -137,11 +148,28 @@ func _draw_entity(world, id: int) -> void:
 	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0, 0, 0, 0.75))
 
+	if world.entity_have_component(COMP_HEALTH, id):
+		_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
+
 	if show_badges:
 		var badges := _component_badges(world, id)
 		if badges != "":
-			draw_string(_font, top_left + Vector2(0, size.y + 13), badges,
+			draw_string(_font, top_left + Vector2(0, size.y + 22), badges,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.65))
+
+
+func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
+	var hp: Dictionary = world.get_component_value(COMP_HEALTH, id)
+	var max_hp: float = float(hp.get("max", 0.0))
+	if max_hp <= 0.0:
+		return
+	var current: float = float(hp.get("current", 0.0))
+	var ratio: float = clampf(current / max_hp, 0.0, 1.0)
+
+	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)
+	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.4, 0.85, 0.35), true)
+	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(max_hp)],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.55))
 
 
 func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: Color) -> void:

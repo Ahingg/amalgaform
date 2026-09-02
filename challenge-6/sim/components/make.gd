@@ -5,13 +5,16 @@ extends RefCounted
 static func delay(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
 	
-static func invulnerability(duration: float) -> Dictionary:
+static func invulnerable(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
 
 static func fire(damage: float) -> Dictionary:
 	return {"damage": damage}
 	
 static func burn(damage: float) -> Dictionary:
+	return {"damage": damage}
+	
+static func damaged(damage: float) -> Dictionary:
 	return {"damage": damage}
 	
 static func position(x: float, y: float) -> Dictionary: 
