@@ -33,8 +33,8 @@ func _ready() -> void:
 	#print(world.entity_have_component(Comp.WIND, e1))
 
 
-	# Lapisan tampilan. Ditambahkan dari kode biar scene-nya tetap sederhana.
-	# renderer.gd cuma BACA world, gak pernah nulis apa pun ke sim/.
+	# View layer. Added from code to keep the scene file simple.
+	# renderer.gd only READS world, it never writes into sim/.
 	add_child(WorldRenderer.new())
 
 

@@ -1,16 +1,16 @@
-# sim/ — simulasi murni
+# sim/ — pure simulation
 
-Aturan keras: TIDAK ADA satu pun file di folder ini yang boleh menyentuh Godot.
-Tidak ada `extends Node`, tidak ada `Vector2` dari engine kalau bisa dihindari,
-tidak ada `Area2D`, tidak ada signal.
+Hard rule: NO file in this folder may touch Godot.
+No `extends Node`, no `Area2D`, no signals, no engine clock.
 
-Alasannya: kalau simulasi bergantung ke engine, state-nya bocor keluar dari World
-dan "retry instan" berhenti jadi satu baris. Semua yang bisa berubah harus hidup
-di dalam World supaya reset = buang World, bikin lagi.
+Why: if the simulation depends on the engine, its state leaks outside World and
+"instant retry" stops being one line. Everything that can change must live
+inside World, so reset = throw the World away and build a new one.
 
-Isi:
-- `world.gd`        — penyimpan entity + komponen, dan query
-- `components/`     — definisi data komponen (data polos, tanpa perilaku)
-- `systems/`        — satu file per system (perilaku, tanpa data milik sendiri)
+Contents:
+- `world.gd`        — entity + component storage, and queries
+- `comp.gd`         — component name constants (typos caught by the editor)
+- `components/`     — component data shapes (plain data, no behaviour)
+- `systems/`        — one file per system (behaviour, owning no data)
 
-Kalau butuh sesuatu dari Godot, itu tandanya barangnya milik `view/`, bukan sini.
+If something in here needs Godot, that is a sign it belongs in `view/` instead.

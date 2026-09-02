@@ -2,27 +2,27 @@ class_name WorldRenderer
 extends Node2D
 
 # ============================================================================
-# LAPISAN TAMPILAN — CUMA BACA
+# VIEW LAYER — READ ONLY
 #
-# File ini tidak pernah menulis apa pun ke World. Dia cuma bertanya dan
-# menggambar. Kalau suatu saat file ini dihapus, simulasi tetap jalan sama
-# persis — cuma jadi tidak kelihatan.
+# This file never writes anything into World. It only asks and draws. If this
+# file were deleted, the simulation would still run exactly the same — it would
+# just be invisible.
 #
-# KONTRAK dengan sim/:
-#   - komponen "Position" berisi {"x": float, "y": float} dalam satuan petak
-#   - komponen "Size" (opsional) berisi {"w": float, "h": float}, default 1x1
+# CONTRACT with sim/:
+#   - component "Position" holds {"x": float, "y": float} in tile units
+#   - component "Size" (optional) holds {"w": float, "h": float}, default 1x1
 #
-# Sengaja pakai string mentah, bukan Comp.XXX, supaya file ini tidak pernah
-# bikin sim/ gagal di-parse kalau nama konstantanya belum ada atau berubah.
-# Kalau ada nama komponen baru yang mau kelihatan, tambahkan di BADGE_ORDER.
+# Raw strings are used here on purpose instead of Comp.XXX, so that this file
+# can never break sim/ parsing if a constant is missing or renamed.
+# To make a new component show up as a badge, add it to BADGE_ORDER.
 # ============================================================================
 
-const KOMPONEN_POSISI := "Position"
-const KOMPONEN_UKURAN := "Size"
-const KOMPONEN_DELAY := "Delay"
+const COMP_POSITION := "Position"
+const COMP_SIZE := "Size"
+const COMP_DELAY := "Delay"
 
-# Urutan menentukan prioritas warna: yang paling atas menang.
-const WARNA_KOMPONEN := {
+# Order matters: the first matching component wins the color.
+const COMPONENT_COLORS := {
 	"Burn": Color(1.0, 0.45, 0.15),
 	"Fire": Color(0.95, 0.3, 0.2),
 	"Water": Color(0.25, 0.6, 1.0),
@@ -31,18 +31,18 @@ const WARNA_KOMPONEN := {
 	"Health": Color(0.55, 0.8, 0.4),
 }
 
-# Komponen yang namanya ditulis di bawah tiap entity, biar kelihatan
-# entity itu lagi "berbentuk" apa. Ini alat debug ECS yang paling kepakai.
+# Component names printed under each entity, so you can see what shape that
+# entity currently has. This is the most useful ECS debugging tool here.
 const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health",
 ]
 
-@export var lebar_grid: int = 12
-@export var tinggi_grid: int = 8
-@export var ukuran_petak: float = 64.0
+@export var grid_width: int = 12
+@export var grid_height: int = 8
+@export var tile_size: float = 64.0
 @export var margin: Vector2 = Vector2(48, 48)
-@export var tampilkan_badge: bool = true
+@export var show_badges: bool = true
 
 var _font: Font
 
@@ -52,138 +52,138 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	# Simulasi berjalan di _physics_process milik Main. Di sini kita cuma minta
-	# gambar ulang tiap frame layar.
+	# The simulation advances in Main's _physics_process. Here we only ask for
+	# a repaint every rendered frame.
 	queue_redraw()
 
 
 func _draw() -> void:
-	_gambar_grid()
+	_draw_grid()
 
-	var world = _ambil_world()
+	var world = _get_world()
 	if world == null:
-		_gambar_pesan("World belum ada di Main. Renderer nunggu.")
+		_draw_message("No World on Main yet. Renderer is waiting.")
 		return
 
-	var kunci: Array[String] = [KOMPONEN_POSISI]
-	var ids: Array[int] = world.get_entities_with_comp(kunci)
+	var query: Array[String] = [COMP_POSITION]
+	var ids: Array[int] = world.get_entities_with_comp(query)
 
 	if ids.is_empty():
-		_gambar_pesan("Belum ada entity yang punya komponen \"%s\"." % KOMPONEN_POSISI)
+		_draw_message("No entity has the \"%s\" component yet." % COMP_POSITION)
 		return
 
 	for id in ids:
-		_gambar_entity(world, id)
+		_draw_entity(world, id)
 
 
-# --- pengambilan world -------------------------------------------------------
+# --- world lookup ------------------------------------------------------------
 
-# Sengaja diambil ulang tiap frame, bukan disimpan sekali di _ready.
-# Alasannya: pas retry, Main bikin World BARU. Kalau referensinya di-cache,
-# renderer bakal terus menggambar dunia lama yang sudah dibuang.
-func _ambil_world():
-	var induk := get_parent()
-	if induk == null:
+# Fetched every frame on purpose instead of cached once in _ready.
+# Reason: on retry, Main builds a NEW World. A cached reference would keep
+# drawing the old, discarded world forever.
+func _get_world():
+	var parent := get_parent()
+	if parent == null:
 		return null
-	return induk.get("world")
+	return parent.get("world")
 
 
-# --- menggambar --------------------------------------------------------------
+# --- drawing -----------------------------------------------------------------
 
-func _gambar_grid() -> void:
-	var w := lebar_grid * ukuran_petak
-	var h := tinggi_grid * ukuran_petak
+func _draw_grid() -> void:
+	var w := grid_width * tile_size
+	var h := grid_height * tile_size
 
 	draw_rect(Rect2(margin, Vector2(w, h)), Color(0.11, 0.12, 0.15), true)
 
-	var warna_garis := Color(1, 1, 1, 0.07)
-	for i in range(lebar_grid + 1):
-		var x := margin.x + i * ukuran_petak
-		draw_line(Vector2(x, margin.y), Vector2(x, margin.y + h), warna_garis, 1.0)
-	for j in range(tinggi_grid + 1):
-		var y := margin.y + j * ukuran_petak
-		draw_line(Vector2(margin.x, y), Vector2(margin.x + w, y), warna_garis, 1.0)
+	var line_color := Color(1, 1, 1, 0.07)
+	for i in range(grid_width + 1):
+		var x := margin.x + i * tile_size
+		draw_line(Vector2(x, margin.y), Vector2(x, margin.y + h), line_color, 1.0)
+	for j in range(grid_height + 1):
+		var y := margin.y + j * tile_size
+		draw_line(Vector2(margin.x, y), Vector2(margin.x + w, y), line_color, 1.0)
 
 
-func _gambar_entity(world, id: int) -> void:
-	var pos: Dictionary = world.get_component_value(KOMPONEN_POSISI, id)
+func _draw_entity(world, id: int) -> void:
+	var pos: Dictionary = world.get_component_value(COMP_POSITION, id)
 	var px: float = float(pos.get("x", 0.0))
 	var py: float = float(pos.get("y", 0.0))
 
-	var lebar := 1.0
-	var tinggi := 1.0
-	if world.entity_have_component(KOMPONEN_UKURAN, id):
-		var uk: Dictionary = world.get_component_value(KOMPONEN_UKURAN, id)
-		lebar = float(uk.get("w", 1.0))
-		tinggi = float(uk.get("h", 1.0))
+	var w := 1.0
+	var h := 1.0
+	if world.entity_have_component(COMP_SIZE, id):
+		var s: Dictionary = world.get_component_value(COMP_SIZE, id)
+		w = float(s.get("w", 1.0))
+		h = float(s.get("h", 1.0))
 
-	var kiri_atas := margin + Vector2(px, py) * ukuran_petak
-	var ukuran := Vector2(lebar, tinggi) * ukuran_petak
-	var kotak := Rect2(kiri_atas, ukuran)
+	var top_left := margin + Vector2(px, py) * tile_size
+	var size := Vector2(w, h) * tile_size
+	var rect := Rect2(top_left, size)
 
-	var warna := _warna_untuk(world, id)
+	var color := _color_for(world, id)
 
-	# Petak-petak yang tersentuh entity ini (okupansi biner: nyentuh = masuk).
-	# Ditandai tipis supaya kelihatan kalau satu entity lagi berdiri di dua petak.
-	_tandai_petak_tersentuh(px, py, lebar, tinggi, warna)
+	# Tiles touched by this entity (binary occupancy: touching means inside).
+	# Highlighted faintly so you can see when one entity straddles two tiles.
+	_highlight_occupied_tiles(px, py, w, h, color)
 
-	draw_rect(kotak, Color(warna.r, warna.g, warna.b, 0.85), true)
-	draw_rect(kotak, Color(1, 1, 1, 0.5), false, 1.5)
+	draw_rect(rect, Color(color.r, color.g, color.b, 0.85), true)
+	draw_rect(rect, Color(1, 1, 1, 0.5), false, 1.5)
 
-	# Delay digambar sebagai bar progres di atas entity.
-	if world.entity_have_component(KOMPONEN_DELAY, id):
-		_gambar_bar_delay(world, id, kiri_atas, ukuran.x)
+	# Delay is drawn as a progress bar above the entity.
+	if world.entity_have_component(COMP_DELAY, id):
+		_draw_delay_bar(world, id, top_left, size.x)
 
-	draw_string(_font, kiri_atas + Vector2(5, 16), "#%d" % id,
+	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0, 0, 0, 0.75))
 
-	if tampilkan_badge:
-		var badge := _daftar_komponen(world, id)
-		if badge != "":
-			draw_string(_font, kiri_atas + Vector2(0, ukuran.y + 13), badge,
+	if show_badges:
+		var badges := _component_badges(world, id)
+		if badges != "":
+			draw_string(_font, top_left + Vector2(0, size.y + 13), badges,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.65))
 
 
-func _tandai_petak_tersentuh(px: float, py: float, w: float, h: float, warna: Color) -> void:
+func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: Color) -> void:
 	var x0 := floori(px)
 	var y0 := floori(py)
 	var x1 := ceili(px + w) - 1
 	var y1 := ceili(py + h) - 1
 	for tx in range(x0, x1 + 1):
 		for ty in range(y0, y1 + 1):
-			var p := margin + Vector2(tx, ty) * ukuran_petak
-			draw_rect(Rect2(p, Vector2(ukuran_petak, ukuran_petak)),
-				Color(warna.r, warna.g, warna.b, 0.13), true)
+			var p := margin + Vector2(tx, ty) * tile_size
+			draw_rect(Rect2(p, Vector2(tile_size, tile_size)),
+				Color(color.r, color.g, color.b, 0.13), true)
 
 
-func _gambar_bar_delay(world, id: int, kiri_atas: Vector2, lebar_px: float) -> void:
-	var d: Dictionary = world.get_component_value(KOMPONEN_DELAY, id)
-	var durasi: float = float(d.get("duration", 0.0))
-	if durasi <= 0.0:
+func _draw_delay_bar(world, id: int, top_left: Vector2, width_px: float) -> void:
+	var d: Dictionary = world.get_component_value(COMP_DELAY, id)
+	var duration: float = float(d.get("duration", 0.0))
+	if duration <= 0.0:
 		return
-	var lewat: float = float(d.get("elapsed", 0.0))
-	var rasio: float = clampf(lewat / durasi, 0.0, 1.0)
+	var elapsed: float = float(d.get("elapsed", 0.0))
+	var ratio: float = clampf(elapsed / duration, 0.0, 1.0)
 
-	var atas := kiri_atas + Vector2(0, -9)
-	draw_rect(Rect2(atas, Vector2(lebar_px, 5)), Color(0, 0, 0, 0.55), true)
-	draw_rect(Rect2(atas, Vector2(lebar_px * rasio, 5)), Color(0.95, 0.85, 0.3), true)
+	var bar_top := top_left + Vector2(0, -9)
+	draw_rect(Rect2(bar_top, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)
+	draw_rect(Rect2(bar_top, Vector2(width_px * ratio, 5)), Color(0.95, 0.85, 0.3), true)
 
 
-func _warna_untuk(world, id: int) -> Color:
-	for nama in WARNA_KOMPONEN:
-		if world.entity_have_component(nama, id):
-			return WARNA_KOMPONEN[nama]
+func _color_for(world, id: int) -> Color:
+	for comp_name in COMPONENT_COLORS:
+		if world.entity_have_component(comp_name, id):
+			return COMPONENT_COLORS[comp_name]
 	return Color(0.75, 0.75, 0.8)
 
 
-func _daftar_komponen(world, id: int) -> String:
-	var punya: Array[String] = []
-	for nama in BADGE_ORDER:
-		if world.entity_have_component(nama, id):
-			punya.append(nama)
-	return " ".join(punya)
+func _component_badges(world, id: int) -> String:
+	var owned: Array[String] = []
+	for comp_name in BADGE_ORDER:
+		if world.entity_have_component(comp_name, id):
+			owned.append(comp_name)
+	return " ".join(owned)
 
 
-func _gambar_pesan(teks: String) -> void:
-	draw_string(_font, margin + Vector2(8, -14), teks,
+func _draw_message(text: String) -> void:
+	draw_string(_font, margin + Vector2(8, -14), text,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
