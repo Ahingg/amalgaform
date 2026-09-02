@@ -7,3 +7,7 @@ const WIND := "Wind"
 const DELAY := "Delay"
 const POSITION := "Position"
 const VELOCITY := "Velocity"
+const SIZE := "Size"
+const HEALTH := "Health"
+
+const BURN := "Burn"

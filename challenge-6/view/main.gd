@@ -9,19 +9,19 @@ func _ready() -> void:
 	var e2 = world.add_entity()
 	var e3 = world.add_entity()
 	
-	world.attach_component(Comp.FIRE, e1, Make.fire(10.0));
-	world.attach_component(Comp.WATER, e1)
-	world.attach_component(Comp.WIND, e1)
+	#world.attach_component(Comp.DELAY, e1, Make.delay(2.0))
+	world.attach_component(Comp.POSITION, e1, Make.position(0.5, 0.5))
+	world.attach_component(Comp.VELOCITY, e1, Make.velocity(1.0, 0))
+	world.attach_component(Comp.SIZE, e1, Make.size(1.0, 1.0))
+	world.attach_component(Comp.HEALTH, e1, Make.health(100))
 	
-	world.attach_component(Comp.FIRE, e2, Make.fire(20.0))
-	world.attach_component(Comp.WIND, e2)
+	world.attach_component(Comp.POSITION, e2, Make.position(5.0, 0))
+	world.attach_component(Comp.SIZE, e2, Make.size(2, 1))
+	world.attach_component(Comp.FIRE, e2, Make.fire(10.0))
 	
 	world.attach_component(Comp.WIND, e3)
 	world.attach_component(Comp.WATER, e3)
 	
-	world.attach_component(Comp.DELAY, e1, Make.delay(2.0))
-	world.attach_component(Comp.POSITION, e1, Make.position(0.5, 1.5))
-	world.attach_component(Comp.VELOCITY, e1, Make.velocity(1.0, 0))
 	
 	#var result: Dictionary =  world.get_component_value(Comp.FIRE, e1)
 	#for key in result:
