@@ -2,290 +2,348 @@
 
 Deadline: **Kamis, 10 September 2026.** Presentasi Jumat 11.
 
-Revisi 2 (3 September malam). Revisi 1 kehilangan "dirapal langsung" dan
-akibatnya jatuh jadi tower defense. Dokumen ini memperbaikinya.
+Revisi 3 (3 September malam). Revisi 1 dan 2 membangun game bertahan berbasis
+fase persiapan — dan itu **membunuh hook asli proyek ini**: "rune yang bisa
+diefisiensikan atau disingkat" tidak berarti apa-apa kalau waktu berhenti saat
+merakit. Pemendekan cuma punya gigi kalau merapal makan waktu dan ada yang
+mengejar. Revisi ini memperbaiki itu.
 
 ---
 
-# 1. Satu ronde, dari awal sampai habis
+# 1. Genre
 
-> Ruangan 14x9 dilihat dari atas: dinding, lantai, dua pintu di kiri, dan
-> **kristal** di kanan yang harus dilindungi. Ada juga barang bawaan ruangan —
-> sebuah **kipas** yang meniup ke satu arah, dan satu **genangan air**.
->
-> Player mengendalikan seorang **penyihir** yang berdiri di dalam ruangan itu.
->
-> **Fase persiapan.** Waktu berhenti. Player punya 8 slot. Dia berjalan
-> keliling, menaruh mesin di petak lantai, memberi tiap mesin arah hadap, dan
-> mengisinya dengan elemen: api, air, angin. Sisa slot yang tidak dipakai jadi
-> cadangan untuk dirapal langsung nanti.
->
-> **Fase eksekusi.** Space. Musuh masuk lewat pintu, satu-satu, tidak
-> berbarengan. Mereka berjalan ke arah kristal — **dan mesin yang player taruh
-> menghalangi jalan mereka**, jadi rutenya berubah. Player tetap bisa bergerak,
-> dan bisa merapal langsung dari cadangannya. Sekitar 30 detik.
->
-> **Hasil.** Satu musuh menyentuh kristal = kalah. Semua musuh mati = menang.
-> R untuk mengulang — semuanya kembali utuh, instan.
->
-> Ruangan yang sama diulang dengan jatah **8 slot, lalu 6, lalu 4.**
+**Aksi arena tampak atas dengan sistem rapalan kombinatorial.**
+
+Tetangga terdekatnya: **Magicka** (antrian elemen, hasil emergen), **Hades**
+(arena, mati, ulang), **Noita** (kombinasi yang mengejutkan perancangnya).
+
+Bukan roguelite penuh — tidak ada prosedural, tidak ada meta-progression antar
+run. Satu arena, gelombang bertingkat, mati dan ulang instan. Kalau nanti ada
+waktu, run bertingkat bisa ditumpuk di atas ini tanpa membongkar apa pun.
 
 ---
 
-# 2. Kenapa ini bukan tower defense
+# 2. Satu ronde
 
-Tiga pembeda, diurutkan dari yang paling langsung kelihatan orang lain — karena
-sistem yang dalam tapi tidak terbaca itu gagal sebagai demo.
+> Arena tampak atas. Player seorang penyihir. Musuh masuk bergelombang dan
+> **mengejar player** — tidak ada yang perlu dilindungi selain diri sendiri.
+>
+> Merapal: tahan tombol rapal, tekan `1`/`2`/`3` untuk mengantrikan rune
+> **api / air / angin**, lepas untuk melepaskan.
+>
+> Selama antrian terbuka, **waktu melambat** — momen "pencerahan" ala anime.
+> Tapi perlambatannya **luntur**: makin lama ragu, makin cepat dunia kembali ke
+> kecepatan normal, dan monster sudah di depan muka.
+>
+> Antrian yang panjang butuh waktu lepas yang lebih lama. Rapalan 3 rune
+> meninggalkan player terbuka jauh lebih lama daripada 2 rune yang tepat.
+>
+> Mati = ulang instan, semuanya kembali utuh.
 
-## a. Player ada di dalam ruangan
+---
 
-Tower defense tidak punya avatar. Di sini player punya badan: dia berjalan,
-dia bisa merapal saat pertarungan berlangsung, dan dia bisa mati. Ini yang
-menghidupkan tiga gaya main:
+# 3. Sistem rapalan
 
-| Gaya | Caranya | Kenapa susah |
+## Tata bahasa: rune pertama menentukan bentuk, seluruh antrian menentukan isi
+
+Ini yang bikin tiga rune terasa jauh lebih banyak dari tiga.
+
+**Rune pertama = wujud:**
+
+| Rune pertama | Wujudnya |
+|---|---|
+| Api | **peluru** yang melesat lurus |
+| Air | **genangan** di lantai pada jarak tertentu |
+| Angin | **kerucut** pendek dari badan player, mendorong |
+
+**Seluruh rune di antrian = isinya:** tiap api menambah kerusakan, tiap air
+menempelkan `Wet`, tiap angin menambah dorongan. Rune yang sama dua kali
+memperbesar efeknya.
+
+Hasilnya, dari tiga simbol:
+
+| Antrian | Yang keluar |
+|---|---|
+| `api` | peluru api biasa |
+| `api api` | peluru yang lebih sakit, lepasnya lebih lama |
+| `api angin` | peluru yang membakar **dan** melempar mundur |
+| `angin api` | kerucut api dari badan — **bahan sama, bentuk beda total** |
+| `air api` | genangan yang membasahi **sekaligus** membakar — kombo klasik dalam satu rapalan |
+| `angin air` | kerucut yang membasahi sekelompok musuh, disiapkan untuk peluru api berikutnya |
+
+`api angin` dan `angin api` adalah momen "oh, urutannya ngaruh" — dan itu
+penemuan pertama yang bikin player sadar ada tata bahasanya, bukan cuma daftar.
+
+## Waktu rapal
+
+```
+cast_time = BASE + PER_RUNE * jumlah_rune        BASE = 0.25s, PER_RUNE = 0.25s
+```
+
+Waktu ini jalan di **kecepatan normal**, bukan diperlambat. Jadi rapalan panjang
+= jendela terbuka yang panjang. Itu ongkos yang bikin pemendekan berarti.
+
+## Perlambatan yang luntur
+
+Selama antrian terbuka:
+
+```
+time_scale(t) = 1.0 - (1.0 - MIN_SCALE) * exp(-t / TAU)
+MIN_SCALE = 0.12     TAU = 0.6 detik
+```
+
+- `t = 0` → 0.12 (dunia hampir berhenti, momen pencerahan)
+- `t = 0.6` → 0.44
+- `t = 1.2` → 0.72
+- `t = 2.0` → 0.90 (praktis sudah normal)
+
+Jadi player dapat sekitar **0,6 detik nyata yang benar-benar berharga**. Yang
+tahu kombonya selesai di dalam jendela itu. Yang ragu-ragu keluar dari jendela
+dan menghadapi monster di kecepatan penuh.
+
+Dua angka itu (`MIN_SCALE`, `TAU`) adalah tuas rasa main utama. Disetel dengan
+dimainkan, bukan ditebak.
+
+**Kenapa luntur, bukan berhenti total:** kalau waktu berhenti, panel rapalan
+jadi menu, dan panjang rapalan tidak ada ongkosnya lagi — persis kesalahan
+revisi 1 dan 2.
+
+## Tanpa mini-game terpisah
+
+Antrian rune di bawah waktu yang meluntur **itu sendiri** sudah mini-game-nya:
+ada input, ada tekanan waktu, ada kemahiran yang bisa naik. Mini-game terpisah
+berarti game kedua yang harus dibangun dan dipoles, dan dia memutus player dari
+pertarungan yang sedang berjalan.
+
+---
+
+# 4. Proficiency — dan garis yang tidak boleh dilewati
+
+Player yang sering memakai kombinasi tertentu jadi mahir dengannya. Tapi
+bentuk hadiahnya menentukan hidup-matinya value proyek ini:
+
+| | Efek | Akibatnya |
 |---|---|---|
-| Perancang murni | Habiskan semua slot untuk mesin sebelum mulai | Tebakan rutenya harus benar, tidak ada penyelamat |
-| Campuran | Pasang yang pasti, sisakan cadangan untuk kejutan | Butuh dua-duanya |
-| Improvisasi | Simpan hampir semua slot untuk dirapal langsung | Boros — rapalan langsung lebih mahal |
+| ❌ Proficiency → **damage naik** | grinding. Kekuatan diberikan game karena pengulangan | Membunuh independence. Player kuat karena mengulang, bukan karena paham |
+| ✅ Proficiency → **lebih cepat merapal**, lalu boleh **diikat ke satu tombol** | Game mengakui apa yang sudah dibuktikan player | Spell-nya sama persis. Yang berubah cuma player |
 
-**Rapalan langsung lebih mahal daripada yang dipasang** (spontaneous vs
-formulaic di Ars Magica). Yang mahal itu fleksibilitas, bukan damage.
+**Aturan keras: proficiency tidak pernah mengubah apa yang spell lakukan.
+Dia hanya mengubah seberapa cepat player bisa mengeluarkannya.**
 
-## b. Musuh dituntun, bukan ditembaki
+Puncaknya: setelah cukup sering, kombinasi itu boleh **diikat ke satu tombol,
+dengan nama yang player karang sendiri.** Rapalan 3 rune jadi satu ketukan.
 
-Di TD musuh lewat jalur tetap dan tower merusak yang lewat. Di sini
-**mesin menghalangi jalan**, angin mendorong, air memperlambat. Kerjaan player
-bukan menaruh damage di atas rute — tapi **membentuk rutenya**.
+Itu **chantless casting** dari fantasi hari pertama — dan dia tidak di-unlock
+oleh game, dia **diperoleh dengan membuktikan**. Persis Ed di Fullmetal
+Alchemist yang bisa transmutasi tanpa lingkaran karena dia sudah paham
+lingkarannya.
 
-Ini juga yang bikin ruangan 14x9 berarti: harus ada minimal dua rute alternatif,
-supaya menutup satu rute adalah keputusan, bukan cuma penempatan.
-
-## c. Loop-nya optimasi, bukan bertahan
-
-TD menaikkan kesulitan dengan gelombang yang makin besar. Di sini ruangan yang
-sama diulang dengan **jatah yang makin kecil**. TD memuai; ini memampat.
+Konsekuensi yang bagus: karena hadiahnya cuma kecepatan, **paham tetap
+mengalahkan mengulang.** Orang yang spam `api api api api` dapat rapalan
+4-rune yang cepat; orang yang paham pakai `air api` yang memang lebih pendek
+sejak awal.
 
 ---
 
-# 3. Teori yang harus ditemukan player
+# 5. Teori yang harus ditemukan
 
-Kalau cuma satu bagian dokumen ini yang bertahan, pertahankan yang ini.
+Tetap sama, dan sekarang justru lebih tajam karena dipakai di bawah tekanan:
 
-## Tidak ada aturan reaksi khusus. Mata uangnya waktu paparan.
+| Elemen | Kerjanya |
+|---|---|
+| **Api** | menyakiti apa pun yang menyentuh, berulang selama bersentuhan |
+| **Air** | menempelkan `Wet` — melambat **50% selama 2 detik** |
+| **Angin** | mendorong **menjauhi sumbernya** |
 
-| Elemen | Yang dia lakukan | Ongkos |
-|---|---|---|
-| **Api** | menyakiti apa pun yang menyentuh, berulang selama bersentuhan | 1 slot |
-| **Air** | menempelkan `Wet`: **melambat 50% selama 2 detik** | 1 slot |
-| **Angin** | mendorong yang menyentuh, **menjauhi sumbernya** | 1 slot |
+Tidak ada aturan `if api and air`. Yang lahir sendiri:
 
-Tidak ada baris `if api and air: uap`. Tapi yang lahir sendiri:
-
-- **Air lalu api** — musuh lambat 50%, jadi dua kali lebih lama di dalam api,
-  jadi dua kali lebih sakit. Dua slot mengerjakan pekerjaan empat slot.
-- **Angin lalu api** — musuh terdorong mundur, melewati api yang sama dua kali.
-- **Mesin sebagai dinding** — rute dipaksa memutar, waktu di ruangan bertambah,
-  semua sumber kerusakan jadi lebih lama bekerja.
-
-Teorinya, yang tidak pernah ditulis di layar mana pun:
+- Basahi dulu → musuh lambat → lebih lama di dalam api → dua kali lebih sakit
+- Dorong ke dalam api → paparan ulang
+- `air api` dalam satu genangan → basah dan terbakar di tempat yang sama
 
 > **Kerusakan = seberapa lama musuh berada di dalam sesuatu yang menyakitkan.
 > Semua hal lain cuma cara mengatur "seberapa lama" itu.**
 
-Player bego pakai 6 slot untuk 6 api yang disebar. Player yang paham pakai
-2 slot dan menang lebih cepat. Ruangan 4 slot memisahkan keduanya.
-
-**Barang gratis ruangan** — kipas dan genangan — ada supaya efisiensi punya
-sumber lain: memanfaatkan yang sudah ada tidak makan slot sama sekali.
+Player yang paham menang dengan 2 rune. Yang tidak paham menghabiskan 4 rune,
+merapal lebih lama, dan kena duluan. **Pemahaman terbayar sebagai kecepatan.**
 
 ---
 
-# 4. Musuh
+# 6. MDA
 
-## Cara jalannya: bukan rel, bukan pathfinding
+## Mechanics — aturan yang ditulis
 
-Tiap langkah, musuh mencoba bergerak **satu petak lebih dekat ke kristal**.
-Kalau petak itu terhalang (dinding atau mesin), dia mencoba sumbu satunya.
-Kalau dua-duanya terhalang:
+Antrian rune · rune pertama menentukan wujud · waktu rapal sebanding panjang
+antrian · perlambatan yang luntur · api menyakiti · air memperlambat · angin
+mendorong · musuh mengejar player lewat A\* · gelombang bertingkat · mati dan
+ulang instan · proficiency menaikkan kecepatan, tidak pernah kekuatan.
 
-> **musuh menyerang mesin yang menghalanginya.**
+## Dynamics — yang muncul saat dimainkan
 
-Aturan terakhir itu penting — dia yang membunuh strategi degeneratif "tembok
-rapat". Menutup semua rute bukan kemenangan; itu cuma memindahkan pertarungan
-ke mesin lo. Player harus **menyisakan rute**, dan itulah keputusan intinya.
+- **Membasahi dulu, membakar kemudian** — ditemukan sendiri, tidak pernah
+  diajarkan
+- **Kiting sebagai alat, bukan pengecut** — mundur untuk membeli waktu rapal
+- **Panik vs lancar** — pemula membeku di panel; yang mahir sudah melepas
+  sebelum perlambatan luntur
+- **Pemadatan** — kombinasi 4 rune yang berhasil pelan-pelan diganti 2 rune yang
+  lebih tepat
+- **Perbendaharaan pribadi** — tiap player berakhir dengan set kombinasi ikat
+  yang berbeda, sesuai cara mainnya
 
-Cukup beberapa baris. Tidak ada A*, tidak ada graf.
+## Aesthetics — rasa yang dikejar (dan yang sengaja tidak)
 
-## Berapa musuh
+| Dikejar | Kenapa |
+|---|---|
+| **Discovery** (utama) | seluruh gamenya tentang menemukan bahwa kerusakan = waktu paparan |
+| **Challenge** (utama) | tahu saja tidak cukup, harus bisa mengeluarkannya sebelum monster sampai |
+| **Fantasy** (pendukung) | jadi penyihir yang **mengerti** sihirnya, bukan yang menghafal mantra |
+| **Expression** (pendukung) | mengarang nama untuk kombinasi temuan sendiri |
 
-Jawaban untuk keberatan yang benar: menambah musuh sejenis memang tidak
-menambah apa-apa. Yang menambah adalah **kedatangan bertahap**.
-
-**4 musuh, masuk satu per satu tiap 3 detik.** Musuh pertama basah dan mati
-pelan; yang kedua masuk saat api masih menyala dan lantai masih basah; yang
-keempat masuk ke ruangan yang keadaannya sudah berubah total. Yang menarik
-bukan jumlahnya — tapi kenyataan bahwa **keadaan ruangan berkembang**.
-
-HP awal: 100. Api: 20 kerusakan per detik paparan.
-
----
-
-# 5. Peta
-
-## Kenapa 14x9
-
-Dua batasan yang menentukan:
-- Harus muat **minimal dua rute berbeda** dari pintu ke kristal — kalau cuma
-  satu rute, menghalangi tidak berarti apa-apa dan kita kembali jadi TD
-- Harus **terbaca sekali pandang** tanpa geser layar, karena player harus bisa
-  membaca seluruh papan saat merancang
-
-14x9 pada petak 56px = 784x504, muat di jendela default. Rute terpendek sekitar
-14 petak = ~14 detik pada kecepatan 1 petak/detik. Cukup panjang untuk dijebak,
-cukup pendek untuk diulang berkali-kali.
-
-## Isi peta
-
-| Isi | Bisa dilewati | Bisa ditempati mesin |
-|---|---|---|
-| Lantai | ya | **ya** |
-| Dinding | tidak | tidak |
-| Pintu masuk (2, di kiri) | ya | tidak |
-| Kristal (kanan) | — | tidak |
-| Kipas (meniup satu arah tetap) | ya | tidak |
-| Genangan air | ya | tidak |
-
-Dinding disusun supaya ada dua koridor dari pintu ke kristal, dengan satu
-persimpangan di tengah. Kipas ditaruh di salah satu koridor, genangan di
-koridor satunya — supaya dua rute punya karakter berbeda dan player punya alasan
-memilih mau menutup yang mana.
-
----
-
-# 6. Tema
-
-**Arkana, bukan sci-fi.** Alasannya bukan selera: seluruh gaya visual sudah
-diputuskan sebagai **tinta monokrom ala catatan peneliti**, dan itu nyambung ke
-penyihir yang membedah teori sihir, bukan ke teknologi.
-
-**Musuh: makhluk, bukan manusia.** Alasan praktis — siluet makhluk sederhana
-jauh lebih cepat digambar dan lebih mudah dibaca dalam gaya sketsa. Manusia
-butuh proporsi yang benar untuk tidak terlihat aneh.
-
-Glyph elemen **sengaja tidak swalayan**: jangan gambar api yang jelas-jelas api.
-Gambar simbol yang artinya baru ketahuan setelah player melihat efeknya —
-supaya memecahkan arti glyph ikut jadi bagian dari risetnya.
-
-Nama game: belum. Diputuskan setelah ada yang bisa dimainkan.
+Tidak dikejar: Fellowship (solo), Narrative (tidak ada cerita), Submission
+(justru anti-grinding).
 
 ---
 
 # 7. Value
 
-**Independence** — tidak ada satu pun sumber kekuatan yang diberikan game.
-Tidak ada unlock, level up, atau stat naik. Ruangan 4 slot cuma bisa dilewati
-kalau player benar-benar paham bahwa kerusakan itu waktu paparan.
+**Independence** — tidak ada kekuatan yang diberikan game. Tidak ada damage
+naik, tidak ada unlock. Satu-satunya yang tumbuh adalah kecepatan player
+mengeluarkan apa yang sudah dia pahami.
 
-**Resilience** — gagal murah dan terbaca (ulang < 5 detik, tidak ada yang
-hilang), dan kesulitan naik dengan **memaksa merevisi solusi yang sudah
-berhasil**, bukan dengan menambah musuh.
+**Resilience** — mati murah dan terbaca, ulang di bawah 5 detik, tidak ada yang
+hilang. Kegagalan selalu bisa dijelaskan: rapalan kepanjangan, atau kombonya
+salah untuk situasi itu.
 
-Yang bikin terlihat: penghitung percobaan dibingkai sebagai usaha (model
-Celeste), ringkasan slot di akhir ronde, dan **tidak pernah ada daftar resep di
-layar**.
+Yang bikin terlihat: penghitung percobaan sebagai usaha (model Celeste),
+ringkasan "rapalan terpanjang / terpendek yang kamu pakai", dan **tidak pernah
+ada daftar resep di layar.**
 
 ---
 
-# 8. Arsitektur (tidak berubah)
+# 8. Arena & musuh
 
-**GDScript, target aplikasi macOS native.** Godot 4.7.2, renderer Compatibility.
+**Satu arena tampak atas**, ada dinding untuk berlindung dan memutar. Ukuran
+kira-kira 20x12 petak — cukup untuk kiting, cukup untuk terbaca sekali pandang.
+
+**Musuh mengejar player** dengan A\*. Tidak ada kristal untuk sekarang. (Kristal
+nanti = "player kedua tanpa `Velocity`" — komponen yang sama, tanpa kendali.
+Karena itu dia bisa ditambahkan kapan saja tanpa membongkar apa pun.)
+
+**Ulang jalur:** jalur dihitung ulang hanya kalau targetnya pindah petak —
+target menempelkan komponen penanda, sistem A\* membaca lalu mencabutnya.
+Bukan tiap frame.
+
+**Gelombang:** 3-5 gelombang, jumlah dan kecepatan naik. Menang = semua
+gelombang bersih. Kalah = player mati.
+
+**Ada barang gratis di arena** — obor (sumber api), genangan (sumber air) —
+supaya memanfaatkan lingkungan jadi jalan efisiensi yang tidak makan rune.
+
+---
+
+# 9. Tampilan & aset
+
+**Logikanya tampak atas.** Sprite digambar dari **sudut 3/4** supaya terasa
+2.5D — Hyper Light Drifter, Hades, Enter the Gungeon semuanya begitu. Player
+melihat kedalaman, kodenya tidak tahu apa-apa soal itu. **Nol baris tambahan.**
+
+2.5D sungguhan (isometrik, ketinggian) dipotong: itu ongkos presentasi, bukan
+mekanik, dan tidak menambah satu pun keputusan buat player.
+
+**Aset: cari yang gratis.** Keputusan sadar Xaviero — menggambar sendiri itu
+ego, bukan tujuan rotasi. Tenaga dipindah ke mekanik. Kalau ternyata ada sisa
+waktu, glyph rune saja yang digambar tangan (paling sering dilihat, paling
+sedikit gambarnya).
+
+---
+
+# 10. Arsitektur (tidak berubah)
+
+**GDScript, aplikasi macOS native.** Godot 4.7.2, renderer Compatibility.
 
 | Lapisan | Menulis ke World? | Aturan |
 |---|---|---|
 | `sim/` | ya | pemilik aturan main. **Tidak boleh menyentuh Godot** |
 | `view/renderer.gd` | tidak | cuma bertanya dan menggambar |
-| `view/assembly_ui.gd` | ya | input. Hanya lewat pintu depan sim, **tanpa aturan main** |
+| lapisan input | ya | hanya lewat pintu depan sim, **tanpa aturan main** |
 
 ## Aturan ECS yang dipegang
 
-- Entity cuma id kosong. Yang menentukan perlakuan adalah komponen yang menempel
+- Entity cuma id kosong; yang menentukan perlakuan adalah komponen yang menempel
 - Komponen = data. System = kelakuan, tanpa state antar frame (`static func`)
 - **Ada-tidaknya komponen itu sendiri flag-nya**
 - **Apa pun yang dibaca sebuah system, masukkan ke query-nya**
 - **Komponen kejadian dikonsumsi di frame yang sama dia dibuat**
 - System tidak pernah memanggil system lain — mereka bicara lewat World
-- Urutan system ditulis eksplisit. Hasil harus bisa diulang
+- Urutan system ditulis eksplisit; hasil harus bisa diulang
 - `duplicate()` tiap dictionary yang dipakai lebih dari sekali
 - Archetype bukan tipe. **Jangan bikin pabrik turunan**
 - Apa pun yang bisa diturunkan dari World, jangan disimpan di penghitung sendiri
 
-## Konvensi posisi
+Posisi pecahan, okupansi biner, `Position` = pojok kiri-atas, `Size` default
+1x1, logika okupansi di satu fungsi.
 
-Posisi pecahan, okupansi biner (menyentuh = di dalam). `Position` = pojok
-kiri-atas, satuan petak. `Size` default 1x1. Logika okupansi hidup di **satu
-fungsi** supaya keputusan pecahan bisa dibalik dalam 10 menit.
+**Catatan perlambatan waktu:** `time_scale` tidak boleh jadi variabel global
+Godot. Dia komponen/keadaan di dalam `World`, dan `delta` yang dioper ke system
+sudah dikalikan. Kalau tidak, keadaan bocor keluar World dan "ulang" berhenti
+jadi satu baris.
 
 ---
 
-# 9. Yang sudah jadi
+# 11. Yang sudah jadi dan tetap terpakai
 
 `World` · `DelaySystem` · `MoveSystem` · `LifetimeSystem` · `DeadSystem` ·
 `FireContactSystem` → `BurnSystem` → `DamageSystem` → `InvulnerabilitySystem` ·
-`MachineSystem` · `Spawn` · `renderer.gd` · `assembly_ui.gd`
+`MachineSystem` (jadi pelahir spell dari antrian) · `Spawn` · `renderer.gd`
 
-**Semuanya selamat dari revisi ini.** Yang bertambah adalah system baru, bukan
-bongkaran. Itu memang hadiah dari ECS.
+`assembly_ui.gd` diparkir — penempatan mesin sebelum ronde sudah tidak ada.
+Kodenya tetap disimpan; sebagian dipakai ulang untuk panel rapalan.
 
 ---
 
-# 10. Rencana 7 hari, dengan checkpoint keras
+# 12. Rencana 6 hari
 
-Scope ini **sengaja lebih besar dari yang aman**. Yang bikin itu tidak
-berbahaya bukan optimisme, tapi tiga tanggal di bawah: pemotongan **dijadwalkan**,
-bukan diharapkan. Di tiap checkpoint, yang belum jadi dipotong hari itu juga —
-bukan ditunda.
+Scope ini **sengaja lebih besar dari yang aman.** Pengamannya bukan optimisme,
+tapi checkpoint yang memotong **pada tanggalnya**, bukan saat sudah terlambat.
 
 | Hari | Xaviero | Claude |
 |---|---|---|
-| **Jum 4** (~2j) | Lingkaran ronde: fase, menang/kalah, retry | UI fase + pemilih arah hadap |
-| **Sab 5** (panjang) | Peta: dinding, lantai, kristal, pintu. Musuh jalan menuju kristal + menyerang mesin kalau buntu | Penggambar peta, penempatan mesin ikut aturan petak |
-| **Min 6** (panjang) | `Wet` + perlambatan, dorongan angin, kipas & genangan | Penyihir: gerak + rapalan langsung |
-| **Sen 7** (~2j) | Penyaluran proyektil + arah hadap | Penghitung percobaan, ringkasan slot |
-| **Sel 8** (~2j) | Menyetel 8/6/4 dengan mengukur, bukan menebak | Juice: partikel, shake, kilat kena |
-| **Rab 9** (~2j) | Art (11 gambar, tinta monokrom) | Layar menang/kalah, memasang art |
+| **Jum 4** (~2j) | Player: gerak + `Health`. Komponen antrian rapalan | Input gerak, panel antrian rune, bar rapal |
+| **Sab 5** (panjang) | A\* + musuh mengejar + menyerang player | Perlambatan waktu, kamera, umpan balik kena |
+| **Min 6** (panjang) | Tata bahasa rapalan: rune pertama = wujud, sisanya isi | Wujud: peluru, genangan, kerucut |
+| **Sen 7** (~2j) | `Wet` + perlambatan, dorongan angin, obor & genangan arena | Gelombang, layar menang/kalah |
+| **Sel 8** (~2j) | Proficiency + ikat tombol + nama karangan player | Juice: partikel, shake, kilat kena |
+| **Rab 9** (~2j) | Menyetel `MIN_SCALE`, `TAU`, damage, kecepatan musuh | Memasang aset gratis, polish |
 | **Kam 10** | Buffer, build `.app`, presentasi | Bantu build & export |
 
-## Checkpoint
+## Checkpoint (pemotongan terjadwal)
 
-- **Sabtu 5 malam — harus sudah bisa dimainkan ujung ke ujung.** Persiapan →
-  eksekusi → menang/kalah → ulang, walaupun cuma api. Kalau belum: **penyihir
-  dipotong**, kembali ke rancang-saja.
-- **Senin 7 malam — tiga elemen dan penuntunan rute harus jalan.** Kalau belum:
-  **proyektil dipotong**, cuma area.
-- **Rabu 9 malam — feature freeze. Tanpa kecuali.** Apa pun yang belum jadi
-  malam itu tidak akan pernah jadi. Kamis khusus build dan presentasi.
+- **Sabtu 5 malam — harus bisa dimainkan ujung ke ujung.** Player gerak, musuh
+  mengejar, satu rune bisa dirapal, mati bisa diulang. Belum? **Tata bahasa
+  urutan dipotong** — antrian jadi kumpulan tak berurut.
+- **Senin 7 malam — tiga elemen dan tiga wujud jalan.** Belum? **Proficiency
+  dan ikat tombol dipotong.**
+- **Rabu 9 malam — feature freeze, tanpa kecuali.** Kamis khusus build dan
+  presentasi.
 
 ## Tingkat cadangan
 
-- **Tingkat 1 (wajib):** satu ruangan, satu jatah slot, tiga elemen, penyaluran
-  area, menang/kalah/retry. Tanpa penyihir. Ini sudah menunjukkan ECS, teori
-  waktu paparan, dan kedua value.
-- **Tingkat 2:** penyihir + rapalan langsung, penuntunan rute lewat mesin,
-  progresi 8/6/4.
-- **Tingkat 3:** proyektil, uap, kipas & genangan.
+- **Tingkat 1 (wajib):** satu arena, player gerak, musuh mengejar, antrian rune
+  dengan perlambatan luntur, tiga elemen, mati dan ulang. Ini sudah menunjukkan
+  ECS, teori waktu paparan, dan kedua value.
+- **Tingkat 2:** tata bahasa urutan (rune pertama = wujud), gelombang,
+  obor & genangan arena.
+- **Tingkat 3:** proficiency, ikat tombol bernama, uap.
 
-**Aturan:** Tingkat 1 harus **jalan utuh** sebelum apa pun dari Tingkat 2
-disentuh. Kegagalan proyek 10 hari hampir selalu berbentuk sepuluh hal yang
-semuanya 80%, bukan lima hal yang selesai.
+**Tingkat 1 harus jalan utuh sebelum apa pun dari Tingkat 2 disentuh.**
 
-## Yang tetap dipotong
+## Yang dipotong
 
-Tampak samping · gravitasi · lantai bertingkat · homing · beberapa spell per
-mesin · A* · lebih dari tiga elemen · layar pembongkaran terpisah · ekonomi
-mata uang · upgrade senjata.
+Fase persiapan · penempatan mesin sebelum ronde · ekonomi slot per ruangan ·
+kristal · tampak samping · gravitasi · lantai bertingkat · isometrik sungguhan ·
+mini-game rapalan terpisah · lebih dari tiga rune · prosedural · meta-progression
+antar run.
 
-## Refleksi (diisi setelah selesai)
+## Refleksi (diisi Kamis, sebelum presentasi)
 
-Kalau tidak kekejar, jawab jujur: keberatan fitur, atau kurang disiplin? Isi
-di sini setelah Kamis, sebelum presentasi.
+Kalau tidak kekejar: keberatan fitur, atau kurang disiplin? Jawab jujur.
