@@ -1,259 +1,291 @@
-# Design Decisions — Rotasi Game Track (10 hari kerja)
+# Design — Rotasi Game Track
 
-Dokumen keputusan, bukan spesifikasi. Isinya cuma hal yang udah dikunci
-plus hal yang masih terbuka. Kalau ada yang berubah, ubah di sini.
+Deadline: **Kamis, 10 September 2026.** Dokumen ini ditulis ulang 3 September
+malam, setelah sadar mekaniknya dibangun sebelum gamenya diputuskan.
 
-## Bentuk game
+Baca bagian 1 saja kalau cuma mau tahu gamenya apa. Sisanya aturan dan rencana.
 
-Satu ruangan per level. Tiga ruangan total.
+---
 
-**Fase 1 — Persiapan.** Waktu berhenti. Player punya jatah slot. Dia menaruh
-mesin di ruangan, mengisi tiap mesin dengan rakitan komponen, dan menyisakan
-sedikit slot untuk rapalan langsung.
+# 1. Satu ronde, dari awal sampai habis
 
-**Fase 2 — Eksekusi.** ~20-30 detik. Musuh masuk dan bergerak sendiri. Mesin
-menyala sesuai pemicunya. State ruangan berubah (basah, panas, uap, angin).
-Player bisa menyelipkan rapalan langsung dari cadangan kecilnya.
+> Ruangan 12x8 dilihat dari atas. Ada pintu di kiri, kristal di kanan. Musuh
+> akan jalan dari pintu ke kristal lewat jalur yang selalu sama.
+>
+> **Fase persiapan.** Waktu berhenti. Player punya 8 slot. Dia menaruh beberapa
+> mesin di petak yang boleh ditempati, memberi tiap mesin arah hadap, dan
+> mengisinya dengan elemen: api, air, angin.
+>
+> **Fase eksekusi.** Player menekan Space. Musuh masuk dan berjalan. Mesin
+> menyala sesuai jeda masing-masing. Sekitar 20-30 detik.
+>
+> **Hasil.** Kalau satu musuh menyentuh kristal, kalah. Kalau semua musuh mati
+> sebelum sampai, menang. Tekan R untuk mengulang — semuanya kembali utuh,
+> tidak ada yang hilang, tidak ada yang perlu di-grind.
+>
+> Ruangan yang sama diulang tiga kali, dengan jatah **8 slot, lalu 6, lalu 4.**
 
-**Fase 3 — Hasil.** Menang atau gagal. Gagal = semua dikembalikan utuh,
-ruangan reset, retry instan. Tidak ada yang hilang, tidak ada grinding.
+Itu seluruh gamenya. Yang bikin dia bukan sekadar pasang jebakan ada di
+bagian 2.
 
-**Antar-ruangan (bagian risetnya).** Player dapat spell utuh sebagai hadiah,
-lalu bisa MEMBONGKARNYA jadi komponen. Di sinilah dia menyadari dua spell
-berbeda ternyata berbagi bagian yang sama, dan mulai merakit yang belum ada.
+---
 
-## Terkunci
+# 2. Teori yang harus ditemukan player
 
-**Bahasa:** GDScript. Iterasi tanpa compile, dokumentasi Godot GDScript-first,
-cocok untuk sesi malam pendek. ECS tetap kelatih penuh — composition itu soal
-struktur, bukan bahasa.
+Ini inti gamenya. Kalau cuma satu hal yang dipertahankan dari seluruh dokumen
+ini, pertahankan bagian ini.
 
-**Verb inti: MEMBONGKAR, bukan mengumpulkan.** Player dapat spell yang sudah
-berfungsi, lalu memretelinya. Ini yang membedakan dari Noita. Efek samping yang
-diinginkan: grammar-nya mengajarkan dirinya sendiri.
+## Tidak ada aturan reaksi khusus. Satu-satunya mata uang adalah waktu paparan.
 
-**Elemen lahir dari state, bukan dari tabel.** Uap muncul karena panas bertemu
-lembab, bukan karena ada aturan `(api, air) -> uap`. Alasannya: benda ruangan
-(kipas, genangan) jadi ikut bermain tanpa menulis aturan per-pasangan. Tumbuh
-linier, bukan kuadratik. State dijaga kecil — beberapa angka per petak, bukan
-simulasi fisika.
+Tiga elemen, masing-masing satu pekerjaan sederhana:
 
-**Satu jenis mesin saja.** Variasi datang dari isinya, bukan dari mesinnya.
-Mesin berjenis-jenis = diam-diam kembali ke inheritance (`MesinApi extends Mesin`).
+| Elemen | Yang dia lakukan |
+|---|---|
+| **Api** | menyakiti apa pun yang menyentuhnya, berulang selama masih bersentuhan |
+| **Air** | menempelkan `Wet` — yang basah bergerak lebih lambat |
+| **Angin** | mendorong apa pun yang menyentuhnya ke arah hadap mesin |
 
-**Rakitan tak berurut, waktu berurut.** `api+air+delay` sama saja dengan
-`air+delay+api`. Urutan yang penting adalah urutan kejadian di ruangan, dan itu
-diatur lewat delay. Alasan tambahan: komponen yang nempel di entity memang tak
-berurut — itu sifat dasar ECS. Urutan rakitan bisa ditambahkan belakangan
-sebagai lapisan di atas kalau perlu.
+Tidak ada satu baris pun yang berbunyi "api + air = uap". Yang ada cuma tiga
+aturan di atas. Tapi lihat apa yang lahir sendiri:
 
-**Bukan tower defense.** Tidak ada gelombang bertumpuk, ekonomi antar-gelombang,
-atau path building.
+- **Air lalu api** — musuh basah jalannya lambat, jadi dia lebih lama di dalam
+  api, jadi kena lebih banyak. Dua slot mengerjakan pekerjaan empat slot.
+- **Angin lalu api** — musuh terdorong mundur, melewati api yang sama dua kali.
+- **Air + angin + api** — lambat *dan* terdorong mundur: paparan maksimum.
 
-## Ongkos
+Player tidak pernah diberi tahu ini. Dia mengamati bahwa air sebelum api
+membunuh lebih cepat daripada api saja, lalu bertanya kenapa, lalu sampai pada
+kalimat yang jadi seluruh teorinya:
 
-**Slot = ongkos utama.** Efisien artinya: efek sama, slot lebih sedikit.
+> **Kerusakan = seberapa lama musuh berada di dalam sesuatu yang menyakitkan.
+> Semua elemen lain cuma cara mengatur "seberapa lama" itu.**
 
-**Rapalan langsung (live):** slot terpisah yang lebih sedikit + ada waktu rapal.
-Waktu rapal punya gigi karena di fase eksekusi musuh sedang bergerak.
+Begitu dia paham kalimat itu, ruangan dengan 4 slot yang tadinya mustahil jadi
+bisa. Itu momen yang dikejar seluruh proyek ini.
 
-**Damage itu opsional dan mahal.** Menyiapkan kondisi (bikin genangan, bikin
-area lembab) itu murah. Memanennya yang bayar.
+**Kenapa desainnya begini:** kalau reaksi ditulis sebagai tabel pasangan, player
+cuma bisa menghafal. Kalau lahir dari state yang saling menumpuk, player bisa
+**menalar** — dan bisa menebak kombinasi yang belum pernah dia coba. Itu beda
+antara resep dan teori.
 
-**Musuh bertransformasi, bukan menahan.** Basah -> menghantar listrik.
-Kepanasan -> lari lebih cepat. Bukan "kebal api". Resistance bikin player
-menghindari sesuatu; transformasi bikin player memanfaatkan sesuatu.
+## Uap — bonus, kerjakan hanya kalau sempat
 
-## Progresi kesulitan (urut dari yang paling disukai)
+Kalau petak menampung api dan air sekaligus, muncul uap: area yang bertahan
+lebih lama dari dua sumbernya dan memperlambat apa pun di dalamnya. Ini satu
+fenomena eksplisit, dan dia masuk daftar "kalau sempat", bukan syarat.
 
-1. **Kurangi jatah slot.** Masalah mirip, budget lebih kecil. Player yang hafal
-   mentok; yang paham bisa bikin efek sama dengan lebih sedikit bagian.
-   Kesulitan yang isinya persis tema game ini.
-2. Ubah bentuk ruangan (dua pintu, petak lebih sedikit, kipas yang menyusahkan).
-3. Perilaku musuh baru yang mematahkan solusi lama.
-4. Terakhir baru tambah jumlah musuh.
+---
 
-## Value yang dibawa: Independence & Resilience
+# 3. Keputusan yang dikunci (dan yang dipotong)
 
-Ini bukan tema naratif, tapi ada di struktur ekonomi game-nya.
+## Sudut pandang: tampak atas. Terkunci.
 
-**Independence**
-- Tidak pernah menampilkan daftar resep -> player bikin hipotesis sendiri.
-- Verb "membongkar" -> player menurunkan aturannya dari contoh, bukan dari manual.
-- Rakitan buatan sendiri -> solusi dikarang, bukan dipilih dari menu.
-- Progresi lewat pengurangan slot -> kemampuan datang dari PEMAHAMAN, bukan dari
-  izin yang dikasih game. Tidak ada satu pun sumber kekuatan yang diberikan game;
-  tidak ada unlock, level up, atau stat naik.
+Tampak samping berarti gravitasi, lompat, dan ketinggian — tiga sistem baru
+yang tidak menambah apa pun ke teori di bagian 2. **Tidak ada gravitasi**,
+karena di tampak atas dia tidak berarti apa-apa.
 
-**Resilience**
-- Gagal murah dan kebaca (<15 detik, tidak ada yang hilang) -> player bertahan di
-  loop cukup lama untuk mengerti. Kegagalan jadi data, bukan hukuman.
-- Kesulitan lewat pengurangan budget -> player dipaksa MEREVISI solusi yang tadinya
-  sudah berhasil. "Solusi kamu jalan. Sekarang lakukan lagi dengan bahan lebih
-  sedikit." Ketekunan yang produktif, bukan toleransi frustrasi.
-- Catatan: grinding BUKAN mekanisme resilience. Grinding melatih toleransi
-  frustrasi. Yang menghasilkan ketekunan adalah kegagalan yang murah dan terbaca.
+## Arena: satu ruangan. Tidak ada lantai bertingkat.
 
-**Tambahan murah supaya value-nya terlihat, bukan cuma terasa:**
-1. Penghitung percobaan dibingkai sebagai usaha, bukan aib (model death counter
-   Celeste). ~1 jam.
-2. Ringkasan slot di akhir ruangan: "Solusi kamu: 6 slot. Batas: 8." Bikin
-   efisiensi — dan berarti pemahaman — jadi angka yang kelihatan. ~1 jam.
-3. Kalau ada hint: hint tidak boleh memberi jawaban, hanya menunjuk apa yang harus
-   diperhatikan. ("Coba lihat apa yang terjadi ke lantai setelah spell air.")
+Bertingkat berarti perpindahan level, keadaan antar lantai, dan tata ruang
+berkali lipat. Progresi datang dari **jatah slot yang mengecil** (8 → 6 → 4),
+bukan dari ruangan baru. Ruangan yang sama, budget berbeda: player yang cuma
+hafal akan mentok, player yang paham akan lewat. Itu justru pengukur pemahaman
+yang lebih jujur daripada level baru.
 
-## Platform
+## Mesin: apa gunanya, dan kenapa dia punya posisi
 
-**Target: aplikasi macOS native.** Dikunci 1 September 2026.
-Mesin: Apple Silicon (arm64), macOS 26.6.2, Xcode 26.6 tersedia.
+Ini lubang yang bikin dokumen ini ditulis ulang. Jawabannya: **mesin menentukan
+dari mana dan ke arah mana efeknya keluar.** Karena itu dia punya `Position`
+**dan** arah hadap.
 
-Alasan: Godot jalan native di Apple Silicon dan export macOS itu bawaan — nol
-toolchain tambahan, testing tinggal F5. Mouse cocok dengan desain (klik menaruh
-mesin, hover melihat isi mesin, drag komponen). Academy tidak mewajibkan iOS/iPadOS.
+Dua cara penyaluran:
 
-Godot yang dipakai: build STANDAR (bukan .NET), karena bahasanya GDScript.
+| Penyaluran | Yang terjadi | Posisi mesin berarti apa |
+|---|---|---|
+| **Area** | efek muncul di petak mesin dan bertahan beberapa detik | di mana efeknya berada |
+| **Proyektil** | efek melesat ke arah hadap sampai kena sesuatu | dari mana dan ke mana |
 
+Tanpa arah hadap, angin tidak punya arti (mendorong ke mana?) dan proyektil
+tidak mungkin. Dengan arah hadap, penempatan jadi keputusan sungguhan.
 
-## Konvensi posisi & okupansi (dikunci 3 September 2026)
+**Homing dipotong.** Menarik, tapi tidak menambah apa pun ke teori waktu paparan.
 
-**Posisi pecahan, okupansi biner.** Musuh boleh berada di antara dua petak.
-Kalau badannya menyentuh sebuah petak — seberapa pun sedikitnya — dia dianggap
-berada di petak itu. Tidak ada perhitungan persentase. Model Growtopia: lava
-kena walaupun badan cuma 5% di dalam.
+## Satu mesin = satu resep. Bukan beberapa spell per mesin.
 
-- `Position` = **pojok kiri-atas** entity, dalam satuan petak, `{"x": float, "y": float}`
-- `Size` opsional, `{"w": float, "h": float}`, **default 1x1**
-- Petak yang tersentuh = dari `floori(x)` sampai `ceili(x + w) - 1`, begitu juga sumbu y
+Ide "satu mesin menampung 3-4 spell" itu sah, tapi dipotong: **urutan waktu
+sudah bisa didapat dari beberapa mesin dengan jeda berbeda.** Menaruh mesin air
+berjeda 1 detik dan mesin api berjeda 2 detik menghasilkan urutan yang sama,
+tanpa lapisan baru di data, di `MachineSystem`, dan di UI.
 
-Efek ganda tidak jadi masalah: system kontak hanya MENEMPELKAN komponen
-(`Burn`), dan menempelkan komponen dua kali sama saja dengan sekali. Dedupe
-gratis dari model komponen itu sendiri.
+Kalau nanti terasa kurang, lapisan itu bisa ditambahkan tanpa membongkar apa pun
+— tapi jangan sekarang.
 
-**Aturan wajib:** logika "entity ini menyentuh petak mana saja" hidup di SATU
-fungsi terpisah, bukan tersebar di banyak system. Kalau suatu saat posisi
-pecahan terasa merepotkan, cukup ganti isi fungsi itu — keputusan ini jadi
-bisa dibalik dalam 10 menit, bukan sekali seumur hidup.
+## Kedalaman dari sedikit komponen — dari mana datangnya
 
-Alasan memilih pecahan (bukan per petak): dorongan dari angin/gaya bikin
-posisi tidak pernah sesederhana v*t, dan okupansi biner menghilangkan
-pertanyaan "kena berapa persen" yang bikin fuzzy.
+Kekhawatiran "komponennya cuma tiga, apa nggak dangkal" terjawab bukan dengan
+menambah elemen, tapi dengan empat sumbu yang sudah ada:
 
-## Batas scope (jangan dilanggar tanpa alasan kuat)
+1. **Urutan waktu** — jeda tiap mesin berbeda, jadi player mengarang urutan
+2. **Tempat dan arah** — petak mana, menghadap ke mana
+3. **Penyaluran** — area atau proyektil
+4. **Keadaan bertumpuk** — basah, terdorong, dan efeknya ke waktu paparan
 
-- 5 komponen. Bukan lebih.
-- 3 ruangan. Bukan 10.
-- Slot mulai dari 8, mengecil tiap ruangan.
-- 2-4 musuh di ruangan pertama.
+Tiga elemen dengan empat sumbu itu ruang yang jauh lebih besar daripada delapan
+elemen tanpa sumbu.
 
-Kalau sempat (bukan prioritas): item +1 slot, fitur player kasih nama sendiri
-ke kombinasi temuannya.
+## Ongkos slot
 
-## Prinsip yang gak boleh dilanggar
+- **Menaruh mesin: gratis.** Jumlah mesin dibatasi petak yang boleh ditempati,
+  bukan slot. Mengecas mesin itu mengecas dua kali untuk hal yang sama, karena
+  resep di-key oleh nama komponen — satu mesin tidak mungkin punya dua `Fire`.
+- **Tiap elemen di dalam resep: 1 slot.**
+- **Penyaluran: gratis.**
 
-1. Aturan tidak pernah bohong. 5 rune dengan aturan konsisten kerasa lebih
-   "berteori" daripada 30 rune yang aturannya bolong.
-2. Jangan pernah tampilkan daftar resep. Penemuan dicatat player, bukan game.
-3. Batasan lebih menarik daripada kekuatan (Sanderson's 2nd Law).
-4. Grinding bukan resilience. Resilience = kegagalan murah + umpan balik yang
-   kebaca. Target: < 15 detik dari gagal ke coba lagi.
-5. Jangan sebut "senjata"/"rifle". Begitu jadi senjata, godaan nambah
-   aim/recoil/ammo bikin ini diam-diam berubah jadi game aksi real-time.
+Jatah per percobaan: **8, lalu 6, lalu 4.** Angka ini disetel setelah reaksinya
+jalan, dengan cara: selesaikan ruangan pakai cara bodoh, catat berapa slot; pakai
+cara pintar, catat berapa. Angka bodoh jadi jatah pertama, angka pintar jadi
+jatah terakhir. Jangan ditebak sebelum ada yang bisa diukur.
 
-## Komponen (draft, belum final)
+## Musuh
 
-- **Api** — elemen. Menaikkan suhu.
-- **Air** — elemen. Menambah kebasahan.
-- **Angin** — elemen. Dorongan area yang bertahan.
-- **Delay** — pengatur waktu. Sumber semua urutan kejadian.
-- **Gaya** — hentakan sesaat di satu titik. Damage adalah salah satu akibatnya,
-  bukan definisinya. Bisa mendorong musuh ke genangan, melempar balik ke pintu.
-  Mahal. Lulus tes "kapan player memilih untuk TIDAK memasangnya" — yaitu saat
-  dia cuma mau menyiapkan kondisi.
+Satu jenis. Jalur tetap dari pintu ke kristal. Kecepatan tetap (bisa berubah
+hanya karena `Wet` atau dorongan angin — supaya player tetap bisa menalar).
+2-4 musuh per ronde. Tidak ada pathfinding.
 
-Catatan: gaya dan angin sama-sama mendorong. Perannya harus dibedakan jelas
-atau salah satu jadi mubazir. Arah: angin = dorongan area yang bertahan
-(dari benda ruangan), gaya = hentakan sesaat (dari spell player).
+---
 
-## Penyaluran (menentukan DI MANA, bukan APA)
+# 4. Value yang dibawa
 
-Minimal dua supaya jadi pilihan. Tiga kalau sempat:
-- **Proyektil** — melesat ke depan, kena yang pertama disenggol.
-- **Area** — meledak sebidang di sekitar mesin.
-- **Bertahan** — nempel di petak beberapa detik, kena siapa pun yang lewat.
-  Ini yang bikin jebakan terasa seperti jebakan.
+**Independence** dan **Resilience**, dan keduanya ada di ekonominya, bukan di
+temanya.
 
-## Masih terbuka
+**Independence** — tidak ada satu pun sumber kekuatan yang diberikan game.
+Tidak ada unlock, tidak ada level up, tidak ada stat naik. Ruangan ketiga cuma
+punya 4 slot; satu-satunya cara lewat adalah benar-benar mengerti bahwa
+kerusakan itu waktu paparan. Kemampuan datang dari pemahaman, bukan dari izin.
 
-- [ ] Penyaluran itu komponen juga (makan slot) atau properti mesin?
-- [ ] Pemicu mesin (kapan dia nyala) itu komponen juga atau setelan terpisah?
-- [ ] Membongkar spell itu permanen (spell-nya hilang) atau bisa dibalik?
-      Permanen bikin keputusannya berarti, tapi bisa terasa menghukum.
-- [ ] Struktur project & arsitektur ECS (dibahas sesi berikutnya).
+**Resilience** — gagal harus murah dan terbaca: ulang dalam hitungan detik,
+tidak ada yang hilang. Dan kesulitan naik dengan cara **memaksa merevisi solusi
+yang tadinya sudah berhasil** ("solusimu jalan; sekarang lakukan lagi dengan
+bahan lebih sedikit"), bukan dengan menambah musuh.
 
-## Rencana sisa waktu (dibuat akhir hari ke-2, 2 September 2026)
+Grinding bukan mekanisme resilience — itu melatih toleransi frustrasi. Yang
+menghasilkan ketekunan adalah kegagalan yang murah dan terbaca.
 
-Sisa 8 hari kerja. Perkiraan waktu tersedia ~30 jam (6 malam pendek @1,5 jam +
-4 hari weekend @6 jam). WEEKEND YANG NANGGUNG PROJECT INI — kalau satu weekend
-hilang, turun ke Tingkat 1 saja.
+**Yang bikin value ini terlihat, bukan cuma terasa:**
+- Penghitung percobaan dibingkai sebagai usaha, bukan aib (model Celeste)
+- Ringkasan slot di akhir ronde: "Solusimu: 6 slot. Batas: 8."
+- Tidak pernah ada daftar resep di layar. Kalau ada hint, dia cuma menunjuk apa
+  yang harus diperhatikan, tidak pernah memberi jawaban
 
-### Potongan scope yang disepakati
+---
 
-1. **Tiga ruangan -> satu ruangan, tiga percobaan.** Progresi lewat jatah slot
-   (8 -> 6 -> 4), bukan lewat bikin ruangan baru. Ganti satu angka, bukan berjam-jam.
-2. **Layar pembongkaran spell dibuang, verb-nya tetap hidup.** Panel samping
-   menampilkan 2-3 spell jadi sebagai kumpulan komponen yang kelihatan isinya;
-   player menarik komponen dari situ ke mesinnya. UI-nya sama dengan UI merakit,
-   jadi nol tambahan, tapi momen "dua spell ini punya bagian yang sama" tetap ada.
-3. **Musuh satu jenis, gerak lurus.** Tidak ada pathfinding.
+# 5. Arsitektur (sudah jalan, tidak berubah)
 
-Yang TIDAK dipotong: penghitung percobaan dan ringkasan slot. Murah, dan justru
-mereka yang bikin value kebaca.
+**GDScript. Target aplikasi macOS native.** Godot 4.7.2, renderer Compatibility.
 
-### Pembagian kerja
+Tiga lapisan, dan batasnya keras:
 
-- **`sim/` 100% Xaviero** — semua system, komponen, logika. Ini yang sedang dipelajari.
-- **`view/` + UI: Claude** — Control node, drag-and-drop, sinkronisasi sprite, juice.
-  Alasannya: itu Godot plumbing, kategori yang sama dengan juice. Bisa paralel tanpa
-  tabrakan file justru karena `sim/` tidak boleh tahu Godot ada.
+| Lapisan | Boleh menulis ke World? | Aturannya |
+|---|---|---|
+| `sim/` | ya | pemilik seluruh aturan main. **Tidak boleh menyentuh Godot** |
+| `view/renderer.gd` | tidak | cuma bertanya dan menggambar |
+| `view/assembly_ui.gd` | ya | input. Menulis hanya lewat pintu depan sim (`Spawn.*`), dan **tidak boleh memuat aturan main** |
 
-### Peta hari
+Alasan `sim/` tidak boleh menyentuh Godot: kalau ada state yang hidup di luar
+`World`, "ulang" berhenti jadi satu baris. Semua yang bisa berubah harus di
+dalam World, supaya reset = buang World, bikin baru.
+
+## Aturan ECS yang sudah dipegang
+
+- Entity itu cuma id kosong. Yang menentukan perlakuan adalah **komponen apa
+  yang menempel**, bukan id-nya
+- Komponen = data. System = kelakuan. System tidak menyimpan state antar frame
+  (dipaksa lewat `static func`)
+- **Ada-tidaknya komponen itu sendiri adalah flag-nya.** Jangan bikin boolean
+  untuk sesuatu yang sudah dijawab oleh keberadaan komponen
+- **Apa pun yang dibaca sebuah system, masukkan ke query-nya.** Query itulah
+  cara mengeceknya
+- **Komponen kejadian harus dikonsumsi di frame yang sama dia dibuat.** Kalau
+  ada system yang melewatinya tanpa mencabut, kejadian itu jadi bom waktu
+- System tidak pernah memanggil system lain. Mereka berkomunikasi lewat World:
+  satu menempelkan komponen, yang lain membacanya
+- Urutan pemanggilan system adalah keputusan desain yang ditulis eksplisit,
+  bukan kebetulan. Hasil harus bisa diulang — itu syarat mati untuk loop riset
+- Cetakan tidak boleh dipakai langsung sebagai barang jadi. `duplicate()` tiap
+  kali sebuah dictionary dipakai lebih dari sekali
+- Archetype (`Spawn.*`) bukan tipe. **Jangan pernah bikin pabrik turunan**
+  (`Spawn.fast_enemy`, `Spawn.armored_enemy`) — itu inheritance lewat pintu
+  belakang. Pabrik memberi bentuk awal, sisanya ditumpuk di pemanggil
+- Apa pun yang bisa diturunkan dari World, jangan disimpan di penghitung sendiri
+
+## Konvensi posisi
+
+Posisi pecahan, **okupansi biner**: kalau badan menyentuh sebuah petak,
+seberapa pun sedikitnya, dia dianggap di petak itu. Tidak ada persentase.
+
+- `Position` = **pojok kiri-atas**, satuan petak
+- `Size` default 1x1
+- Petak tersentuh = `floori(x)` sampai `ceili(x + w) - 1`
+- Logika okupansi hidup di **satu fungsi** (`Helper`), supaya keputusan pecahan
+  bisa dibalik dalam 10 menit kalau ternyata merepotkan
+
+---
+
+# 6. Yang sudah jadi
+
+- `World` — penyimpanan komponen per jenis, query AND, reset satu panggilan
+- `DelaySystem`, `MoveSystem`, `LifetimeSystem`, `DeadSystem`
+- `FireContactSystem` → `BurnSystem` → `DamageSystem` → `InvulnerabilitySystem`
+- `MachineSystem` — melahirkan entity dari resep
+- `Spawn` — archetype `enemy` dan `machine`
+- `renderer.gd` — grid, entity, bar HP, bar delay, kedip i-frame, badge komponen
+- `assembly_ui.gd` — taruh mesin, rakit resep, hitung slot
+
+**Semua di atas selamat dari perubahan desain ini.** Yang berubah cuma isi
+resep, ongkos slot, dan tata ruangan — data, bukan system. Itu memang hadiah
+dari ECS: proyek ini bukan satu game, tapi mesin untuk mencoba banyak game.
+
+---
+
+# 7. Rencana 7 hari
 
 | Hari | Xaviero | Claude |
 |---|---|---|
-| 3 (Kam) | Runner system + system Delay | — |
-| 4 (Jum) | Overlap + rantai Burn->Damaged->Health | — |
-| Weekend 1 | System elemen (suhu/basah/uap) | Lapisan gambar + penempatan mesin |
-| 5-6 (Sen-Sel) | Menyambungkan sistem, aturan menang/kalah | UI perakitan |
-| 7-8 (Rab-Kam) | Retry, jatah slot, penghitung percobaan | Beresin UI |
-| Weekend 2 | Art (11 gambar) + menyetel angka | Juice: partikel, shake, tween |
-| 9-10 | Buffer, build .app, siapkan presentasi | Bantu build & export |
+| **Jum 4** (~2j) | Lingkaran ronde: fase persiapan/eksekusi, menang/kalah, retry | UI fase + pemilih arah hadap |
+| **Sab 5** (panjang) | `Wet` + perlambatan, dorongan angin | Kristal, pintu, petak yang boleh ditempati |
+| **Min 6** (panjang) | Jalur musuh + gelombang, penyaluran proyektil | Penghitung percobaan, ringkasan slot |
+| **Sen 7** (~2j) | Menyetel tiga jatah slot dengan mengukur, bukan menebak | Juice: partikel, shake, kilat kena |
+| **Sel 8** (~2j) | Menyeimbangkan angka, memperbaiki yang aneh | Layar menang/kalah |
+| **Rab 9** (~2j) | Art (11 gambar, tinta monokrom) | Memasang art, polish |
+| **Kam 10** | Buffer, build `.app`, siapkan presentasi | Bantu build & export |
 
-### Tingkat cadangan
+## Tingkat cadangan
 
-- **Tingkat 1 (amankan dulu):** satu ruangan, satu jatah slot, tanpa progresi.
-  Tetap menunjukkan ECS, sistem sihir, dan kedua value.
-- **Tingkat 2 (kalau lancar):** progresi slot 8->6->4 + panel spell jadi.
+- **Tingkat 1 — amankan dulu:** satu ruangan, satu jatah slot, api + air + angin,
+  penyaluran area saja, menang/kalah/retry. Ini sudah menunjukkan ECS, teori
+  waktu paparan, dan kedua value.
+- **Tingkat 2:** progresi slot 8 → 6 → 4, penyaluran proyektil, penghitung
+  percobaan.
+- **Tingkat 3 — kalau ajaib:** uap, panel spell jadi yang bisa dibongkar.
 
-Aturan: bikin Tingkat 1 JALAN UTUH dulu, baru menumpuk. Jangan mengerjakan semuanya
-setengah-setengah bersamaan — itu cara tercepat sampai di hari ke-10 dengan sepuluh
-hal yang semuanya 80%.
+**Aturan:** bikin Tingkat 1 **jalan utuh** dulu, baru menumpuk. Jangan pernah
+mengerjakan semuanya setengah-setengah bersamaan.
 
-## Status (akhir hari ke-2)
+## Yang dipotong, supaya tidak dipikirkan lagi
 
-- Godot 4.7.2 di /Applications, project di `challenge-6/`, renderer Compatibility.
-- Struktur folder: `sim/` (murni, tanpa Godot), `sim/components/`, `sim/systems/`,
-  `view/`, `assets/`.
-- `sim/world.gd` SELESAI dan sudah dites: add_entity, attach/detach_component,
-  entity_have_component, get_entities_with_comp (AND), clear_everything.
-- `sim/Comp.gd` — konstanta nama komponen, supaya typo ketahuan editor.
-- `view/main.gd` — scene bootstrap + tes World.
+Tampak samping · gravitasi · lantai bertingkat · homing · beberapa spell per
+mesin · pathfinding · lebih dari tiga elemen · layar pembongkaran spell terpisah
+· ekonomi mata uang · upgrade senjata.
 
-### Sisa kecil di world.gd
-- Komentar baris 4 dan 18 masih menggambarkan struktur lama (array & nama entity).
+---
 
-### Pertanyaan terbuka berikutnya (hari ke-3)
-- System itu class atau fungsi biasa?
-- Siapa yang memegang daftar system dan memanggilnya tiap frame?
-- Urutan jalannya system ditentukan di mana?
-Setelah itu: system pertama = Delay (memaksa pakai detach, dan godaan callback
-terbesar ada di situ).
+# 8. Yang masih milik Xaviero untuk diputuskan
+
+1. **Angin mendorong ke arah hadap mesin, atau menjauh dari sumbernya?**
+   Berpengaruh ke seberapa rumit UI arah hadap.
+2. **Musuh basah melambat berapa persen?** Ini tuas yang menentukan seberapa
+   besar hadiah dari menemukan teorinya. Terlalu kecil, penemuannya tidak
+   terasa; terlalu besar, api saja jadi tidak berguna.
+3. **Berapa musuh dan berapa HP-nya** di ronde pertama.
+4. **Nama gamenya.**
