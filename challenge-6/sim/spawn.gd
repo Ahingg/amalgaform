@@ -29,19 +29,20 @@ static func enemy(
 	world: World,
 	x: float, y: float,
 	hp: int,
-	speed_x: float = 1.0, speed_y: float = 0.0,
+	speed: float = 3.0,
 	w: float = 1.0, h: float = 1.0
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.POSITION, e, Make.position(x, y))
 	world.attach_component(Comp.SIZE, e, Make.size(w, h))
-	world.attach_component(Comp.VELOCITY, e, Make.velocity(speed_x, speed_y))
+	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
 	world.attach_component(Comp.HEALTH, e, Make.health(hp))
+	world.attach_component(Comp.MOVE_INTENT, e, Make.move_intent(0.0, 0.0))
+	world.attach_component(Comp.SPEED, e, Make.speed(speed))
+	world.attach_component(Comp.CHASE, e)
 	return e
 
 
-# The machine starts with a Delay already attached, so its first shot lands one
-# full interval after the round begins instead of on frame one.
 static func machine(
 	world: World,
 	x: float, y: float,
@@ -57,3 +58,18 @@ static func machine(
 	world.attach_component(Comp.DELAY, m, Make.delay(interval))
 	world.attach_component(Comp.RECIPE, m, Make.recipe(recipe))
 	return m
+
+static func player(world: World,
+	x: float, y: float,
+	hp: int, 
+	speed: float = 4.0,
+	w: float = 1.0, h: float = 1.0,
+) -> int:
+	var e := world.add_entity()
+	world.attach_component(Comp.PLAYER, e)
+	world.attach_component(Comp.POSITION, e, Make.position(x, y))
+	world.attach_component(Comp.SIZE, e, Make.size(w, h))
+	world.attach_component(Comp.HEALTH, e, Make.health(hp))
+	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
+	world.attach_component(Comp.SPEED, e, Make.speed(speed))
+	return e

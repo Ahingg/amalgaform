@@ -20,9 +20,9 @@ func _ready() -> void:
 # to be: throw the World away, call this again.
 func build_round() -> void:
 	world = World.new()
-
+	Spawn.player(world, 2.0, 2.0, 200)
 	Spawn.enemy(world, 0.5, 0.5, 100)
-
+#
 	Spawn.machine(world, 3.0, 0.0, 2.0, {
 		Comp.FIRE: Make.fire(5),
 		Comp.POSITION: Make.position(3.0, 0.0),   # relative to the machine

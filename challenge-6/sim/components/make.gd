@@ -11,7 +11,7 @@ static func delay(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
 
 static func lifetime(duration: float) -> Dictionary:
-	return {"elapsed": 0.0, "duration": duration}
+	return {"elapsed": 0.0, "duration": duration, "on_expire": {Comp.DEAD: {}}}
 		
 static func invulnerable(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
@@ -34,8 +34,14 @@ static func position(x: float, y: float) -> Dictionary:
 static func velocity(speed_x: float, speed_y: float) -> Dictionary:
 	return {"x": speed_x, "y": speed_y}
 	
+static func speed(num: float) -> Dictionary:
+	return {"value": num}
+	
 static func size(width: float, height: float) -> Dictionary:
 	return {"w": width, "h": height} 
 
 static func health(amount: int) -> Dictionary:
 	return {"current": amount, "max": amount};
+	
+static func move_intent(x: float, y: float) -> Dictionary:
+	return {"x": x, "y": y}

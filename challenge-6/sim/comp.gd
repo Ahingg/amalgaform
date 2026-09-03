@@ -20,3 +20,8 @@ const INVULNERABLE := "Invulnerable"
 const DAMAGED := "Damaged"
 
 const DEAD := "Dead"
+
+const PLAYER := "Player"
+const MOVE_INTENT := "MoveIntent"
+const SPEED := "Speed"
+const CHASE := "Chase"
