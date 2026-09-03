@@ -41,7 +41,7 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable",
 	"Machine", "Recipe", "Lifetime", "Dead",
-	"Player", "MoveIntent", "Enemy",
+	"Player", "MoveIntent", "Chase", "CastQueue", "CastRelease",
 ]
 
 @export var grid_width: int = 12
@@ -60,6 +60,7 @@ func _ready() -> void:
 	# AssemblyUI is parked: machine placement before the round no longer exists
 	# after design revision 3. The file is kept for the casting panel.
 	add_child(PlayerInput.new())
+	add_child(CastUI.new())
 
 
 func _process(_delta: float) -> void:
