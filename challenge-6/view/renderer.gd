@@ -25,6 +25,7 @@ const COMP_HEALTH := "Health"
 
 # Order matters: the first matching component wins the color.
 const COMPONENT_COLORS := {
+	"Player": Color(0.95, 0.9, 0.7),
 	"Burn": Color(1.0, 0.45, 0.15),
 	"Fire": Color(0.95, 0.3, 0.2),
 	"Water": Color(0.25, 0.6, 1.0),
@@ -40,6 +41,7 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable",
 	"Machine", "Recipe", "Lifetime", "Dead",
+	"Player", "MoveIntent", "Enemy",
 ]
 
 @export var grid_width: int = 12
@@ -53,9 +55,11 @@ var _font: Font
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
-	# The input layer lives under the renderer so it can reuse the geometry
-	# helpers above, and so main.gd does not need to know it exists.
-	add_child(AssemblyUI.new())
+	# Input layers live under the renderer so they can reuse the geometry
+	# helpers above, and so main.gd does not need to know they exist.
+	# AssemblyUI is parked: machine placement before the round no longer exists
+	# after design revision 3. The file is kept for the casting panel.
+	add_child(PlayerInput.new())
 
 
 func _process(_delta: float) -> void:
