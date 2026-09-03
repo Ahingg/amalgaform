@@ -30,6 +30,7 @@ const COMPONENT_COLORS := {
 	"Water": Color(0.25, 0.6, 1.0),
 	"Wind": Color(0.4, 0.85, 0.75),
 	"Damaged": Color(1.0, 0.85, 0.2),
+	"Machine": Color(0.65, 0.55, 0.85),
 	"Health": Color(0.55, 0.8, 0.4),
 }
 
@@ -38,6 +39,7 @@ const COMPONENT_COLORS := {
 const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable",
+	"Machine", "Recipe", "Lifetime", "Dead",
 ]
 
 @export var grid_width: int = 12

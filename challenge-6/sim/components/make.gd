@@ -2,11 +2,22 @@
 class_name Make
 extends RefCounted
 
+	
+# bentuknya adalah component_name: {body}
+static func recipe(body: Dictionary) -> Dictionary:
+	return body
+
 static func delay(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
-	
+
+static func lifetime(duration: float) -> Dictionary:
+	return {"elapsed": 0.0, "duration": duration}
+		
 static func invulnerable(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration}
+
+static func interval(duration: float) -> Dictionary:
+	return {"duration": duration}
 
 static func fire(damage: float) -> Dictionary:
 	return {"damage": damage}
