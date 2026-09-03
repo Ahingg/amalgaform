@@ -53,6 +53,9 @@ var _font: Font
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
+	# The input layer lives under the renderer so it can reuse the geometry
+	# helpers above, and so main.gd does not need to know it exists.
+	add_child(AssemblyUI.new())
 
 
 func _process(_delta: float) -> void:
@@ -78,6 +81,23 @@ func _draw() -> void:
 
 	for id in ids:
 		_draw_entity(world, id)
+
+
+# --- geometry helpers, shared with the input layer -----------------------------
+# The UI must not recompute tile maths on its own; if the grid moves, only this
+# file should need to know.
+
+func tile_at(screen_pos: Vector2) -> Vector2i:
+	var local := screen_pos - margin
+	return Vector2i(floori(local.x / tile_size), floori(local.y / tile_size))
+
+
+func screen_of_tile(tile: Vector2i) -> Vector2:
+	return margin + Vector2(tile) * tile_size
+
+
+func inside_grid(tile: Vector2i) -> bool:
+	return tile.x >= 0 and tile.y >= 0 and tile.x < grid_width and tile.y < grid_height
 
 
 # --- world lookup ------------------------------------------------------------
