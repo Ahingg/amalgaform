@@ -43,10 +43,12 @@ const CAST_PER_RUNE := 0.25
 const SLOW_MIN := 0.12
 const SLOW_TAU := 0.6
 
+# J/K/L, not 1/2/3: the left hand never leaves WASD, so the runes have to sit
+# under the right hand.
 const RUNE_KEYS := {
-	KEY_1: "Fire",
-	KEY_2: "Water",
-	KEY_3: "Wind",
+	KEY_J: "Fire",
+	KEY_K: "Water",
+	KEY_L: "Wind",
 }
 
 const RUNE_COLORS := {
@@ -221,7 +223,7 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
 	if runes.is_empty():
-		draw_string(_font, at, "1 api   ·   2 air   ·   3 angin   ·   ESC batal",
+		draw_string(_font, at, "J api   ·   K air   ·   L angin   ·   ESC batal",
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.4))
 		return
 
