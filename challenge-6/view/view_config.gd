@@ -25,6 +25,8 @@ const MOVE_INTENT := "MoveIntent"
 const FACING := "Facing"
 const CAST_QUEUE := "CastQueue"
 const CAST_RELEASE := "CastRelease"
+const HELD_SPELL := "HeldSpell"
+const LAUNCH_SPELL := "LaunchSpell"
 
 const FIRE := "Fire"
 const WATER := "Water"
@@ -54,7 +56,7 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
 	"Machine", "Recipe", "Lifetime", "Dead",
-	"Player", "MoveIntent", "Facing", "Chase", "CastQueue", "CastRelease", "Knockback",
+	"Player", "MoveIntent", "Facing", "HeldSpell", "Chase", "CastQueue", "CastRelease", "Knockback",
 ]
 
 

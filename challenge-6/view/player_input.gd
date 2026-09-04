@@ -46,20 +46,35 @@ func _physics_process(_delta: float) -> void:
 		else:
 			world.attach_component(ViewConfig.MOVE_INTENT, id, {"x": dir.x, "y": dir.y})
 
-		# The same keys aim. Only updated while a direction is actually held, so
-		# letting go of WASD keeps the last aim instead of snapping it to zero.
-		#
-		# Nothing here knows that casting roots the player — that is a game rule
-		# and it lives in sim. This layer just keeps saying "the player is
-		# pointing that way"; whether the wizard is allowed to walk there is
-		# somebody else's call.
-		if dir != Vector2.ZERO:
-			if world.entity_have_component(ViewConfig.FACING, id):
-				var facing: Dictionary = world.get_component_value(ViewConfig.FACING, id)
-				facing["x"] = dir.x
-				facing["y"] = dir.y
-			else:
-				world.attach_component(ViewConfig.FACING, id, {"x": dir.x, "y": dir.y})
+		_aim_at_mouse(world, id)
+
+
+# Aim is continuous and completely independent of movement: run left, point
+# right. That is the whole reason the wizard can kite and still threaten.
+#
+# Written every tick rather than only while a spell is held, so the wizard
+# always faces the cursor — it reads as intent even when nothing is charged.
+func _aim_at_mouse(world, id: int) -> void:
+	var renderer := get_parent() as WorldRenderer
+	if renderer == null:
+		return
+	if not world.entity_have_component(ViewConfig.POSITION, id):
+		return
+
+	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, id)
+	var here := Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0)))
+	var target := renderer.world_at(get_viewport().get_mouse_position())
+	var dir := (target - here)
+	if dir.length() < 0.001:
+		return
+	dir = dir.normalized()
+
+	if world.entity_have_component(ViewConfig.FACING, id):
+		var facing: Dictionary = world.get_component_value(ViewConfig.FACING, id)
+		facing["x"] = dir.x
+		facing["y"] = dir.y
+	else:
+		world.attach_component(ViewConfig.FACING, id, {"x": dir.x, "y": dir.y})
 
 
 func _read_direction() -> Vector2:

@@ -46,6 +46,8 @@ static func health(amount: int) -> Dictionary:
 static func move_intent(x: float, y: float) -> Dictionary:
 	return {"x": x, "y": y}
 	
+static func facing(x: float, y: float) -> Dictionary:
+	return {"x": x, "y": y}
 	
 static func cast_queue() -> Dictionary:
 	return {"runes": [], "open": false, "open_time": 0.0}

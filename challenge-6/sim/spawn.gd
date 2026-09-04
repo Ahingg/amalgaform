@@ -39,7 +39,7 @@ static func enemy(
 	world.attach_component(Comp.HEALTH, e, Make.health(hp))
 	world.attach_component(Comp.MOVE_INTENT, e, Make.move_intent(0.0, 0.0))
 	world.attach_component(Comp.SPEED, e, Make.speed(speed))
-	world.attach_component(Comp.CHASE, e)
+	#world.attach_component(Comp.CHASE, e)
 	return e
 
 
@@ -73,6 +73,7 @@ static func player(world: World,
 	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
 	world.attach_component(Comp.SPEED, e, Make.speed(speed))
 	world.attach_component(Comp.CAST_QUEUE, e, Make.cast_queue())
+	world.attach_component(Comp.FACING, e, Make.facing(0.0, 1.0))
 	return e
 
 static func round(world: World) -> int:

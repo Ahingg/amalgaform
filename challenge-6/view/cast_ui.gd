@@ -20,6 +20,11 @@ func _process(_delta: float) -> void:
 # --- input -------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT:
+		_launch()
+		return
+
 	if not (event is InputEventKey) or event.echo:
 		return
 
@@ -52,6 +57,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _open(world, player: int) -> void:
+	# One orb at a time. Holding one blocks chanting the next, which is what
+	# turns "I have a spell ready" into a decision — spend it now, or keep it
+	# for a better moment — instead of a stockpile.
+	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
+		return
 	# Attached fresh rather than reusing an old one, so a queue can never carry
 	# leftovers from the previous cast.
 	world.attach_component(ViewConfig.CAST_QUEUE, player, {"runes": [], "open": true})
@@ -82,6 +92,23 @@ func _release(world, player: int) -> void:
 	var runes: Array = q.get("runes", [])
 	world.attach_component(ViewConfig.CAST_RELEASE, player,
 		{"runes": runes.duplicate()})
+
+
+# Phase two. The orb waits, so there is no timer racing the hand that has to
+# travel from JKL to the mouse — that trip is exactly what made aiming and
+# chanting at the same time feel awful.
+func _launch() -> void:
+	var world = _get_world()
+	if world == null:
+		return
+	var player := _player(world)
+	if player == -1:
+		return
+	if not world.entity_have_component(ViewConfig.HELD_SPELL, player):
+		return
+	# A bare event. Direction is read from Facing by sim, so this layer never
+	# decides where a spell goes — only that the player asked for it to go.
+	world.attach_component(ViewConfig.LAUNCH_SPELL, player, {})
 
 
 func _cancel(world, player: int) -> void:
@@ -131,9 +158,12 @@ func _draw() -> void:
 	if player == -1:
 		return
 
+	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
+		_draw_held(world, player)
+
 	var q := _queue(world, player)
 	if q.is_empty() or not q.get("open", false):
-		_draw_hint()
+		_draw_hint(world, player)
 		return
 
 	var runes: Array = q.get("runes", [])
@@ -199,6 +229,47 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 	draw_rect(Rect2(at, Vector2(width * left, 6)), col, true)
 
 
-func _draw_hint() -> void:
-	draw_string(_font, Vector2(48, 596), "Tahan SHIFT untuk merapal",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.3))
+func _draw_hint(world, player: int) -> void:
+	var text := "Tahan SHIFT untuk merapal"
+	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
+		text = "Bola siap  ·  arahkan mouse  ·  klik kiri untuk melepas"
+	draw_string(_font, Vector2(48, 596), text,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.35))
+
+
+# The orb, and a line to where it will go. Without the line the player has no
+# idea what "aimed" means, and 360 degrees of freedom is worse than 8 was.
+func _draw_held(world, player: int) -> void:
+	var renderer := get_parent() as WorldRenderer
+	if renderer == null:
+		return
+	if not world.entity_have_component(ViewConfig.POSITION, player):
+		return
+
+	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, player)
+	var here := renderer.screen_of_tile(Vector2i.ZERO) \
+		+ Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))) * renderer.tile_size \
+		+ Vector2(renderer.tile_size, renderer.tile_size) * 0.5
+
+	var held: Dictionary = world.get_component_value(ViewConfig.HELD_SPELL, player)
+	var runes: Array = held.get("runes", [])
+
+	var dir := Vector2.RIGHT
+	if world.entity_have_component(ViewConfig.FACING, player):
+		var f: Dictionary = world.get_component_value(ViewConfig.FACING, player)
+		var v := Vector2(float(f.get("x", 0.0)), float(f.get("y", 0.0)))
+		if v != Vector2.ZERO:
+			dir = v.normalized()
+
+	draw_line(here + dir * renderer.tile_size * 0.7,
+		here + dir * renderer.tile_size * 4.0,
+		Color(1, 0.95, 0.7, 0.25), 2.0)
+
+	var orb := here + dir * renderer.tile_size * 0.8
+	var col := Color(1, 0.95, 0.75)
+	if not runes.is_empty():
+		col = ViewConfig.color_of(runes[0])
+	draw_circle(orb, 13.0, Color(col.r, col.g, col.b, 0.85))
+	draw_arc(orb, 15.0, 0.0, TAU, 24, Color(1, 1, 1, 0.6), 2.0)
+	draw_string(_font, orb + Vector2(-6, 5), str(runes.size()),
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0, 0, 0, 0.8))

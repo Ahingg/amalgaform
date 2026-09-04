@@ -71,6 +71,12 @@ func tile_at(screen_pos: Vector2) -> Vector2i:
 	return Vector2i(floori(local.x / tile_size), floori(local.y / tile_size))
 
 
+# Fractional tile coordinates, unlike tile_at which rounds down. Aiming needs
+# the real point under the cursor, not the tile it happens to sit in.
+func world_at(screen_pos: Vector2) -> Vector2:
+	return (screen_pos - margin) / tile_size
+
+
 func screen_of_tile(tile: Vector2i) -> Vector2:
 	return margin + Vector2(tile) * tile_size
 
