@@ -2,6 +2,7 @@
 class_name Make
 extends RefCounted
 
+
 	
 # bentuknya adalah component_name: {body}
 static func recipe(body: Dictionary) -> Dictionary:

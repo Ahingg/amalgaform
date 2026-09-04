@@ -32,6 +32,50 @@ const CAST_PER_RUNE := 0.25
 
 const MAX_RUNES := 4
 
+# Power is split by how many DIFFERENT runes are in the queue, never by how many
+# runes there are:
+#     power[rune] = count[rune] / pow(kinds, SPREAD)
+#
+# Splitting by total count would make ["Fire","Fire"] produce two half-strength
+# payloads that merge back into one full-strength one — repeats would be
+# pointless, and half the grammar dies.
+#
+# SPREAD is the knob: 0 = mixing is free, 1 = full penalty for breadth.
+# Using a power (not a subtraction) means it can never reach zero, so a
+# three-kind spell is weak rather than silent.
+const SPREAD := 0.5
+
+
+# --- spell shapes -----------------------------------------------------------
+
+const BULLET_SPEED := 8.0
+const BULLET_LIFETIME := 1.2
+const BULLET_SIZE := 0.6
+
+# The water ball needs no aim point: its range is decided by the world — it
+# bursts on contact, or when its lifetime runs out.
+const WATERBALL_SPEED := 7.0
+const WATERBALL_LIFETIME := 1.0
+const WATERBALL_SIZE := 0.6
+
+const PUDDLE_SIZE := 2.0
+const PUDDLE_LIFETIME := 3.0
+
+# A box, not a cone: Helper.overlap is axis-aligned, so a cone at 37 degrees
+# cannot be expressed. Debt, deliberately taken.
+const BURST_SIZE := 3.0
+const BURST_LIFETIME := 0.3
+const BURST_OFFSET := 1.5
+
+const SPAWN_OFFSET := 0.7
+
+
+# --- payload base values (before the SPREAD split) --------------------------
+
+const FIRE_DAMAGE := 20.0
+const KNOCKBACK_STRENGTH := 6.0
+const KNOCKBACK_DURATION := 0.3
+
 
 # --- movement ---------------------------------------------------------------
 

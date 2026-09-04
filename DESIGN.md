@@ -28,92 +28,135 @@ waktu, run bertingkat bisa ditumpuk di atas ini tanpa membongkar apa pun.
 > Arena tampak atas. Player seorang penyihir. Musuh masuk bergelombang dan
 > **mengejar player** — tidak ada yang perlu dilindungi selain diri sendiri.
 >
-> Merapal: tahan tombol rapal, tekan `1`/`2`/`3` untuk mengantrikan rune
-> **api / air / angin**, lepas untuk melepaskan.
+> **Merapal itu dua babak.**
 >
-> Selama antrian terbuka, **waktu melambat** — momen "pencerahan" ala anime.
-> Tapi perlambatannya **luntur**: makin lama ragu, makin cepat dunia kembali ke
-> kecepatan normal, dan monster sudah di depan muka.
+> **Babak 1 — menyusun.** Tahan `SHIFT`, tekan `J`/`K`/`L` untuk mengantrikan
+> rune **api / air / angin**, lepas `SHIFT`. Selama antrian terbuka waktu
+> melambat, tapi perlambatannya **luntur** — makin lama ragu, makin cepat dunia
+> kembali normal. Player **tidak bisa bergerak** selama menyusun; itulah ongkos
+> panjang rapalan.
 >
-> Antrian yang panjang butuh waktu lepas yang lebih lama. Rapalan 3 rune
-> meninggalkan player terbuka jauh lebih lama daripada 2 rune yang tepat.
+> Hasilnya: sebuah **bola siap tembak** melayang di sisi penyihir.
+>
+> **Babak 2 — melepas.** Bolanya menunggu, tidak ada hitungan mundur. Player
+> bebas bergerak lagi, mengarahkan dengan **mouse (360 derajat)**, dan
+> **klik kiri** untuk melepas.
+>
+> **Satu bola saja.** Memegang satu memblokir penyusunan berikutnya, jadi
+> "punya spell siap" adalah keputusan, bukan timbunan.
 >
 > Mati = ulang instan, semuanya kembali utuh.
+
+**Kenapa dua babak:** versi satu babak menumpuk tiga keputusan di 0,6 detik —
+pilih rune, atur sudut, lihat jendela menutup. Dites, dan memang kacau.
+Dipisah, tangan kanan pindah dari JKL ke mouse *setelah* mengetik selesai, dan
+karena bolanya menunggu, perpindahan itu tidak dihukum.
 
 ---
 
 # 3. Sistem rapalan
 
-## Tata bahasa: rune pertama menentukan bentuk, seluruh antrian menentukan isi
+## Rune pertama menentukan WUJUD, seluruh antrian menentukan ISI
 
-Ini yang bikin tiga rune terasa jauh lebih banyak dari tiga.
+**Aturan keras: satu elemen = satu arti sebagai muatan.** Angin tidak boleh
+kadang berarti dorongan kadang berarti area. Kalau artinya berubah-ubah, player
+tidak bisa menebak kombinasi yang belum dia coba — dan itu bedanya punya teori
+dengan punya daftar hafalan.
 
-**Rune pertama = wujud:**
+| Rune | WUJUD (kalau di slot pertama) | MUATAN (di slot mana pun) |
+|---|---|---|
+| **Api** | peluru melesat | kerusakan |
+| **Air** | bola yang **pecah jadi genangan** | `Wet` — memperlambat |
+| **Angin** | **ledakan di badan**, tidak terbang | `Knockback` — mendorong |
 
-| Rune pertama | Wujudnya |
-|---|---|
-| Api | **peluru** yang melesat lurus |
-| Air | **genangan** di lantai pada jarak tertentu |
-| Angin | **kerucut** pendek dari badan player, mendorong |
+## Mekanik tiap wujud
 
-**Seluruh rune di antrian = isinya:** tiap api menambah kerusakan, tiap air
-menempelkan `Wet`, tiap angin menambah dorongan. Rune yang sama dua kali
-memperbesar efeknya.
+| | Lahir di mana | Gerak | Berhenti | `OnHit` |
+|---|---|---|---|---|
+| **Peluru api** | badan + arah × 0.7 | ~8 petak/dtk | umur ~1.2s | `Dead` — mati saat kena |
+| **Bola air** | badan + arah × 0.7 | ~7 petak/dtk | umur ~1.0s | `Burst` — berubah jadi genangan |
+| **Genangan** | tempat bola pecah | diam | umur ~3s | **tidak punya** — ditembus siapa pun |
+| **Ledakan angin** | badan + arah × 1.5 | diam | umur ~0.3s | — |
 
-Hasilnya, dari tiga simbol:
+**Bola air tidak butuh titik bidik.** Jaraknya ditentukan dunia: pecah saat
+kena musuh, atau saat umurnya habis. Player mengarahkan, dunia yang memutuskan
+sejauh apa. Ini menggantikan rencana `AimPoint` — lebih sedikit kode, dan
+rasanya jadi seperti melempar granat.
 
-| Antrian | Yang keluar |
-|---|---|
-| `api` | peluru api biasa |
-| `api api` | peluru yang lebih sakit, lepasnya lebih lama |
-| `api angin` | peluru yang membakar **dan** melempar mundur |
-| `angin api` | kerucut api dari badan — **bahan sama, bentuk beda total** |
-| `air api` | genangan yang membasahi **sekaligus** membakar — kombo klasik dalam satu rapalan |
-| `angin air` | kerucut yang membasahi sekelompok musuh, disiapkan untuk peluru api berikutnya |
+**Genangan tidak punya tabrakan.** Musuh berjalan *masuk* ke dalamnya. Itu
+bedanya: peluru **mencari** musuh, genangan **menunggu** musuh. Sifat
+"tidak bisa ditabrak" itu konsekuensi dari tidak punya `OnHit`, bukan aturan
+yang ditulis.
 
-`api angin` dan `angin api` adalah momen "oh, urutannya ngaruh" — dan itu
-penemuan pertama yang bikin player sadar ada tata bahasanya, bukan cuma daftar.
+## `OnHit` — kembaran `on_expire`
 
-## Waktu rapal
-
-```
-cast_time = BASE + PER_RUNE * jumlah_rune        BASE = 0.25s, PER_RUNE = 0.25s
-```
-
-Waktu ini jalan di **kecepatan normal**, bukan diperlambat. Jadi rapalan panjang
-= jendela terbuka yang panjang. Itu ongkos yang bikin pemendekan berarti.
-
-## Perlambatan yang luntur
-
-Selama antrian terbuka:
-
-```
-time_scale(t) = 1.0 - (1.0 - MIN_SCALE) * exp(-t / TAU)
-MIN_SCALE = 0.12     TAU = 0.6 detik
+```gdscript
+OnHit = { ...komponen yang ditempel saat bersentuhan... }
 ```
 
-- `t = 0` → 0.12 (dunia hampir berhenti, momen pencerahan)
-- `t = 0.6` → 0.44
-- `t = 1.2` → 0.72
-- `t = 2.0` → 0.90 (praktis sudah normal)
+System kontak jadi bodoh total: *"ada yang bersentuhan? tempel semua isi
+`OnHit`-nya."* Nol percabangan. Menambah perilaku tabrakan baru = menambah data,
+bukan menambah `if`.
 
-Jadi player dapat sekitar **0,6 detik nyata yang benar-benar berharga**. Yang
-tahu kombonya selesai di dalam jendela itu. Yang ragu-ragu keluar dari jendela
-dan menghadapi monster di kecepatan penuh.
+## Kekuatan: dibagi jumlah JENIS, bukan jumlah rune
 
-Dua angka itu (`MIN_SCALE`, `TAU`) adalah tuas rasa main utama. Disetel dengan
-dimainkan, bukan ditebak.
+```
+jenis  = berapa macam rune berbeda di antrian
+jumlah = berapa kali rune itu muncul
 
-**Kenapa luntur, bukan berhenti total:** kalau waktu berhenti, panel rapalan
-jadi menu, dan panjang rapalan tidak ada ongkosnya lagi — persis kesalahan
-revisi 1 dan 2.
+kekuatan[rune] = jumlah[rune] / pow(jenis, SPREAD)        SPREAD mulai 0.5
+```
 
-## Tanpa mini-game terpisah
+| Antrian | Jenis | Hasil |
+|---|---|---|
+| `api` | 1 | api ×1.00 |
+| `api api` | 1 | **api ×2.00** |
+| `api air` | 2 | api ×0.71, basah ×0.71 |
+| `api api air` | 2 | api ×1.41, basah ×0.71 |
+| `api air angin` | 3 | ketiganya ×0.58 |
 
-Antrian rune di bawah waktu yang meluntur **itu sendiri** sudah mini-game-nya:
-ada input, ada tekanan waktu, ada kemahiran yang bisa naik. Mini-game terpisah
-berarti game kedua yang harus dibangun dan dipoles, dan dia memutus player dari
-pertarungan yang sedang berjalan.
+**Kenapa jenis, bukan jumlah rune:** kalau dibagi jumlah rune, `api api` akan
+menghasilkan dua muatan setengah kekuatan yang dijumlahkan kembali jadi satu —
+rune kembar tidak ada gunanya, dan separuh tata bahasa mati.
+
+**Kenapa harus ada pembagian sama sekali:** tanpa ini, menambah rune hanya
+menambah efek. Empat rune selalu lebih baik dari dua, dan tidak ada satu pun
+alasan untuk mempersingkat — hook utama proyek ini mati.
+
+Sekarang panjang bukan "lebih kuat" tapi **"lebih lebar tapi lebih tipis"**, dan
+rapalan panjang tetap lebih lama mengunci player di tempat. Dua ongkos.
+
+## Penggabungan
+
+Komponen belum ada → masukkan. Sudah ada → **jumlahkan angkanya.**
+
+## Waktu rapal & perlambatan
+
+```
+cast_time  = CAST_BASE + CAST_PER_RUNE * jumlah_rune
+time_scale = 1.0 - (1.0 - SLOW_MIN) * exp(-open_time / SLOW_TAU)
+```
+
+`open_time` dihitung dengan **delta asli**, bukan yang sudah dikali `time_scale`
+— kalau tidak, terbentuk lingkaran umpan balik dan jendela 0,6 detik molor jadi
+4-5 detik nyata.
+
+**Kenapa luntur, bukan berhenti total:** kalau waktu berhenti, panel jadi menu
+dan panjang rapalan kembali gratis.
+
+## Utang yang disadari
+
+**"Kerucut" jadi kotak.** `Helper.overlap` hanya AABB, jadi kerucut di sudut
+37 derajat tidak bisa dinyatakan. Ledakan angin memakai kotak di depan player:
+bebas sudut, nol matematika baru. Bentuk yang benar butuh tabrakan berputar —
+dikerjakan setelah ada game utuh, sebagai branch terpisah.
+
+**Wujud angin dikunci "di badan", bukan terbang.** Diputuskan Claude karena
+Xaviero menyerahkan pilihannya. Alasannya: kalau angin ikut terbang, dua dari
+tiga wujud jadi sama-sama peluru dan tata bahasanya mendatar. Ledakan di badan
+juga satu-satunya jawaban untuk "musuh sudah menempel". Mendorong musuh ke dalam
+api tetap bisa — caranya berdiri di seberang bahayanya, dan itu justru keahlian
+penempatan. **Satu baris untuk diubah kalau ternyata terasa salah.**
 
 ---
 
