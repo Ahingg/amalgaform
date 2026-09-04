@@ -23,9 +23,6 @@ static func interval(duration: float) -> Dictionary:
 static func fire(damage: float) -> Dictionary:
 	return {"damage": damage}
 	
-static func burn(damage: float) -> Dictionary:
-	return {"damage": damage}
-	
 static func damaged(damage: float) -> Dictionary:
 	return {"damage": damage}
 	
@@ -59,3 +56,15 @@ static func cast_release() -> Dictionary:
 
 static func time_scale() -> Dictionary:
 	return {"value": 1.0}
+	
+static func on_hit(body: Dictionary) -> Dictionary:
+	return {"action": body}
+	
+static func damage(amount: float) -> Dictionary:
+	return {"amount": amount}
+
+static func wet(duration: float, speed_mult: float) -> Dictionary:
+	return {"duration": duration, "speed_mult": speed_mult}
+
+static func knocked(duration: float, strength: float) -> Dictionary:
+	return {"duration": duration, "strength": strength}

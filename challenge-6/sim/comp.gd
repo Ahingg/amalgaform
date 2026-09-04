@@ -1,21 +1,30 @@
 class_name Comp
 extends RefCounted
-
-const MACHINE := "Machine"
-const RECIPE := "Recipe"
-const LIFETIME := "Lifetime"
-const INTERVAL := "Interval"
-
+# Element Tag, General
 const FIRE := "Fire"
 const WATER := "Water"
 const WIND := "Wind"
+
+# Element Tag, Rune
+const IGNIS := "Ignis"
+const AQUA := "Aqua"
+const VENTUS := "Ventus"
+
+# Tag
+const ROUND := "Round"
+
+const LIFETIME := "Lifetime"
+const MACHINE := "Machine"
+const RECIPE := "Recipe"
+const INTERVAL := "Interval"
+
 const DELAY := "Delay"
 const POSITION := "Position"
 const VELOCITY := "Velocity"
 const SIZE := "Size"
 const HEALTH := "Health"
 
-const BURN := "Burn"
+const BURST := "Burst"
 const INVULNERABLE := "Invulnerable"
 const DAMAGED := "Damaged"
 
@@ -28,9 +37,17 @@ const CHASE := "Chase"
 
 const CAST_QUEUE := "CastQueue"
 const CAST_RELEASE := "CastRelease"
-const ROUND := "Round"
 const TIME_SCALE := "TimeScale"
 const FACING := "Facing" 
 
 const HELD_SPELL := "HeldSpell"
 const LAUNCH_SPELL := "LaunchSpell"
+
+const DAMAGE := "Damage"
+const FORCE := "Force" 
+
+# Status Effect Related
+const INFLICT := "Inflict"
+const WET := "Wet"
+const KNOCKED := "Knocked"
+const ON_HIT := "OnHit"

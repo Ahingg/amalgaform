@@ -28,9 +28,12 @@ const CAST_RELEASE := "CastRelease"
 const HELD_SPELL := "HeldSpell"
 const LAUNCH_SPELL := "LaunchSpell"
 
-const FIRE := "Fire"
-const WATER := "Water"
-const WIND := "Wind"
+# The rune symbols the player types. These must match sim/comp.gd exactly —
+# they are the only strings that cross the layer boundary as data rather than
+# as a component name.
+const IGNIS := "Ignis"
+const AQUA := "Aqua"
+const VENTUS := "Ventus"
 
 
 # --- palette -----------------------------------------------------------------
@@ -38,6 +41,12 @@ const WIND := "Wind"
 # Order matters: the first component an entity has wins the colour.
 const COLORS := {
 	"Player": Color(0.95, 0.9, 0.7),
+	"Ignis": Color(0.95, 0.3, 0.2),
+	"Aqua": Color(0.25, 0.6, 1.0),
+	"Ventus": Color(0.4, 0.85, 0.75),
+	"Damage": Color(0.95, 0.4, 0.25),
+	"Wet": Color(0.3, 0.65, 1.0),
+	"Knocked": Color(0.45, 0.85, 0.8),
 	"Burn": Color(1.0, 0.45, 0.15),
 	"Fire": Color(0.95, 0.3, 0.2),
 	"Water": Color(0.25, 0.6, 1.0),
@@ -56,7 +65,8 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
 	"Machine", "Recipe", "Lifetime", "Dead",
-	"Player", "MoveIntent", "Facing", "HeldSpell", "Chase", "CastQueue", "CastRelease", "Knockback",
+	"Player", "MoveIntent", "Facing", "HeldSpell", "Chase",
+	"Ignis", "Aqua", "Ventus", "Damage", "Wet", "Knocked", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
 ]
 
 
@@ -65,18 +75,18 @@ const BADGE_ORDER := [
 # J/K/L, not 1/2/3: the left hand never leaves WASD, so the runes have to sit
 # under the right hand.
 const RUNE_KEYS := {
-	KEY_J: "Fire",
-	KEY_K: "Water",
-	KEY_L: "Wind",
+	KEY_J: IGNIS,
+	KEY_K: AQUA,
+	KEY_L: VENTUS,
 }
 
 # The first rune decides the shape of the spell. Naming it on screen the moment
 # it is queued is feedback on what the player is holding — not a recipe list.
 # The player still has to find out what each shape is good for.
 const FORM_OF := {
-	"Fire": "BULLET",
-	"Water": "PUDDLE",
-	"Wind": "CONE",
+	IGNIS: "BULLET",
+	AQUA: "BALL",
+	VENTUS: "BURST",
 }
 
 

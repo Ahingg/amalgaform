@@ -15,5 +15,5 @@ static func process(world: World, _delta: float) -> void:
 			var fire_comp := world.get_component_value(Comp.FIRE, fire)
 			
 			if Helper.overlap(target_pos, target_size, fire_pos, fire_size):
-				world.attach_component(Comp.BURN, target, Make.burn(fire_comp["damage"]))
+				#world.attach_component(Comp.BURN, target, Make.burn(fire_comp["damage"]))
 	

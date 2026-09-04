@@ -1,15 +1,6 @@
 class_name CastSystem
 extends RefCounted
 
-const FORM := {
-	Comp.FIRE : {
-				Comp.POSITION: Make.position(0.0, 0.0), 
-				Comp.SIZE: Make.size(1.0, 1.0), 
-				Comp.VELOCITY: 
-				},
-				
-	Comp.WATER : {}
-}
 
 static func process(world: World, delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.CAST_QUEUE])
