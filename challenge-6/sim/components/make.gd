@@ -45,3 +45,13 @@ static func health(amount: int) -> Dictionary:
 	
 static func move_intent(x: float, y: float) -> Dictionary:
 	return {"x": x, "y": y}
+	
+	
+static func cast_queue() -> Dictionary:
+	return {"runes": [], "open": false, "open_time": 0.0}
+	
+static func cast_release() -> Dictionary: 
+	return {}
+
+static func time_scale() -> Dictionary:
+	return {"value": 1.0}

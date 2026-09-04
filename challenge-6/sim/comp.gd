@@ -25,3 +25,8 @@ const PLAYER := "Player"
 const MOVE_INTENT := "MoveIntent"
 const SPEED := "Speed"
 const CHASE := "Chase"
+
+const CAST_QUEUE := "CastQueue"
+const CAST_RELEASE := "CastRelease"
+const ROUND := "Round"
+const TIME_SCALE := "TimeScale"

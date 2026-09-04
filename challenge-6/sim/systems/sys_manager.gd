@@ -2,13 +2,15 @@ class_name SystemManager
 extends RefCounted
 
 static func process(world: World, delta: float) -> void:
-	TimerSystem.process(world, delta)
-	MachineSystem.process(world, delta)
-	ChaseSystem.process(world, delta)
-	IntentSystem.process(world, delta)
-	MoveSystem.process(world, delta)
-	FireContactSystem.process(world, delta)
-	BurnSystem.process(world, delta)
-	DamageSystem.process(world, delta)
-	DeadSystem.process(world, delta)
+	CastSystem.process(world, delta)
+	var sdelta := delta * RoundState.time_scale(world)
+	TimerSystem.process(world, sdelta)
+	MachineSystem.process(world, sdelta)
+	ChaseSystem.process(world, sdelta)
+	IntentSystem.process(world, sdelta)
+	MoveSystem.process(world, sdelta)
+	FireContactSystem.process(world, sdelta)
+	BurnSystem.process(world, sdelta)
+	DamageSystem.process(world, sdelta)
+	DeadSystem.process(world, sdelta)
 	

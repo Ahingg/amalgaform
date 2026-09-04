@@ -19,8 +19,7 @@ extends Node
 # design decision, so it is not written here.
 # ============================================================================
 
-const COMP_PLAYER := "Player"
-const COMP_MOVE_INTENT := "MoveIntent"
+# Component names come from ViewConfig.
 
 
 func _physics_process(_delta: float) -> void:
@@ -28,7 +27,7 @@ func _physics_process(_delta: float) -> void:
 	if world == null:
 		return
 
-	var query: Array[String] = [COMP_PLAYER]
+	var query: Array[String] = [ViewConfig.PLAYER]
 	var players: Array[int] = world.get_entities_with_comp(query)
 	if players.is_empty():
 		return
@@ -40,12 +39,12 @@ func _physics_process(_delta: float) -> void:
 		# keypress would leave the last direction stuck in the component after
 		# the key is released, and the wizard would drift forever. "No input"
 		# is a statement that has to be made out loud.
-		if world.entity_have_component(COMP_MOVE_INTENT, id):
-			var intent: Dictionary = world.get_component_value(COMP_MOVE_INTENT, id)
+		if world.entity_have_component(ViewConfig.MOVE_INTENT, id):
+			var intent: Dictionary = world.get_component_value(ViewConfig.MOVE_INTENT, id)
 			intent["x"] = dir.x
 			intent["y"] = dir.y
 		else:
-			world.attach_component(COMP_MOVE_INTENT, id, {"x": dir.x, "y": dir.y})
+			world.attach_component(ViewConfig.MOVE_INTENT, id, {"x": dir.x, "y": dir.y})
 
 
 func _read_direction() -> Vector2:

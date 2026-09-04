@@ -14,35 +14,9 @@ extends Node2D
 #
 # Raw strings are used here on purpose instead of Comp.XXX, so that this file
 # can never break sim/ parsing if a constant is missing or renamed.
-# To make a new component show up as a badge, add it to BADGE_ORDER.
+# To make a new component show up as a badge, add it to ViewConfig.BADGE_ORDER.
 # ============================================================================
 
-const COMP_POSITION := "Position"
-const COMP_SIZE := "Size"
-const COMP_DELAY := "Delay"
-const COMP_INVULNERABLE := "Invulnerable"
-const COMP_HEALTH := "Health"
-
-# Order matters: the first matching component wins the color.
-const COMPONENT_COLORS := {
-	"Player": Color(0.95, 0.9, 0.7),
-	"Burn": Color(1.0, 0.45, 0.15),
-	"Fire": Color(0.95, 0.3, 0.2),
-	"Water": Color(0.25, 0.6, 1.0),
-	"Wind": Color(0.4, 0.85, 0.75),
-	"Damaged": Color(1.0, 0.85, 0.2),
-	"Machine": Color(0.65, 0.55, 0.85),
-	"Health": Color(0.55, 0.8, 0.4),
-}
-
-# Component names printed under each entity, so you can see what shape that
-# entity currently has. This is the most useful ECS debugging tool here.
-const BADGE_ORDER := [
-	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
-	"Burn", "Damaged", "Health", "Invulnerable",
-	"Machine", "Recipe", "Lifetime", "Dead",
-	"Player", "MoveIntent", "Chase", "CastQueue", "CastRelease",
-]
 
 @export var grid_width: int = 12
 @export var grid_height: int = 8
@@ -77,11 +51,11 @@ func _draw() -> void:
 		_draw_message("No World on Main yet. Renderer is waiting.")
 		return
 
-	var query: Array[String] = [COMP_POSITION]
+	var query: Array[String] = [ViewConfig.POSITION]
 	var ids: Array[int] = world.get_entities_with_comp(query)
 
 	if ids.is_empty():
-		_draw_message("No entity has the \"%s\" component yet." % COMP_POSITION)
+		_draw_message("No entity has the \"%s\" component yet." % ViewConfig.POSITION)
 		return
 
 	for id in ids:
@@ -135,14 +109,14 @@ func _draw_grid() -> void:
 
 
 func _draw_entity(world, id: int) -> void:
-	var pos: Dictionary = world.get_component_value(COMP_POSITION, id)
+	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, id)
 	var px: float = float(pos.get("x", 0.0))
 	var py: float = float(pos.get("y", 0.0))
 
 	var w := 1.0
 	var h := 1.0
-	if world.entity_have_component(COMP_SIZE, id):
-		var s: Dictionary = world.get_component_value(COMP_SIZE, id)
+	if world.entity_have_component(ViewConfig.SIZE, id):
+		var s: Dictionary = world.get_component_value(ViewConfig.SIZE, id)
 		w = float(s.get("w", 1.0))
 		h = float(s.get("h", 1.0))
 
@@ -160,8 +134,8 @@ func _draw_entity(world, id: int) -> void:
 	# when it can be hurt again. Blink is driven by the component's own elapsed
 	# value, not by wall-clock time, so it stays in step with the simulation.
 	var alpha := 0.85
-	if world.entity_have_component(COMP_INVULNERABLE, id):
-		var inv: Dictionary = world.get_component_value(COMP_INVULNERABLE, id)
+	if world.entity_have_component(ViewConfig.INVULNERABLE, id):
+		var inv: Dictionary = world.get_component_value(ViewConfig.INVULNERABLE, id)
 		var t: float = float(inv.get("elapsed", 0.0))
 		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
 
@@ -169,13 +143,13 @@ func _draw_entity(world, id: int) -> void:
 	draw_rect(rect, Color(1, 1, 1, 0.5), false, 1.5)
 
 	# Delay is drawn as a progress bar above the entity.
-	if world.entity_have_component(COMP_DELAY, id):
+	if world.entity_have_component(ViewConfig.DELAY, id):
 		_draw_delay_bar(world, id, top_left, size.x)
 
 	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0, 0, 0, 0.75))
 
-	if world.entity_have_component(COMP_HEALTH, id):
+	if world.entity_have_component(ViewConfig.HEALTH, id):
 		_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
 
 	if show_badges:
@@ -186,7 +160,7 @@ func _draw_entity(world, id: int) -> void:
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
-	var hp: Dictionary = world.get_component_value(COMP_HEALTH, id)
+	var hp: Dictionary = world.get_component_value(ViewConfig.HEALTH, id)
 	var max_hp: float = float(hp.get("max", 0.0))
 	if max_hp <= 0.0:
 		return
@@ -212,7 +186,7 @@ func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: 
 
 
 func _draw_delay_bar(world, id: int, top_left: Vector2, width_px: float) -> void:
-	var d: Dictionary = world.get_component_value(COMP_DELAY, id)
+	var d: Dictionary = world.get_component_value(ViewConfig.DELAY, id)
 	var duration: float = float(d.get("duration", 0.0))
 	if duration <= 0.0:
 		return
@@ -225,15 +199,15 @@ func _draw_delay_bar(world, id: int, top_left: Vector2, width_px: float) -> void
 
 
 func _color_for(world, id: int) -> Color:
-	for comp_name in COMPONENT_COLORS:
+	for comp_name in ViewConfig.COLORS:
 		if world.entity_have_component(comp_name, id):
-			return COMPONENT_COLORS[comp_name]
-	return Color(0.75, 0.75, 0.8)
+			return ViewConfig.COLORS[comp_name]
+	return ViewConfig.NEUTRAL
 
 
 func _component_badges(world, id: int) -> String:
 	var owned: Array[String] = []
-	for comp_name in BADGE_ORDER:
+	for comp_name in ViewConfig.BADGE_ORDER:
 		if world.entity_have_component(comp_name, id):
 			owned.append(comp_name)
 	return " ".join(owned)
