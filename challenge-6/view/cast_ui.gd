@@ -24,7 +24,7 @@ extends Node2D
 # sim/ still owns CastSystem: accumulating open_time, computing time_scale, and
 # translating runes into a spell on release. Those are game rules.
 #
-# Controls: hold SPACE to open, 1/2/3 to queue fire/water/wind, release to cast,
+# Controls: hold SPACE to open, J/K/L to queue fire/water/wind, release to cast,
 # ESC to cancel without casting.
 # ============================================================================
 
