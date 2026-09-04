@@ -10,5 +10,5 @@ static func process(world: World, _delta: float) -> void:
 			var hp := world.get_component_value(Comp.HEALTH, e)
 			var dmg := world.get_component_value(Comp.DAMAGED, e)
 			hp["current"] -= dmg["damage"]
-			world.attach_component(Comp.INVULNERABLE, e, Make.invulnerable(0.5))
+			world.attach_component(Comp.INVULNERABLE, e, Make.invulnerable(Tuning.INVULNERABLE_TIME))
 		world.detach_component(Comp.DAMAGED, e)

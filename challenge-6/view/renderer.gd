@@ -146,6 +146,11 @@ func _draw_entity(world, id: int) -> void:
 	if world.entity_have_component(ViewConfig.DELAY, id):
 		_draw_delay_bar(world, id, top_left, size.x)
 
+	# Aim has to be visible or aiming is guesswork — especially now that WASD
+	# does double duty and the direction is not implied by where you are moving.
+	if world.entity_have_component(ViewConfig.FACING, id):
+		_draw_aim(world, id, top_left + size * 0.5)
+
 	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0, 0, 0, 0.75))
 
@@ -157,6 +162,22 @@ func _draw_entity(world, id: int) -> void:
 		if badges != "":
 			draw_string(_font, top_left + Vector2(0, size.y + 22), badges,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.65))
+
+
+func _draw_aim(world, id: int, center: Vector2) -> void:
+	var f: Dictionary = world.get_component_value(ViewConfig.FACING, id)
+	var dir := Vector2(float(f.get("x", 0.0)), float(f.get("y", 0.0)))
+	if dir == Vector2.ZERO:
+		return
+	dir = dir.normalized()
+
+	var near := center + dir * tile_size * 0.55
+	var far := center + dir * tile_size * 1.35
+	draw_line(near, far, Color(1, 0.95, 0.75, 0.75), 3.0)
+	# A small head, so the direction reads at a glance instead of being a stick.
+	var side := dir.orthogonal() * tile_size * 0.16
+	draw_line(far, far - dir * tile_size * 0.22 + side, Color(1, 0.95, 0.75, 0.75), 3.0)
+	draw_line(far, far - dir * tile_size * 0.22 - side, Color(1, 0.95, 0.75, 0.75), 3.0)
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:

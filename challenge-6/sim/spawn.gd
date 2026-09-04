@@ -29,7 +29,7 @@ static func enemy(
 	world: World,
 	x: float, y: float,
 	hp: int,
-	speed: float = 3.0,
+	speed: float = Tuning.ENEMY_SPEED,
 	w: float = 1.0, h: float = 1.0
 ) -> int:
 	var e := world.add_entity()
@@ -62,7 +62,7 @@ static func machine(
 static func player(world: World,
 	x: float, y: float,
 	hp: int, 
-	speed: float = 4.0,
+	speed: float = Tuning.PLAYER_SPEED,
 	w: float = 1.0, h: float = 1.0,
 ) -> int:
 	var e := world.add_entity()

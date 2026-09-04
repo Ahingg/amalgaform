@@ -46,6 +46,21 @@ func _physics_process(_delta: float) -> void:
 		else:
 			world.attach_component(ViewConfig.MOVE_INTENT, id, {"x": dir.x, "y": dir.y})
 
+		# The same keys aim. Only updated while a direction is actually held, so
+		# letting go of WASD keeps the last aim instead of snapping it to zero.
+		#
+		# Nothing here knows that casting roots the player — that is a game rule
+		# and it lives in sim. This layer just keeps saying "the player is
+		# pointing that way"; whether the wizard is allowed to walk there is
+		# somebody else's call.
+		if dir != Vector2.ZERO:
+			if world.entity_have_component(ViewConfig.FACING, id):
+				var facing: Dictionary = world.get_component_value(ViewConfig.FACING, id)
+				facing["x"] = dir.x
+				facing["y"] = dir.y
+			else:
+				world.attach_component(ViewConfig.FACING, id, {"x": dir.x, "y": dir.y})
+
 
 func _read_direction() -> Vector2:
 	var dir := Vector2.ZERO

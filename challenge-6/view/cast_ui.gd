@@ -32,7 +32,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var key: int = event.keycode
 
-	if key == KEY_SPACE:
+	if key == KEY_SHIFT:
 		if event.pressed:
 			_open(world, player)
 		else:
@@ -175,7 +175,7 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
 	if runes.is_empty():
-		draw_string(_font, at, "J api   ·   K air   ·   L angin   ·   ESC batal",
+		draw_string(_font, at, "J api  ·  K air  ·  L angin  ·  WASD arah  ·  ESC batal",
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.4))
 		return
 
@@ -200,5 +200,5 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 
 
 func _draw_hint() -> void:
-	draw_string(_font, Vector2(48, 596), "Tahan SPACE untuk merapal",
+	draw_string(_font, Vector2(48, 596), "Tahan SHIFT untuk merapal",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.3))

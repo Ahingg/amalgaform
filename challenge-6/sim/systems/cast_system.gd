@@ -9,12 +9,12 @@ static func process(world: World, delta: float) -> void:
 	
 	var time_scale := world.get_component_value(Comp.TIME_SCALE, round_id[0])
 	
+	time_scale["value"] = 1.0
 	for e in entities:
 		var queue := world.get_component_value(Comp.CAST_QUEUE, e)
 		if queue["open"] == true:
 			queue["open_time"] = queue.get("open_time", 0.0) + delta
-			var scale := 1.0 - (1.0 - 0.12) * exp(-queue["open_time"] / 0.8)
+			var scale := 1.0 - (1.0 - Tuning.SLOW_MIN) * exp(-queue["open_time"] / Tuning.SLOW_TAU)
 			time_scale["value"] = scale
 			continue
-		time_scale["value"] = 1.0
 		
