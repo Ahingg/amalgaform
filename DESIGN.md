@@ -316,6 +316,29 @@ tapi checkpoint yang memotong **pada tanggalnya**, bukan saat sudah terlambat.
 | **Rab 9** (~2j) | Menyetel `MIN_SCALE`, `TAU`, damage, kecepatan musuh | Memasang aset gratis, polish |
 | **Kam 10** | Buffer, build `.app`, presentasi | Bantu build & export |
 
+
+## Migrasi komponen: Dictionary -> class (disepakati 4 September)
+
+**Pemicunya bukan tanggal, tapi syarat:** begitu satu ronde utuh bisa dimainkan
+— spell bisa dilepas, musuh bisa menyakiti, mati bisa diulang.
+
+Alasan menunggu titik itu bukan jam kerja, tapi jaring pengaman: refactor besar
+aman kalau ada cara mengecek dalam 5 detik apakah barusan ada yang rusak.
+Sebelum ronde utuh jalan, "rusak karena migrasi" tidak bisa dibedakan dari
+"memang belum jadi" — dan itu cara tercepat menghabiskan satu hari.
+
+**Pembagian:** Xaviero menentukan komponen mana yang naik duluan dan bentuknya;
+Claude mengerjakan konversinya (mekanis, bukan keputusan desain), sementara
+Xaviero lanjut ke tata bahasa rapalan.
+
+**Urutan yang paling banyak bayarannya:** keluarga timer (`elapsed`, `duration`,
+`on_expire`) karena bentuknya identik di empat tempat, lalu `Health`, lalu
+keluarga `{x, y}` (Position, Velocity, Facing, MoveIntent).
+
+**Sementara itu:** tiap komponen hanya didefinisikan bentuknya di `make.gd`,
+dengan komentar satu baris berisi daftar field-nya. Dengan begitu `make.gd`
+jadi daftar skema, dan nanti langsung jadi checklist migrasi.
+
 ## Checkpoint (pemotongan terjadwal)
 
 - **Sabtu 5 malam — harus bisa dimainkan ujung ke ujung.** Player gerak, musuh

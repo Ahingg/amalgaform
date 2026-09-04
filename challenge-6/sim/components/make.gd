@@ -52,8 +52,9 @@ static func facing(x: float, y: float) -> Dictionary:
 static func cast_queue() -> Dictionary:
 	return {"runes": [], "open": false, "open_time": 0.0}
 	
+	
 static func cast_release() -> Dictionary: 
-	return {}
+	return {"runes": []}
 
 static func time_scale() -> Dictionary:
 	return {"value": 1.0}

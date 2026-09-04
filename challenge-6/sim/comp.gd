@@ -31,3 +31,6 @@ const CAST_RELEASE := "CastRelease"
 const ROUND := "Round"
 const TIME_SCALE := "TimeScale"
 const FACING := "Facing" 
+
+const HELD_SPELL := "HeldSpell"
+const LAUNCH_SPELL := "LaunchSpell"
