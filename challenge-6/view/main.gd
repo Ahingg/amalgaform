@@ -7,6 +7,11 @@ extends Node
 
 var world: World
 
+# Attempts belong to the session, not to the round — so this is the one piece of
+# state that deliberately survives build_round(). Everything else is thrown away
+# with the World.
+var attempt: int = 1
+
 func _ready() -> void:
 	build_round()
 
@@ -15,8 +20,14 @@ func _ready() -> void:
 	add_child(WorldRenderer.new())
 
 
-# Everything that describes one attempt at the room lives here. Retry is going
-# to be: throw the World away, call this again.
+func retry() -> void:
+	attempt += 1
+	build_round()
+
+
+# Everything that describes one attempt at the room lives here. Retrying is
+# literally this function again: throw the World away, build a new one. No
+# cleanup, no reset pass — nothing in sim/ ever kept state outside the World.
 func build_round() -> void:
 	world = World.new()
 	Spawn.round(world)

@@ -46,38 +46,31 @@ static func build(runes: Array) -> Dictionary:
 		rune_presence[r] += 1
 	
 	var recipe: Dictionary = Grammar.FORM[runes[0]].duplicate(true)
-	print(recipe)
 	var on_self: Dictionary = recipe.get(Comp.ON_HIT, {}).get("self", {})
 	var on_target: Dictionary = recipe.get(Comp.ON_HIT, {}).get("target", {})
-	print("before")
-	print(on_self)
-	print(on_target)
 	# gabungin on hit yang ada di actionnya for both on self, on target
 	for r in rune_presence:
 		var power: float = rune_presence[r] / pow(unique, Tuning.SPREAD)
 		# setiap produced bakal punya on self sama on target juga, yang harus ditambahin ke on self dan on target diatas
 		var produced: Dictionary = Grammar.PAYLOAD[r].call(power)
-		print(produced)
 		if not (produced.has("self") and produced.has("target")):
 			continue
 		
-		for comp in produced["self"]:
+		var produced_on_self: Dictionary = produced["target"]
+		for comp in produced_on_self:
 			if on_self.has(comp):
-				for k in produced["self"][comp]:
-					on_self[comp][k] += produced["self"][comp][k]
+				for k in produced_on_self[comp]:
+					on_self[comp][k] += produced_on_self[comp][k]
 			else:
-				on_self[comp] = produced[comp]
-		for comp in produced["target"]:
+				on_self[comp] = produced_on_self[comp]
+		var produced_on_target: Dictionary = produced["target"]
+		for comp in produced_on_target:
 			if on_target.has(comp):
-				for k in produced["target"][comp]:
-					on_target[comp][k] += produced[comp][k]
+				for k in produced_on_target[comp]:
+					on_target[comp][k] += produced_on_target[comp][k]
 			else:
-				on_target[comp] = produced["target"][comp]
+				on_target[comp] = produced_on_target[comp]
 			
 			
-		print("after")
-		print(on_self)
-		print(on_target)
 	recipe[Comp.ON_HIT] = Make.on_hit(on_self, on_target)
-	#print(recipe)
 	return recipe

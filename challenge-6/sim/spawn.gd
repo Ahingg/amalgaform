@@ -34,13 +34,15 @@ static func enemy(
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ENEMY, e)
+	world.attach_component(Comp.FACING, e, Make.facing(1.0, 0))
+	world.attach_component(Comp.MELEE, e, Make.melee(Make.on_hit({}, {Comp.DAMAGED: Make.damaged(Tuning.MELEE_DAMAGE)})))
 	world.attach_component(Comp.POSITION, e, Make.position(x, y))
 	world.attach_component(Comp.SIZE, e, Make.size(w, h))
 	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
 	world.attach_component(Comp.HEALTH, e, Make.health(hp))
 	world.attach_component(Comp.MOVE_INTENT, e, Make.move_intent(0.0, 0.0))
 	world.attach_component(Comp.SPEED, e, Make.speed(speed))
-	#world.attach_component(Comp.CHASE, e)
+	world.attach_component(Comp.CHASE, e)
 	return e
 
 

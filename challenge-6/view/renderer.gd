@@ -35,6 +35,7 @@ func _ready() -> void:
 	# after design revision 3. The file is kept for the casting panel.
 	add_child(PlayerInput.new())
 	add_child(CastUI.new())
+	add_child(RoundUI.new())
 
 
 func _process(_delta: float) -> void:

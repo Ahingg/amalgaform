@@ -8,7 +8,7 @@ static func process(world: World, _delta: float) -> void:
 	for s in sources:
 		var pos_s := world.get_component_value(Comp.POSITION, s)
 		var size_s := world.get_component_value(Comp.SIZE, s)
-		var action := world.get_component_value(Comp.ON_HIT, s).duplicate(true)
+		var action := world.get_component_value(Comp.ON_HIT, s)
 		if not (action.has("self") and action.has("target")):
 			continue
 
@@ -20,6 +20,6 @@ static func process(world: World, _delta: float) -> void:
 				continue
 				
 			for on_self in action["self"]:
-				world.attach_component(on_self, s, action["self"][on_self])
+				world.attach_component(on_self, s, action["self"][on_self].duplicate(true))
 			for on_target in action["target"]:
-				world.attach_component(on_target, t, action["target"][on_target])
+				world.attach_component(on_target, t, action["target"][on_target].duplicate(true))

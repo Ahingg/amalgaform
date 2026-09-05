@@ -71,3 +71,6 @@ static func knocked(duration: float, strength: float) -> Dictionary:
 	
 static func held_spell(spell: Dictionary, runes: Array) -> Dictionary:
 	return {"runes": runes, "recipe": spell}
+	
+static func melee(on_hit: Dictionary) -> Dictionary:
+	return {Comp.ON_HIT: on_hit}

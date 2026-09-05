@@ -94,3 +94,5 @@ const INVULNERABLE_TIME := 0.5
 # large and fire alone becomes pointless.
 const WET_SLOW := 0.5
 const WET_DURATION := 2.0
+
+const MELEE_DAMAGE := 55.0

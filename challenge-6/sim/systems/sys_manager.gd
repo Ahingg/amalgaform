@@ -12,6 +12,8 @@ static func process(world: World, delta: float) -> void:
 	IntentSystem.process(world, sdelta)
 	MoveSystem.process(world, sdelta)
 	ContactSystem.process(world, sdelta)
+	MeleeSystem.process(world, sdelta)
 	DamageSystem.process(world, sdelta)
+	EntityDeadSystem.process(world, sdelta)
 	DeadSystem.process(world, sdelta)
 	

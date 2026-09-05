@@ -48,6 +48,7 @@ const LAUNCH_SPELL := "LaunchSpell"
 const DAMAGE := "Damage"
 const FORCE := "Force" 
 
+const MELEE := "Melee"
 const WET := "Wet"
 const KNOCKED := "Knocked"
 const ON_HIT := "OnHit"
