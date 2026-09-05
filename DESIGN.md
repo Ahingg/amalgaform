@@ -160,33 +160,19 @@ penempatan. **Satu baris untuk diubah kalau ternyata terasa salah.**
 
 ---
 
-# 4. Proficiency — dan garis yang tidak boleh dilewati
+# 4. Proficiency — DIPARKIR (6 September)
 
-Player yang sering memakai kombinasi tertentu jadi mahir dengannya. Tapi
-bentuk hadiahnya menentukan hidup-matinya value proyek ini:
+Dipindah ke daftar cadangan Tingkat 3. Alasannya: dia tidak menyentuh inti
+gamenya. Yang bikin game ini jalan adalah tata bahasa rune dan teori waktu
+paparan; proficiency cuma mempercepat apa yang sudah dipahami.
 
-| | Efek | Akibatnya |
-|---|---|---|
-| ❌ Proficiency → **damage naik** | grinding. Kekuatan diberikan game karena pengulangan | Membunuh independence. Player kuat karena mengulang, bukan karena paham |
-| ✅ Proficiency → **lebih cepat merapal**, lalu boleh **diikat ke satu tombol** | Game mengakui apa yang sudah dibuktikan player | Spell-nya sama persis. Yang berubah cuma player |
+Kalau nanti dikerjakan, aturannya tetap: **proficiency tidak pernah mengubah
+apa yang spell lakukan, hanya seberapa cepat player bisa mengeluarkannya.**
+Hadiah berupa damage naik akan membunuh independence — player jadi kuat karena
+mengulang, bukan karena paham.
 
-**Aturan keras: proficiency tidak pernah mengubah apa yang spell lakukan.
-Dia hanya mengubah seberapa cepat player bisa mengeluarkannya.**
-
-Puncaknya: setelah cukup sering, kombinasi itu boleh **diikat ke satu tombol,
-dengan nama yang player karang sendiri.** Rapalan 3 rune jadi satu ketukan.
-
-Itu **chantless casting** dari fantasi hari pertama — dan dia tidak di-unlock
-oleh game, dia **diperoleh dengan membuktikan**. Persis Ed di Fullmetal
-Alchemist yang bisa transmutasi tanpa lingkaran karena dia sudah paham
-lingkarannya.
-
-Konsekuensi yang bagus: karena hadiahnya cuma kecepatan, **paham tetap
-mengalahkan mengulang.** Orang yang spam `api api api api` dapat rapalan
-4-rune yang cepat; orang yang paham pakai `air api` yang memang lebih pendek
-sejak awal.
-
----
+Puncaknya (mengikat kombinasi ke satu tombol dengan nama karangan player) tetap
+jadi fitur paling menarik yang tersisa, tapi bukan syarat.
 
 # 5. Teori yang harus ditemukan
 
@@ -344,71 +330,59 @@ Kodenya tetap disimpan; sebagian dipakai ulang untuk panel rapalan.
 
 ---
 
-# 12. Rencana 6 hari
+# 12. Rencana sisa (ditulis ulang 6 September, 03:30)
 
-Scope ini **sengaja lebih besar dari yang aman.** Pengamannya bukan optimisme,
-tapi checkpoint yang memotong **pada tanggalnya**, bukan saat sudah terlambat.
+Checkpoint Sabtu dan Senin sudah kena — Senin dua hari lebih cepat. Kecepatan
+kerja yang terukur sejauh ini: satu sesi malam (~3-4 jam) = 2-3 system utuh
+plus perbaikannya. Weekend panjang = jauh lebih banyak.
+
+Sisa waktu: **Minggu (panjang), Senin-Rabu (masing-masing ~2 jam), Kamis
+(buffer + build + presentasi).**
+
+Karena progres di depan jadwal, ada ruang untuk aset buatan sendiri — dan itu
+dijadwalkan, bukan diharapkan.
 
 | Hari | Xaviero | Claude |
 |---|---|---|
-| **Jum 4** (~2j) | Player: gerak + `Health`. Komponen antrian rapalan | Input gerak, panel antrian rune, bar rapal |
-| **Sab 5** (panjang) | A\* + musuh mengejar + menyerang player | Perlambatan waktu, kamera, umpan balik kena |
-| **Min 6** (panjang) | Tata bahasa rapalan: rune pertama = wujud, sisanya isi | Wujud: peluru, genangan, kerucut |
-| **Sen 7** (~2j) | `Wet` + perlambatan, dorongan angin, obor & genangan arena | Gelombang, layar menang/kalah |
-| **Sel 8** (~2j) | Proficiency + ikat tombol + nama karangan player | Juice: partikel, shake, kilat kena |
-| **Rab 9** (~2j) | Menyetel `MIN_SCALE`, `TAU`, damage, kecepatan musuh | Memasang aset gratis, polish |
-| **Kam 10** | Buffer, build `.app`, presentasi | Bantu build & export |
+| **Min 6** siang | MAIN DULU 30 menit, catat yang terasa salah. Lalu setel angka: SLOW_TAU, SPREAD, kecepatan musuh, damage | Arena berdinding + tabrakan dinding |
+| **Min 6** malam | Gelombang musuh (3-5 gelombang, masuk bertahap) + layar menang | Juice: partikel kena, screen shake, kilat damage |
+| **Sen 7** | Beresi utang Facing (mouse vs intent), setel ulang setelah gelombang ada | Layar menang/kalah yang layak dilihat |
+| **Sel 8** | **Aset: 2 aset utama buatan sendiri** (glyph rune + penyihir) | Memasang aset, polish tampilan |
+| **Rab 9** | Setel akhir + **FEATURE FREEZE malam ini** | Polish terakhir |
+| **Kam 10** | Build `.app`, siapkan presentasi, isi bagian Refleksi | Bantu build & export |
 
+## Kenapa aset dapat harinya sendiri
 
-## Migrasi komponen: Dictionary -> class (disepakati 4 September)
+Kalau tidak dijadwalkan, dia akan dikerjakan Rabu malam dalam keadaan panik dan
+hasilnya jelek. Selasa memberi jarak: kalau ternyata lebih lama, Rabu masih ada.
 
-**Pemicunya bukan tanggal, tapi syarat:** begitu satu ronde utuh bisa dimainkan
-— spell bisa dilepas, musuh bisa menyakiti, mati bisa diulang.
+**Dua aset saja, yang paling sering dilihat:** glyph rune (player melototi ini
+tiap kali merapal) dan penyihir. Sisanya tetap kotak berwarna, dan itu tidak
+apa-apa — gaya tinta monokrom membuat campuran kotak dan sketsa terbaca sebagai
+pilihan, bukan sebagai kekurangan.
 
-Alasan menunggu titik itu bukan jam kerja, tapi jaring pengaman: refactor besar
-aman kalau ada cara mengecek dalam 5 detik apakah barusan ada yang rusak.
-Sebelum ronde utuh jalan, "rusak karena migrasi" tidak bisa dibedakan dari
-"memang belum jadi" — dan itu cara tercepat menghabiskan satu hari.
+## Checkpoint yang tersisa
 
-**Pembagian:** Xaviero menentukan komponen mana yang naik duluan dan bentuknya;
-Claude mengerjakan konversinya (mekanis, bukan keputusan desain), sementara
-Xaviero lanjut ke tata bahasa rapalan.
-
-**Urutan yang paling banyak bayarannya:** keluarga timer (`elapsed`, `duration`,
-`on_expire`) karena bentuknya identik di empat tempat, lalu `Health`, lalu
-keluarga `{x, y}` (Position, Velocity, Facing, MoveIntent).
-
-**Sementara itu:** tiap komponen hanya didefinisikan bentuknya di `make.gd`,
-dengan komentar satu baris berisi daftar field-nya. Dengan begitu `make.gd`
-jadi daftar skema, dan nanti langsung jadi checklist migrasi.
-
-## Checkpoint (pemotongan terjadwal)
-
-- **Sabtu 5 malam — harus bisa dimainkan ujung ke ujung.** Player gerak, musuh
-  mengejar, satu rune bisa dirapal, mati bisa diulang. Belum? **Tata bahasa
-  urutan dipotong** — antrian jadi kumpulan tak berurut.
-- **Senin 7 malam — tiga elemen dan tiga wujud jalan.** Belum? **Proficiency
-  dan ikat tombol dipotong.**
-- **Rabu 9 malam — feature freeze, tanpa kecuali.** Kamis khusus build dan
-  presentasi.
+- **Minggu malam — gelombang jalan dan angkanya sudah disetel sekali.** Kalau
+  belum: arena berdinding dipotong, arena kosong saja.
+- **Rabu malam — FEATURE FREEZE, tanpa kecuali.** Apa pun yang belum jadi malam
+  itu tidak akan pernah jadi.
 
 ## Tingkat cadangan
 
-- **Tingkat 1 (wajib):** satu arena, player gerak, musuh mengejar, antrian rune
-  dengan perlambatan luntur, tiga elemen, mati dan ulang. Ini sudah menunjukkan
-  ECS, teori waktu paparan, dan kedua value.
-- **Tingkat 2:** tata bahasa urutan (rune pertama = wujud), gelombang,
-  obor & genangan arena.
-- **Tingkat 3:** proficiency, ikat tombol bernama, uap.
-
-**Tingkat 1 harus jalan utuh sebelum apa pun dari Tingkat 2 disentuh.**
+- **Tingkat 1 (SUDAH TERCAPAI):** satu arena, player bergerak, musuh mengejar,
+  antrian rune dengan perlambatan luntur, tiga rune yang semuanya terasa, mati
+  dan ulang.
+- **Tingkat 2:** gelombang, arena berdinding, juice, aset sendiri.
+- **Tingkat 3 (cadangan, bukan target):** proficiency + ikat kombo ke tombol,
+  uap, musuh jenis kedua, progresi antar-ronde.
 
 ## Yang dipotong
 
 Fase persiapan · penempatan mesin sebelum ronde · ekonomi slot per ruangan ·
 kristal · tampak samping · gravitasi · lantai bertingkat · isometrik sungguhan ·
-mini-game rapalan terpisah · lebih dari tiga rune · prosedural · meta-progression
-antar run.
+mini-game rapalan terpisah · lebih dari tiga rune · prosedural ·
+meta-progression antar run · homing · A\* · beberapa spell per mesin.
 
 ## Refleksi (diisi Kamis, sebelum presentasi)
 

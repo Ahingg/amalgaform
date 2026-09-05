@@ -1,14 +1,12 @@
 class_name Countdown
 extends Component
 
-# Dipakai bersama oleh Delay, Lifetime, Invulnerable, dan Wet — bentuknya memang
-# identik. Yang membedakan cuma NAMA komponennya saat ditempel (itulah kunci
-# query-nya) dan apa yang terjadi saat habis.
+# Dipake bareng sama Delay, Lifetime, Invulnerable, Wet. Bentuknya emang sama
+# persis. Yang bedain cuma NAMA komponennya waktu di attach, itu yang jadi kunci
+# querynya.
+# Bentuk boleh sama, makna engga. Position sama Velocity juga sama sama {x, y}.
 #
-# Bentuk boleh dibagi, makna tidak. Position dan Velocity juga sama-sama {x, y}
-# dan tetap dua komponen berbeda.
-#
-# Hanya data: tidak ada advance() atau is_expired(). Itu tugas TimerSystem.
+# Cuma data, gaada advance() atau is_expired(). Itu kerjaan TimerSystem.
 
 var elapsed: float = 0.0
 var duration: float = 0.0

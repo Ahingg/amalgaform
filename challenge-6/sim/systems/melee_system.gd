@@ -1,15 +1,15 @@
 class_name MeleeSystem
 extends RefCounted
 
-# Bentuknya sama persis dengan ContactSystem, cuma arahnya kebalik: yang
-# menyentuh adalah entity ber-Melee, yang kena adalah player.
+# Sama persis kayak ContactSystem, cuma kebalik: yang nyentuh entity ber-Melee,
+# yang kena player.
 #
-# Query-nya menanyakan KEMAMPUAN (Melee), bukan identitas (Enemy) — jadi musuh
-# yang cuma menembak dari jauh tinggal tidak diberi Melee, tanpa system ini
-# diubah.
+# Querynya nanya KEMAMPUAN (Melee), bukan identitas (Enemy). Jadi musuh yang
+# cuma nembak dari jauh tinggal ga dikasih Melee, system ini ga usah diubah.
 #
-# Kontak dinilai ulang tiap frame selama masih bersentuhan. Itu aman di sini
-# karena DamageSystem menyaring lewat Invulnerable.
+# Kontak dinilai ulang tiap frame selama masih nyentuh. Aman disini soalnya
+# DamageSystem nyaring lewat Invulnerable.
+
 static func process(world: World, _delta: float) -> void:
 	var sources := world.get_entities_with_comp([Comp.MELEE, Comp.POSITION, Comp.SIZE])
 	var targets := world.get_entities_with_comp([Comp.PLAYER, Comp.HEALTH, Comp.POSITION, Comp.SIZE])

@@ -1,9 +1,10 @@
 class_name Speed
 extends Component
 
-# `value` adalah kecepatan yang berlaku sekarang; `base` yang tidak pernah
-# berubah. Efek seperti Wet memotong dari base, bukan dari value — kalau tidak,
-# dua efek berurutan akan saling menumpuk dan kecepatan tidak pernah pulih.
+# value = kecepatan yang berlaku sekarang, base = yang gapernah berubah.
+# Wet motong dari base, bukan dari value. Kalo motong dari value, dua efek
+# berturut turut bakal numpuk dan kecepatannya gapernah balik.
+
 var value: float = 0.0
 var base: float = 0.0
 

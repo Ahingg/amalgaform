@@ -1,9 +1,10 @@
 class_name CastSystem
 extends RefCounted
 
-# Dijalankan PALING AWAL dan dengan delta ASLI, bukan delta yang sudah dikali
-# time_scale. Kalau open_time ikut melambat, terbentuk lingkaran umpan balik dan
-# jendela 0,6 detik molor jadi beberapa detik nyata.
+# Jalan PALING AWAL dan pake delta ASLI, bukan yang udah dikali time_scale.
+# Kalo open_time ikut melambat, jadi lingkaran umpan balik dan jendela 0.6 detik
+# molor jadi beberapa detik beneran.
+
 static func process(world: World, delta: float) -> void:
 	var round_ids := world.get_entities_with_comp([Comp.ROUND, Comp.TIME_SCALE])
 	if round_ids.is_empty():
@@ -11,13 +12,13 @@ static func process(world: World, delta: float) -> void:
 
 	var time_scale: Scalar = world.get_component_value(Comp.TIME_SCALE, round_ids[0])
 
-	# Direset sebelum loop, bukan di dalamnya: kalau tidak ada perapal sama
-	# sekali (player mati saat merapal), loop tidak jalan dan dunia akan
-	# melambat selamanya.
+	# Direset sebelum loop, bukan didalemnya. Kalo gaada perapal sama sekali
+	# (player mati pas lagi ngerapal), loopnya ga jalan dan dunianya bakal
+	# lambat selamanya.
 	time_scale.value = 1.0
 
-	# CastQueue sengaja hanya dipunyai player. Musuh yang bisa merapal nanti
-	# menempelkan CastRelease langsung, tanpa antrian.
+	# CastQueue sengaja cuma punya player. Musuh yang bisa ngerapal nanti
+	# nempelin CastRelease langsung, ga pake antrian.
 	for e in world.get_entities_with_comp([Comp.CAST_QUEUE]):
 		var queue: Dictionary = world.get_component_value(Comp.CAST_QUEUE, e)
 		if not queue["open"]:

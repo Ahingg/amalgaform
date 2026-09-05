@@ -1,16 +1,12 @@
 class_name Component
 extends RefCounted
 
-# Base bersama untuk semua komponen berbentuk nilai.
+# Base buat semua komponen yang isinya nilai.
+# Cuma boleh ngasih mekanik umum kayak clone, jangan pernah kasih logic game
+# disini, nanti komponennya balik megang kelakuan lagi.
 #
-# GARIS YANG DIJAGA: base ini hanya boleh memberi MEKANIK umum (menyalin,
-# membandingkan), tidak pernah MAKNA game. Begitu ada apply_to() atau
-# semacamnya di sini, komponen kembali memegang kelakuan — persis yang
-# dihindari sejak hari pertama.
-#
-# SYARAT: setiap subclass harus bisa dibuat tanpa argumen, karena clone()
-# memanggil get_script().new(). Jadi semua parameter _init wajib punya nilai
-# bawaan.
+# Syarat: semua subclass harus bisa dibuat tanpa argumen, soalnya clone manggil
+# get_script().new(). Jadi semua parameter _init wajib ada default value.
 
 func clone() -> Component:
 	var c: Component = get_script().new()

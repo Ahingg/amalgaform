@@ -1,9 +1,12 @@
 class_name Inflict
 extends RefCounted
 
-# Org yang punya inflict itu kerjaannya bakal handle onhit dan bongkar onhitnya 
+# Satu satunya tempat isi OnHit dibongkar dan ditempel. Dipake bareng
+# ContactSystem sama MeleeSystem, bedanya cuma siapa nyentuh siapa.
 #
-# wajib pake clone biar referenceenya ga sama
+# Wajib clone: satu ledakan bisa kena beberapa target dalam satu frame, kalo
+# ga disalin mereka bakal share satu komponen dan timernya jalan berkali lipat.
+
 static func apply(world: World, action: Dictionary, source: int, target: int,
 		pos_s: Vec2, pos_t: Vec2) -> void:
 	for comp in action["self"]:

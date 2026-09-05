@@ -1,6 +1,8 @@
 class_name MoveSystem
 extends RefCounted
 
+
+
 static func process(world: World, delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.POSITION, Comp.VELOCITY])
 

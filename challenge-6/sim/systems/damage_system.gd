@@ -1,6 +1,8 @@
 class_name DamageSystem
 extends RefCounted
 
+
+
 static func process(world: World, _delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.DAMAGED, Comp.HEALTH])
 
@@ -11,6 +13,6 @@ static func process(world: World, _delta: float) -> void:
 			hp.current -= dmg.damage
 			world.attach_component(Comp.INVULNERABLE, e,
 				Countdown.new(Tuning.INVULNERABLE_TIME))
-		# Selalu dicabut, termasuk saat diserap kekebalan: komponen kejadian
-		# harus dikonsumsi di frame yang sama dia dibuat.
+		# Selalu dicabut, termasuk pas keserap kekebalan. Komponen kejadian
+		# harus dimakan di frame yang sama dia dibuat.
 		world.detach_component(Comp.DAMAGED, e)

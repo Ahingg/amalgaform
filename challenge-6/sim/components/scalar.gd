@@ -1,8 +1,8 @@
 class_name Scalar
 extends Component
 
-# Bentuk bersama untuk komponen yang isinya cuma satu angka: TimeScale,
-# Interval, dan sejenisnya.
+# Bentuk bareng buat komponen yang isinya cuma satu angka: TimeScale, Interval.
+
 var value: float = 0.0
 
 

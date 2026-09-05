@@ -1,8 +1,9 @@
 class_name Damaged
 extends Component
 
-# Komponen KEJADIAN: ditempel oleh system kontak, dikonsumsi dan dicabut
+# Komponen kejadian. Di attach sama system kontak, dimakan dan dicabut
 # DamageSystem di frame yang sama.
+
 var damage: float = 0.0
 
 

@@ -3,10 +3,11 @@ extends RefCounted
 
 # Babak dua: bola yang dipegang dilepas ke arah Facing.
 #
-# Position dan Speed di dalam FORM cuma template — yang satu relatif ke pelempar,
-# yang satu besaran tanpa arah. Cuma dua ini yang butuh konteks peluncuran;
-# komponen lain (Lifetime, OnHit, Size) lewat apa adanya. Karena itu keduanya
-# dibereskan SEBELUM ditempel, bukan dikoreksi sesudahnya.
+# Position sama Speed di FORM itu cuma template, yang satu relatif ke pelempar,
+# yang satu besaran tanpa arah. Cuma dua ini yang butuh konteks peluncuran,
+# sisanya lewat apa adanya. Makanya dibenerin SEBELUM di attach, bukan
+# dikoreksi setelahnya.
+
 static func process(world: World, _delta: float) -> void:
 	var entities := world.get_entities_with_comp(
 		[Comp.LAUNCH_SPELL, Comp.HELD_SPELL, Comp.POSITION, Comp.FACING])

@@ -1,6 +1,9 @@
 class_name Knocked
 extends Countdown
 
+# Arahnya diisi sama system kontak, dia yang tau posisi sumber sama target.
+# Grammar cuma tau seberapa kuat.
+
 var strength: float = 0.0
 var x: float = 0.0
 var y: float = 0.0

@@ -1,13 +1,11 @@
 class_name Make
 extends RefCounted
 
-# Yang tersisa di sini hanya komponen berbentuk WADAH: isinya heterogen —
-# kumpulan komponen lain, array rune, atau pasangan self/target. Bentuk seperti
-# itu tidak untung dijadikan class bertipe, karena isinya memang tidak tetap.
+# Sisanya disini cuma komponen yang bentuknya WADAH, isinya campur campur.
+# Bentuk kayak gitu ga untung dijadiin class soalnya isinya emang ga tetap.
 #
-# Komponen berbentuk NILAI sudah pindah jadi class: Vec2, Size, Health, Speed,
-# Countdown, Wet, Knocked, Damaged, Scalar. Konstruktornya sendiri yang jadi
-# skema, dan salah ketik nama field ketahuan editor.
+# Komponen yang bentuknya nilai udah pindah jadi class: Vec2, Size, Health,
+# Speed, Countdown, Wet, Knocked, Damaged, Scalar.
 
 static func recipe(body: Dictionary) -> Dictionary:
 	return body

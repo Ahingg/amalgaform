@@ -21,9 +21,9 @@ func remove_entity_by_id(id: int) -> void:
 			component_map[key].erase(id)
 		 	
 	
-# body sengaja Variant, bukan Dictionary: komponen boleh berupa Dictionary
-# (belum dimigrasi) maupun objek bertipe. World tidak pernah peduli isinya apa —
-# itu yang bikin migrasi ke class bisa dicicil satu keluarga komponen sekaligus.
+# body sengaja Variant, bukan Dictionary. Komponen boleh Dictionary (yang
+# belum dimigrasi) atau objek bertipe. World gapernah peduli isinya apa, itu
+# yang bikin migrasi ke class bisa dicicil satu keluarga sekali jalan.
 func attach_component(component_name: String, entity_id: int, body: Variant = {}) -> void:
 	if (not component_map.has(component_name)):
 		component_map[component_name] = {}

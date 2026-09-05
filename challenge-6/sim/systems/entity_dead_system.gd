@@ -1,8 +1,9 @@
 class_name EntityDeadSystem
 extends RefCounted
 
-# Memutuskan SIAPA yang mati. Penghapusannya milik DeadSystem — dipisah supaya
-# "barusan mati" sempat jadi keadaan yang bisa dibaca system lain.
+# Nentuin SIAPA yang mati. Penghapusannya punya DeadSystem, dipisah biar
+# "barusan mati" sempet jadi keadaan yang bisa dibaca system lain.
+
 static func process(world: World, _delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.HEALTH])
 	for e in entities:
