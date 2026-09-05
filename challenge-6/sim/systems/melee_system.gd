@@ -8,11 +8,11 @@ static func process(world: World, _delta: float) -> void:
 		return
 		
 	for s in sources:
-		var pos_s := world.get_component_value(Comp.POSITION, s)
-		var size_s := world.get_component_value(Comp.SIZE, s)
+		var pos_s: Dictionary = world.get_component_value(Comp.POSITION, s)
+		var size_s: Dictionary = world.get_component_value(Comp.SIZE, s)
 		
 		# melee bakal dibuat punya on hit, sehingga bisa di embed efek tertentu
-		var melee := world.get_component_value(Comp.MELEE, s)
+		var melee: Dictionary = world.get_component_value(Comp.MELEE, s)
 		if not melee.has(Comp.ON_HIT):
 			continue
 		var action: Dictionary = melee.get(Comp.ON_HIT, {})
@@ -20,8 +20,8 @@ static func process(world: World, _delta: float) -> void:
 			continue
 		
 		var t := target[0]
-		var pos_t := world.get_component_value(Comp.POSITION, t)
-		var size_t := world.get_component_value(Comp.SIZE, t)
+		var pos_t: Dictionary = world.get_component_value(Comp.POSITION, t)
+		var size_t: Dictionary = world.get_component_value(Comp.SIZE, t)
 		if not Helper.overlap(pos_s, size_s, pos_t, size_t):
 			continue
 			

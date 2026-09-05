@@ -142,8 +142,8 @@ func _draw_entity(world, id: int) -> void:
 	# value, not by wall-clock time, so it stays in step with the simulation.
 	var alpha := 0.85
 	if world.entity_have_component(ViewConfig.INVULNERABLE, id):
-		var inv: Dictionary = world.get_component_value(ViewConfig.INVULNERABLE, id)
-		var t: float = float(inv.get("elapsed", 0.0))
+		var inv: Countdown = world.get_component_value(ViewConfig.INVULNERABLE, id)
+		var t: float = inv.elapsed
 		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
 
 	draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
@@ -214,12 +214,10 @@ func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: 
 
 
 func _draw_delay_bar(world, id: int, top_left: Vector2, width_px: float) -> void:
-	var d: Dictionary = world.get_component_value(ViewConfig.DELAY, id)
-	var duration: float = float(d.get("duration", 0.0))
-	if duration <= 0.0:
+	var d: Countdown = world.get_component_value(ViewConfig.DELAY, id)
+	if d.duration <= 0.0:
 		return
-	var elapsed: float = float(d.get("elapsed", 0.0))
-	var ratio: float = clampf(elapsed / duration, 0.0, 1.0)
+	var ratio: float = clampf(d.elapsed / d.duration, 0.0, 1.0)
 
 	var bar_top := top_left + Vector2(0, -9)
 	draw_rect(Rect2(bar_top, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)

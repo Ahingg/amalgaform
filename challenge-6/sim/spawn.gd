@@ -58,7 +58,7 @@ static func machine(
 	world.attach_component(Comp.POSITION, m, Make.position(x, y))
 	world.attach_component(Comp.SIZE, m, Make.size(w, h))
 	world.attach_component(Comp.INTERVAL, m, Make.interval(interval))
-	world.attach_component(Comp.DELAY, m, Make.delay(interval))
+	world.attach_component(Comp.DELAY, m, Countdown.new(interval))
 	world.attach_component(Comp.RECIPE, m, Make.recipe(recipe))
 	return m
 

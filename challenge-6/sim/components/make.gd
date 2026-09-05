@@ -8,14 +8,10 @@ extends RefCounted
 static func recipe(body: Dictionary) -> Dictionary:
 	return body
 
-static func delay(duration: float) -> Dictionary:
-	return {"elapsed": 0.0, "duration": duration}
 
 static func lifetime(duration: float) -> Dictionary:
 	return {"elapsed": 0.0, "duration": duration, "on_expire": {Comp.DEAD: {}}}
 		
-static func invulnerable(duration: float) -> Dictionary:
-	return {"elapsed": 0.0, "duration": duration}
 
 static func interval(duration: float) -> Dictionary:
 	return {"duration": duration}

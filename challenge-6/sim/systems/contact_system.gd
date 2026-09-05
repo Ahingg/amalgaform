@@ -6,16 +6,16 @@ static func process(world: World, _delta: float) -> void:
 	var target := world.get_entities_with_comp([Comp.ENEMY, Comp.HEALTH, Comp.POSITION, Comp.SIZE])
 	
 	for s in sources:
-		var pos_s := world.get_component_value(Comp.POSITION, s)
-		var size_s := world.get_component_value(Comp.SIZE, s)
-		var action := world.get_component_value(Comp.ON_HIT, s)
+		var pos_s: Dictionary = world.get_component_value(Comp.POSITION, s)
+		var size_s: Dictionary = world.get_component_value(Comp.SIZE, s)
+		var action: Dictionary = world.get_component_value(Comp.ON_HIT, s)
 		if not (action.has("self") and action.has("target")):
 			continue
 
 		
 		for t in target:
-			var pos_t := world.get_component_value(Comp.POSITION, t)
-			var size_t := world.get_component_value(Comp.SIZE, t)
+			var pos_t: Dictionary = world.get_component_value(Comp.POSITION, t)
+			var size_t: Dictionary = world.get_component_value(Comp.SIZE, t)
 			if not Helper.overlap(pos_s, size_s, pos_t, size_t):
 				continue
 				

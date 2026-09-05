@@ -21,7 +21,10 @@ func remove_entity_by_id(id: int) -> void:
 			component_map[key].erase(id)
 		 	
 	
-func attach_component(component_name: String, entity_id: int, body: Dictionary = {}) -> void:
+# body sengaja Variant, bukan Dictionary: komponen boleh berupa Dictionary
+# (belum dimigrasi) maupun objek bertipe. World tidak pernah peduli isinya apa —
+# itu yang bikin migrasi ke class bisa dicicil satu keluarga komponen sekaligus.
+func attach_component(component_name: String, entity_id: int, body: Variant = {}) -> void:
 	if (not component_map.has(component_name)):
 		component_map[component_name] = {}
 	component_map[component_name][entity_id] = body
@@ -50,7 +53,7 @@ func get_entities_with_comp(components: Array[String]) -> Array[int]:
 	return result
 	
 	
-func get_component_value(component_name: String, entity_id: int) -> Dictionary:
+func get_component_value(component_name: String, entity_id: int) -> Variant:
 	# anggap component name itu udah selalu ada dan entity id juga selalu ada
 	# dari caller di system bisa dibilamg udah ngecek duluan, jadi untuk sekarang 
 	# pilih yang paling simpel aja dlu.

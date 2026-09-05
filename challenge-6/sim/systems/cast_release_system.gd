@@ -5,7 +5,7 @@ extends RefCounted
 static func process(world: World, _delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.CAST_RELEASE])
 	for e in entities:
-		var body := world.get_component_value(Comp.CAST_RELEASE, e)
+		var body: Dictionary = world.get_component_value(Comp.CAST_RELEASE, e)
 		if not body.has("runes") or body["runes"].is_empty():
 			continue
 			

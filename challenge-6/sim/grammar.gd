@@ -1,28 +1,40 @@
 class_name Grammar 
 extends RefCounted
 
-static var FORM= {
-	Comp.IGNIS : {
-		Comp.POSITION: Make.position(0.0, 0.0), 
-		Comp.SIZE: Make.size(Tuning.BULLET_SIZE, Tuning.BULLET_SIZE), 
-		Comp.SPEED: Make.speed(Tuning.BULLET_SPEED),
-		Comp.LIFETIME: Make.lifetime(Tuning.BULLET_LIFETIME),
-		Comp.ON_HIT: Make.on_hit({Comp.DEAD: {}}, {})
-	},
-	Comp.AQUA : {
-		Comp.POSITION: Make.position(0.0, 0.0), 
-		Comp.SIZE: Make.size(Tuning.WATERBALL_SIZE, Tuning.WATERBALL_SIZE), 
-		Comp.SPEED: Make.speed(Tuning.WATERBALL_SPEED),
-		Comp.LIFETIME: Make.lifetime(Tuning.WATERBALL_LIFETIME),
-		Comp.ON_HIT: Make.on_hit({}, {Comp.BURST: {}})
-	}, 
-	Comp.VENTUS : {
-		Comp.POSITION: Make.position(0.0, 0.0), 
-		Comp.SIZE: Make.size(Tuning.BURST_SIZE, Tuning.BURST_SIZE), 
-		Comp.LIFETIME: Make.lifetime(Tuning.BURST_LIFETIME),
-	}
+# PABRIK, bukan tabel nilai — dan ini WAJIB sejak Countdown jadi class.
+#
+# Dictionary.duplicate(true) menyalin dictionary dan array bersarang, TAPI TIDAK
+# menyalin objek — dia cuma menyalin referensinya. Jadi kalau FORM menyimpan
+# instance Countdown, setiap spell yang lahir dari wujud yang sama akan berbagi satu
+# Countdown, dan elapsed-nya jalan bersama-sama. Diam, tanpa error.
+#
+# Pabrik menghilangkan seluruh kelas bug itu: tiap panggilan bikin instance baru,
+# jadi tidak ada yang perlu disalin sama sekali. PAYLOAD sudah berbentuk begini
+# lebih dulu; sekarang FORM menyusul.
+static var FORM := {
+	Comp.IGNIS: func() -> Dictionary:
+		return {
+			Comp.POSITION: Make.position(0.0, 0.0),
+			Comp.SIZE: Make.size(Tuning.BULLET_SIZE, Tuning.BULLET_SIZE),
+			Comp.SPEED: Make.speed(Tuning.BULLET_SPEED),
+			Comp.LIFETIME: Countdown.new(Tuning.BULLET_LIFETIME),
+			Comp.ON_HIT: Make.on_hit({Comp.DEAD: {}}, {}),
+		},
+	Comp.AQUA: func() -> Dictionary:
+		return {
+			Comp.POSITION: Make.position(0.0, 0.0),
+			Comp.SIZE: Make.size(Tuning.WATERBALL_SIZE, Tuning.WATERBALL_SIZE),
+			Comp.SPEED: Make.speed(Tuning.WATERBALL_SPEED),
+			Comp.LIFETIME: Countdown.new(Tuning.WATERBALL_LIFETIME),
+			Comp.ON_HIT: Make.on_hit({}, {Comp.BURST: {}}),
+		},
+	Comp.VENTUS: func() -> Dictionary:
+		return {
+			Comp.POSITION: Make.position(0.0, 0.0),
+			Comp.SIZE: Make.size(Tuning.BURST_SIZE, Tuning.BURST_SIZE),
+			Comp.LIFETIME: Countdown.new(Tuning.BURST_LIFETIME),
+		},
 }
-
 
 
 static var PAYLOAD := {
@@ -45,7 +57,7 @@ static func build(runes: Array) -> Dictionary:
 		
 		rune_presence[r] += 1
 	
-	var recipe: Dictionary = Grammar.FORM[runes[0]].duplicate(true)
+	var recipe: Dictionary = Grammar.FORM[runes[0]].call()
 	var on_self: Dictionary = recipe.get(Comp.ON_HIT, {}).get("self", {})
 	var on_target: Dictionary = recipe.get(Comp.ON_HIT, {}).get("target", {})
 	# gabungin on hit yang ada di actionnya for both on self, on target

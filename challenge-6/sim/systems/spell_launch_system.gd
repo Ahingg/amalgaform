@@ -6,8 +6,8 @@ static func process(world: World, _delta: float) -> void:
 	for e in entities:
 		# cek origin dan velocity, karena masing masing itu memiliki sifat yang relatif.
 		# sehingga kita perlu secara eksplisit ngecek apakah ada velocity yang 
-		var facing := world.get_component_value(Comp.FACING, e)
-		var origin := world.get_component_value(Comp.POSITION, e).duplicate(true)
+		var facing: Dictionary = world.get_component_value(Comp.FACING, e)
+		var origin: Dictionary = world.get_component_value(Comp.POSITION, e).duplicate(true)
 		origin["x"] += facing["x"] * Tuning.SPAWN_OFFSET
 		origin["y"] += facing["y"] * Tuning.SPAWN_OFFSET
 		
@@ -20,7 +20,7 @@ static func process(world: World, _delta: float) -> void:
 		
 		# Position yang diberikan dalam FORM itu cuma place holder, jangan lupa di ganti dengan origin
 		# Kalau ada velocity, set dengan direction dan kecepatan wujud
-		var held_spell := world.get_component_value(Comp.HELD_SPELL, e)
+		var held_spell: Dictionary = world.get_component_value(Comp.HELD_SPELL, e)
 		var recipe: Dictionary = held_spell["recipe"].duplicate(true)
 		
 		if recipe.has(Comp.POSITION):
