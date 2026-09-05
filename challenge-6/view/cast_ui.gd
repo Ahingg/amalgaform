@@ -246,9 +246,9 @@ func _draw_held(world, player: int) -> void:
 	if not world.entity_have_component(ViewConfig.POSITION, player):
 		return
 
-	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, player)
+	var pos: Vec2 = world.get_component_value(ViewConfig.POSITION, player)
 	var here := renderer.screen_of_tile(Vector2i.ZERO) \
-		+ Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0))) * renderer.tile_size \
+		+ Vector2(pos.x, pos.y) * renderer.tile_size \
 		+ Vector2(renderer.tile_size, renderer.tile_size) * 0.5
 
 	var held: Dictionary = world.get_component_value(ViewConfig.HELD_SPELL, player)
@@ -256,8 +256,8 @@ func _draw_held(world, player: int) -> void:
 
 	var dir := Vector2.RIGHT
 	if world.entity_have_component(ViewConfig.FACING, player):
-		var f: Dictionary = world.get_component_value(ViewConfig.FACING, player)
-		var v := Vector2(float(f.get("x", 0.0)), float(f.get("y", 0.0)))
+		var f: Vec2 = world.get_component_value(ViewConfig.FACING, player)
+		var v := Vector2(f.x, f.y)
 		if v != Vector2.ZERO:
 			dir = v.normalized()
 

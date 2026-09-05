@@ -39,3 +39,23 @@ mengganggu jalan ke deadline. Diisi saat ketemu, bukan saat sempat.
 
 - Kerucut yang sebenarnya (butuh tabrakan berputar, `Helper.overlap` hanya AABB)
 - Migrasi komponen Dictionary -> class (lihat DESIGN.md)
+
+## Ditemukan saat migrasi ke class (6 September)
+
+- **`IntentSystem` dan mouse berebut `Facing`.** `IntentSystem` menulis
+  `face.x = ceili(intent.x)` tiap frame, sementara `player_input` menulis
+  `Facing` dari posisi mouse tiap frame juga. Keduanya menimpa satu sama lain.
+  Dan `ceili(-0.7)` = 0, jadi arah negatif hilang — bergerak ke kiri memberi
+  facing.x = 0, bukan -1.
+  Kemungkinan yang diinginkan: musuh mengambil Facing dari intent, player dari
+  mouse. Kalau begitu, baris itu perlu disaring (misalnya hanya untuk entity
+  tanpa `Player`), dan `signf` lebih tepat daripada `ceili`.
+
+- **`Speed.base` sudah disiapkan tapi belum dipakai.** Wet nanti harus memotong
+  dari `base`, bukan dari `value` — kalau memotong dari `value`, dua efek
+  berurutan saling menumpuk dan kecepatan tidak pernah pulih.
+
+- **`view/assembly_ui.gd` sudah mati** (tidak ada di scene sejak revisi desain 3)
+  dan isinya sekarang usang: masih membaca Position sebagai Dictionary. Aman
+  karena tidak pernah dijalankan, tapi layak dihapus kalau sudah pasti tidak
+  dipakai lagi untuk panel rapalan.

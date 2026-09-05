@@ -40,11 +40,11 @@ func _physics_process(_delta: float) -> void:
 		# the key is released, and the wizard would drift forever. "No input"
 		# is a statement that has to be made out loud.
 		if world.entity_have_component(ViewConfig.MOVE_INTENT, id):
-			var intent: Dictionary = world.get_component_value(ViewConfig.MOVE_INTENT, id)
-			intent["x"] = dir.x
-			intent["y"] = dir.y
+			var intent: Vec2 = world.get_component_value(ViewConfig.MOVE_INTENT, id)
+			intent.x = dir.x
+			intent.y = dir.y
 		else:
-			world.attach_component(ViewConfig.MOVE_INTENT, id, {"x": dir.x, "y": dir.y})
+			world.attach_component(ViewConfig.MOVE_INTENT, id, Vec2.new(dir.x, dir.y))
 
 		_aim_at_mouse(world, id)
 
@@ -61,8 +61,8 @@ func _aim_at_mouse(world, id: int) -> void:
 	if not world.entity_have_component(ViewConfig.POSITION, id):
 		return
 
-	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, id)
-	var here := Vector2(float(pos.get("x", 0.0)), float(pos.get("y", 0.0)))
+	var pos: Vec2 = world.get_component_value(ViewConfig.POSITION, id)
+	var here := Vector2(pos.x, pos.y)
 	var target := renderer.world_at(get_viewport().get_mouse_position())
 	var dir := (target - here)
 	if dir.length() < 0.001:
@@ -70,11 +70,11 @@ func _aim_at_mouse(world, id: int) -> void:
 	dir = dir.normalized()
 
 	if world.entity_have_component(ViewConfig.FACING, id):
-		var facing: Dictionary = world.get_component_value(ViewConfig.FACING, id)
-		facing["x"] = dir.x
-		facing["y"] = dir.y
+		var facing: Vec2 = world.get_component_value(ViewConfig.FACING, id)
+		facing.x = dir.x
+		facing.y = dir.y
 	else:
-		world.attach_component(ViewConfig.FACING, id, {"x": dir.x, "y": dir.y})
+		world.attach_component(ViewConfig.FACING, id, Vec2.new(dir.x, dir.y))
 
 
 func _read_direction() -> Vector2:

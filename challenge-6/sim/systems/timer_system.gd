@@ -1,7 +1,7 @@
 class_name TimerSystem
 extends RefCounted
 
-const TIMERS := [Comp.DELAY, Comp.LIFETIME, Comp.INVULNERABLE]
+const TIMERS := [Comp.DELAY, Comp.LIFETIME, Comp.INVULNERABLE, Comp.WET]
 
 static func process(world: World, delta: float) -> void:
 	for type in TIMERS: 

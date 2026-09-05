@@ -34,33 +34,16 @@ static func enemy(
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ENEMY, e)
-	world.attach_component(Comp.FACING, e, Make.facing(1.0, 0))
-	world.attach_component(Comp.MELEE, e, Make.melee(Make.on_hit({}, {Comp.DAMAGED: Make.damaged(Tuning.MELEE_DAMAGE)})))
-	world.attach_component(Comp.POSITION, e, Make.position(x, y))
-	world.attach_component(Comp.SIZE, e, Make.size(w, h))
-	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
-	world.attach_component(Comp.HEALTH, e, Make.health(hp))
-	world.attach_component(Comp.MOVE_INTENT, e, Make.move_intent(0.0, 0.0))
-	world.attach_component(Comp.SPEED, e, Make.speed(speed))
+	world.attach_component(Comp.FACING, e, Vec2.new(1.0, 0))
+	world.attach_component(Comp.MELEE, e, Make.melee(Make.on_hit({}, {Comp.DAMAGED: Damaged.new(Tuning.MELEE_DAMAGE)})))
+	world.attach_component(Comp.POSITION, e, Vec2.new(x, y))
+	world.attach_component(Comp.SIZE, e, Size.new(w, h))
+	world.attach_component(Comp.VELOCITY, e, Vec2.new(0.0, 0.0))
+	world.attach_component(Comp.HEALTH, e, Health.new(hp))
+	world.attach_component(Comp.MOVE_INTENT, e, Vec2.new(0.0, 0.0))
+	world.attach_component(Comp.SPEED, e, Speed.new(speed))
 	world.attach_component(Comp.CHASE, e)
 	return e
-
-
-static func machine(
-	world: World,
-	x: float, y: float,
-	interval: float,
-	recipe: Dictionary,
-	w: float = 1.0, h: float = 1.0
-) -> int:
-	var m := world.add_entity()
-	world.attach_component(Comp.MACHINE, m)
-	world.attach_component(Comp.POSITION, m, Make.position(x, y))
-	world.attach_component(Comp.SIZE, m, Make.size(w, h))
-	world.attach_component(Comp.INTERVAL, m, Make.interval(interval))
-	world.attach_component(Comp.DELAY, m, Countdown.new(interval))
-	world.attach_component(Comp.RECIPE, m, Make.recipe(recipe))
-	return m
 
 static func player(world: World,
 	x: float, y: float,
@@ -70,18 +53,18 @@ static func player(world: World,
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.PLAYER, e)
-	world.attach_component(Comp.POSITION, e, Make.position(x, y))
-	world.attach_component(Comp.SIZE, e, Make.size(w, h))
-	world.attach_component(Comp.HEALTH, e, Make.health(hp))
-	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
-	world.attach_component(Comp.SPEED, e, Make.speed(speed))
+	world.attach_component(Comp.POSITION, e, Vec2.new(x, y))
+	world.attach_component(Comp.SIZE, e, Size.new(w, h))
+	world.attach_component(Comp.HEALTH, e, Health.new(hp))
+	world.attach_component(Comp.VELOCITY, e, Vec2.new(0.0, 0.0))
+	world.attach_component(Comp.SPEED, e, Speed.new(speed))
 	world.attach_component(Comp.CAST_QUEUE, e, Make.cast_queue())
-	world.attach_component(Comp.FACING, e, Make.facing(0.0, 1.0))
+	world.attach_component(Comp.FACING, e, Vec2.new(0.0, 1.0))
 	return e
 	
 
 static func round(world: World) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ROUND, e)
-	world.attach_component(Comp.TIME_SCALE, e, Make.time_scale())
+	world.attach_component(Comp.TIME_SCALE, e, Scalar.new(1.0))
 	return e 

@@ -116,16 +116,16 @@ func _draw_grid() -> void:
 
 
 func _draw_entity(world, id: int) -> void:
-	var pos: Dictionary = world.get_component_value(ViewConfig.POSITION, id)
-	var px: float = float(pos.get("x", 0.0))
-	var py: float = float(pos.get("y", 0.0))
+	var pos: Vec2 = world.get_component_value(ViewConfig.POSITION, id)
+	var px: float = pos.x
+	var py: float = pos.y
 
 	var w := 1.0
 	var h := 1.0
 	if world.entity_have_component(ViewConfig.SIZE, id):
-		var s: Dictionary = world.get_component_value(ViewConfig.SIZE, id)
-		w = float(s.get("w", 1.0))
-		h = float(s.get("h", 1.0))
+		var s: Size = world.get_component_value(ViewConfig.SIZE, id)
+		w = s.w
+		h = s.h
 
 	var top_left := margin + Vector2(px, py) * tile_size
 	var size := Vector2(w, h) * tile_size
@@ -172,8 +172,8 @@ func _draw_entity(world, id: int) -> void:
 
 
 func _draw_aim(world, id: int, center: Vector2) -> void:
-	var f: Dictionary = world.get_component_value(ViewConfig.FACING, id)
-	var dir := Vector2(float(f.get("x", 0.0)), float(f.get("y", 0.0)))
+	var f: Vec2 = world.get_component_value(ViewConfig.FACING, id)
+	var dir := Vector2(f.x, f.y)
 	if dir == Vector2.ZERO:
 		return
 	dir = dir.normalized()
@@ -188,16 +188,15 @@ func _draw_aim(world, id: int, center: Vector2) -> void:
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
-	var hp: Dictionary = world.get_component_value(ViewConfig.HEALTH, id)
-	var max_hp: float = float(hp.get("max", 0.0))
-	if max_hp <= 0.0:
+	var hp: Health = world.get_component_value(ViewConfig.HEALTH, id)
+	if hp.max <= 0.0:
 		return
-	var current: float = float(hp.get("current", 0.0))
-	var ratio: float = clampf(current / max_hp, 0.0, 1.0)
+	var current: float = hp.current
+	var ratio: float = clampf(current / hp.max, 0.0, 1.0)
 
 	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)
 	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.4, 0.85, 0.35), true)
-	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(max_hp)],
+	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(hp.max)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.55))
 
 
