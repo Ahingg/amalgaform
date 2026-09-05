@@ -33,6 +33,7 @@ static func enemy(
 	w: float = 1.0, h: float = 1.0
 ) -> int:
 	var e := world.add_entity()
+	world.attach_component(Comp.ENEMY, e)
 	world.attach_component(Comp.POSITION, e, Make.position(x, y))
 	world.attach_component(Comp.SIZE, e, Make.size(w, h))
 	world.attach_component(Comp.VELOCITY, e, Make.velocity(0.0, 0.0))
@@ -75,6 +76,7 @@ static func player(world: World,
 	world.attach_component(Comp.CAST_QUEUE, e, Make.cast_queue())
 	world.attach_component(Comp.FACING, e, Make.facing(0.0, 1.0))
 	return e
+	
 
 static func round(world: World) -> int:
 	var e := world.add_entity()

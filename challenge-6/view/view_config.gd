@@ -65,7 +65,7 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
 	"Machine", "Recipe", "Lifetime", "Dead",
-	"Player", "MoveIntent", "Facing", "HeldSpell", "Chase",
+	"Player", "Enemy", "MoveIntent", "Facing", "HeldSpell", "Chase",
 	"Ignis", "Aqua", "Ventus", "Damage", "Wet", "Knocked", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
 ]
 

@@ -31,6 +31,8 @@ const DAMAGED := "Damaged"
 const DEAD := "Dead"
 
 const PLAYER := "Player"
+const ENEMY := "Enemy"
+
 const MOVE_INTENT := "MoveIntent"
 const SPEED := "Speed"
 const CHASE := "Chase"
@@ -46,8 +48,6 @@ const LAUNCH_SPELL := "LaunchSpell"
 const DAMAGE := "Damage"
 const FORCE := "Force" 
 
-# Status Effect Related
-const INFLICT := "Inflict"
 const WET := "Wet"
 const KNOCKED := "Knocked"
 const ON_HIT := "OnHit"

@@ -19,12 +19,3 @@ static func process(world: World, delta: float) -> void:
 			time_scale["value"] = scale
 			continue
 			
-	var want_release := world.get_entities_with_comp([Comp.CAST_RELEASE])
-	for e in want_release:
-		var body := world.get_component_value(Comp.CAST_RELEASE, e)
-		if not body.has("runes") or body["runes"].is_empty():
-			continue
-		
-		#var new_id := world.add_entity()
-		#for comp in body["runes"]:
-			#world.attach_component(comp, new_id, Make.)

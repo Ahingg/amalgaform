@@ -57,14 +57,17 @@ static func cast_release() -> Dictionary:
 static func time_scale() -> Dictionary:
 	return {"value": 1.0}
 	
-static func on_hit(body: Dictionary) -> Dictionary:
-	return {"action": body}
+static func on_hit(on_self: Dictionary, on_target: Dictionary) -> Dictionary:
+	return {"self": on_self, "target": on_target}
 	
 static func damage(amount: float) -> Dictionary:
 	return {"amount": amount}
 
-static func wet(duration: float, speed_mult: float) -> Dictionary:
-	return {"duration": duration, "speed_mult": speed_mult}
+static func wet(duration: float, slow: float) -> Dictionary:
+	return {"duration": duration, "slow": slow}
 
 static func knocked(duration: float, strength: float) -> Dictionary:
 	return {"duration": duration, "strength": strength}
+	
+static func held_spell(spell: Dictionary, runes: Array) -> Dictionary:
+	return {"runes": runes, "recipe": spell}

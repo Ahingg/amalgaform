@@ -92,5 +92,5 @@ const INVULNERABLE_TIME := 0.5
 # Wet: how much it slows, and for how long. This is the reward for discovering
 # that damage is exposure time — too small and the discovery feels flat, too
 # large and fire alone becomes pointless.
-const WET_SPEED_MULT := 0.5
+const WET_SLOW := 0.5
 const WET_DURATION := 2.0
