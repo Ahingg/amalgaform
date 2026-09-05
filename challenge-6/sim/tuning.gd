@@ -96,3 +96,4 @@ const WET_SLOW := 0.5
 const WET_DURATION := 2.0
 
 const MELEE_DAMAGE := 55.0
+const MAX_SLOW := 0.9

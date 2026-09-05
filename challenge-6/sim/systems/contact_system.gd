@@ -1,9 +1,7 @@
 class_name ContactSystem
 extends RefCounted
 
-# Spell menyentuh musuh. Isi OnHit dibongkar jadi dua: yang ditempel ke DIRI
-# SENDIRI (mati, pecah) dan yang ditempel ke TARGET (luka, basah, terdorong).
-# System ini tidak pernah tahu efeknya apa — dia cuma menyalurkan.
+# On hit di bongkar ke yang ngefek ke sendiri sama target yang kena contact
 static func process(world: World, _delta: float) -> void:
 	var sources := world.get_entities_with_comp([Comp.ON_HIT, Comp.POSITION, Comp.SIZE])
 	var targets := world.get_entities_with_comp([Comp.ENEMY, Comp.HEALTH, Comp.POSITION, Comp.SIZE])

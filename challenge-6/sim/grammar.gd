@@ -2,22 +2,15 @@ class_name Grammar
 extends RefCounted
 
 # PABRIK, bukan tabel nilai — dan ini WAJIB sejak Countdown jadi class.
-#
-# Dictionary.duplicate(true) menyalin dictionary dan array bersarang, TAPI TIDAK
-# menyalin objek — dia cuma menyalin referensinya. Jadi kalau FORM menyimpan
-# instance Countdown, setiap spell yang lahir dari wujud yang sama akan berbagi satu
-# Countdown, dan elapsed-nya jalan bersama-sama. Diam, tanpa error.
-#
-# Pabrik menghilangkan seluruh kelas bug itu: tiap panggilan bikin instance baru,
-# jadi tidak ada yang perlu disalin sama sekali. PAYLOAD sudah berbentuk begini
-# lebih dulu; sekarang FORM menyusul.
+# Buat handle ceation nilai nilai as pabrik form
+# Kudu dijadiin pabrik soalnya dia bakal create satu item baru setiap kali dipanggil.
 static var FORM := {
 	Comp.IGNIS: func() -> Dictionary:
 		return {
 			Comp.POSITION: Vec2.new(0.0, 0.0),
 			Comp.SIZE: Size.new(Tuning.BULLET_SIZE, Tuning.BULLET_SIZE),
 			Comp.SPEED: Speed.new(Tuning.BULLET_SPEED),
-			Comp.LIFETIME: Countdown.new(Tuning.BULLET_LIFETIME),
+			Comp.LIFETIME: Countdown.new(Tuning.BULLET_LIFETIME, {Comp.DEAD: {}}),
 			Comp.ON_HIT: Make.on_hit({Comp.DEAD: {}}, {}),
 		},
 	Comp.AQUA: func() -> Dictionary:
@@ -25,14 +18,14 @@ static var FORM := {
 			Comp.POSITION: Vec2.new(0.0, 0.0),
 			Comp.SIZE: Size.new(Tuning.WATERBALL_SIZE, Tuning.WATERBALL_SIZE),
 			Comp.SPEED: Speed.new(Tuning.WATERBALL_SPEED),
-			Comp.LIFETIME: Countdown.new(Tuning.WATERBALL_LIFETIME),
-			Comp.ON_HIT: Make.on_hit({}, {Comp.BURST: {}}),
+			Comp.LIFETIME: Countdown.new(Tuning.WATERBALL_LIFETIME, {Comp.DEAD: {}}),
+			Comp.ON_HIT: Make.on_hit({Comp.BURST: {}}, {}),
 		},
 	Comp.VENTUS: func() -> Dictionary:
 		return {
 			Comp.POSITION: Vec2.new(0.0, 0.0),
 			Comp.SIZE: Size.new(Tuning.BURST_SIZE, Tuning.BURST_SIZE),
-			Comp.LIFETIME: Countdown.new(Tuning.BURST_LIFETIME),
+			Comp.LIFETIME: Countdown.new(Tuning.BURST_LIFETIME, {Comp.DEAD: {}}),
 		},
 }
 
@@ -41,7 +34,7 @@ static var PAYLOAD := {
 	Comp.IGNIS: func(p: float) -> Dictionary:
 			return Make.on_hit({}, {Comp.DAMAGED: Damaged.new(Tuning.FIRE_DAMAGE * p)}),
 	Comp.AQUA : func(p: float) -> Dictionary:
-			return Make.on_hit({}, {Comp.WET: Wet.new(Tuning.WET_DURATION, Tuning.WET_SLOW*p)}),
+			return Make.on_hit({}, {Comp.WET: Wet.new(Tuning.WET_DURATION, 1.0 - pow(1.0 - Tuning.WET_SLOW, p))}),
 	Comp.VENTUS : func(p: float) -> Dictionary:
 			return Make.on_hit({}, {Comp.KNOCKED: Knocked.new(Tuning.KNOCKBACK_DURATION, Tuning.KNOCKBACK_STRENGTH*p)}),
 }
@@ -68,7 +61,7 @@ static func build(runes: Array) -> Dictionary:
 		if not (produced.has("self") and produced.has("target")):
 			continue
 		
-		var produced_on_self: Dictionary = produced["target"]
+		var produced_on_self: Dictionary = produced["self"]
 		for comp in produced_on_self:
 			if on_self.has(comp):
 				for k in produced_on_self[comp]:
@@ -83,6 +76,10 @@ static func build(runes: Array) -> Dictionary:
 			else:
 				on_target[comp] = produced_on_target[comp]
 			
+	var first: String = runes[0]
+	var power_first: float = rune_presence[first] / pow(unique, Tuning.SPREAD)
+	if on_self.has(Comp.BURST):
+		on_self[Comp.BURST] = {"inflict": Grammar.PAYLOAD[first].call(power_first)["target"]}
 			
 	recipe[Comp.ON_HIT] = Make.on_hit(on_self, on_target)
 	return recipe
