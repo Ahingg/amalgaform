@@ -3,6 +3,7 @@ extends RefCounted
 
 static func process(world: World, delta: float) -> void:
 	WaveSystem.process(world, delta)
+	RuntimeSystem.process(world, delta)
 	CastSystem.process(world, delta)
 	var sdelta := delta * RoundState.time_scale(world)
 	TimerSystem.process(world, sdelta)
@@ -11,10 +12,12 @@ static func process(world: World, delta: float) -> void:
 	SpellLaunchSystem.process(world, delta)
 	ChaseSystem.process(world, sdelta)
 	SpeedModifierSystem.process(world, sdelta)
+	DashSystem.process(world, sdelta)
 	IntentSystem.process(world, sdelta)
-	KnockedSystem.process(world, sdelta)
+	ImpulseSystem.process(world, sdelta)
 	SeparationSystem.process(world, sdelta)
 	MoveSystem.process(world, sdelta)
+	BoundSystem.process(world, sdelta)
 	ContactSystem.process(world, sdelta)
 	BurstSystem.process(world, sdelta)
 	MeleeSystem.process(world, sdelta)

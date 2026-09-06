@@ -15,7 +15,9 @@ static func process(world: World, _delta: float) -> void:
 		var wave: Scalar = world.get_component_value(Comp.ROUND_WAVE, r)
 		if world.entity_have_component(Comp.DELAY, r) or not enemies.is_empty():
 			continue
-		if wave.value > Tuning.WAVE_COUNT and not world.entity_have_component(Comp.WON, r):
+		if world.entity_have_component(Comp.WON, r): 
+			continue
+		if wave.value > Tuning.WAVE_COUNT:
 			world.attach_component(Comp.WON, r)
 			continue
 		var data: Dictionary = WAVES[wave.value-1]

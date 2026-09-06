@@ -31,6 +31,7 @@ const ROUND := "Round"
 const WON := "Won"
 const ROUND_WAVE := "RoundWave"
 const ENEMY := "Enemy"
+const DASH := "Dash"
 const DASH_INTENT := "DashIntent"
 const DASH_COOLDOWN := "DashCooldown"
 const RUN_TIME := "RunTime"
@@ -72,9 +73,9 @@ const NEUTRAL := Color(0.75, 0.75, 0.8)
 const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
-	"Machine", "Recipe", "Lifetime", "Dead",
+	"Machine", "Recipe", "Lifetime", "Dead", 
 	"Player", "Enemy", "MoveIntent", "Facing", "HeldSpell", "Chase",
-	"Ignis", "Aqua", "Ventus", "Damage", "Wet", "Knocked", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
+	"Ignis", "Aqua", "Ventus", "Damage", "Wet", "Knocked", "Dash", "DashCooldown", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
 ]
 
 

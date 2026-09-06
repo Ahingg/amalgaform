@@ -18,7 +18,7 @@ static func apply(world: World, action: Dictionary, source: int, target: int,
 			continue
 		var body: Variant = _copy(action["target"][comp])
 		# arah dorongan kalo knocked
-		if body is Knocked:
+		if body is Impulse:
 			var dir := Vector2(pos_t.x - pos_s.x, pos_t.y - pos_s.y).normalized()
 			body.x = dir.x
 			body.y = dir.y

@@ -94,6 +94,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var query: Array[String] = [ViewConfig.PLAYER]
 	for id in world.get_entities_with_comp(query):
+		# Ditolak selagi dash masih jalan atau masih cooldown. Tanpa ini niatnya
+		# menggantung sampai cooldown habis, lalu menembak sendiri — pemain
+		# menekan sekali dan dash-nya baru keluar setengah detik kemudian.
+		if world.entity_have_component(ViewConfig.DASH, id):
+			continue
+		if world.entity_have_component(ViewConfig.DASH_COOLDOWN, id):
+			continue
 		world.attach_component(ViewConfig.DASH_INTENT, id, {})
 	get_viewport().set_input_as_handled()
 

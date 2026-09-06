@@ -37,7 +37,7 @@ static var PAYLOAD := {
 	Comp.AQUA : func(p: float) -> Dictionary:
 			return Make.on_hit({}, {Comp.WET: Wet.new(Tuning.WET_DURATION, 1.0 - pow(1.0 - Tuning.WET_SLOW, p))}),
 	Comp.VENTUS : func(p: float) -> Dictionary:
-			return Make.on_hit({}, {Comp.KNOCKED: Knocked.new(Tuning.KNOCKBACK_DURATION, Tuning.KNOCKBACK_STRENGTH*p)}),
+			return Make.on_hit({}, {Comp.KNOCKED: Impulse.new(Tuning.KNOCKBACK_DURATION, Tuning.KNOCKBACK_STRENGTH*p)}),
 }
 
 static func build(runes: Array) -> Dictionary:

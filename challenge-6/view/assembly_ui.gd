@@ -153,11 +153,6 @@ func _click_grid(world, r: WorldRenderer, at: Vector2) -> void:
 	if _slots_used(world) + 1 > SLOT_BUDGET:
 		return
 
-	selected = Spawn.machine(
-		world, float(tile.x), float(tile.y),
-		MACHINE_INTERVAL,
-		DEFAULT_DELIVERY.duplicate(true)
-	)
 
 
 func _machine_at(world, tile: Vector2i) -> int:

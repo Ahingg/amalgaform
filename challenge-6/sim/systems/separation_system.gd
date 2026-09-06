@@ -18,5 +18,5 @@ static func process(world: World, _delta: float) -> void:
 				var dir: Vector2 = Vector2(pos_a.x - pos_b.x, pos_a.y - pos_b.y).normalized()
 				
 				var va: Vec2 = world.get_component_value(Comp.VELOCITY, a)
-				va.x += (dir.x * 2.0) # speed pemecah
-				va.y += (dir.y * 2.0)
+				va.x += (dir.x * Tuning.SEPARATE_SPEED) # speed pemecah
+				va.y += (dir.y * Tuning.SEPARATE_SPEED)

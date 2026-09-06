@@ -21,6 +21,13 @@ const WAVE_COUNT := 4
 const WAVE_GAP := 3.0
 const ENEMIES_BASE := 2.0
 
+
+# DASH VARIABLE
+const DASH_COOLDOWN := 1.0
+const DASH_STRENGTH := 12
+const DASH_DURATION := 0.15
+
+
 # --- casting ----------------------------------------------------------------
 
 # Slow motion while the rune queue is open, decaying back to normal:
@@ -72,7 +79,7 @@ const PUDDLE_LIFETIME := 3.0
 
 # A box, not a cone: Helper.overlap is axis-aligned, so a cone at 37 degrees
 # cannot be expressed. Debt, deliberately taken.
-const BURST_SIZE := 3.0
+const BURST_SIZE := 4.0
 const BURST_LIFETIME := 0.3
 const BURST_OFFSET := 1.5
 
@@ -81,8 +88,8 @@ const SPAWN_OFFSET := 0.7
 
 # --- payload base values (before the SPREAD split) --------------------------
 
-const FIRE_DAMAGE := 10.0
-const KNOCKBACK_STRENGTH := 6.0
+const FIRE_DAMAGE := 200.0
+const KNOCKBACK_STRENGTH := 21
 const KNOCKBACK_DURATION := 0.3
 
 
@@ -90,8 +97,8 @@ const KNOCKBACK_DURATION := 0.3
 
 # The enemy MUST be slower than the player, otherwise kiting is impossible and
 # the whole casting window stops mattering. Aim for 60-75% of player speed.
-const PLAYER_SPEED := 4.0
-const ENEMY_SPEED := 2.6
+const PLAYER_SPEED := 3.2
+const ENEMY_SPEED := 2.85
 
 
 # --- combat -----------------------------------------------------------------
@@ -107,3 +114,4 @@ const WET_DURATION := 2.0
 const MELEE_DAMAGE := 20.0
 
 const SPELL_HOLD_BASE_MODIFIER := 0.08
+const SEPARATE_SPEED := 1.25

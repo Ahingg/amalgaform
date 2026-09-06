@@ -162,6 +162,8 @@ func _draw() -> void:
 	if player == -1:
 		return
 
+	_draw_dash(world, player)
+
 	if world.entity_have_component(ViewConfig.CASTING, player):
 		_draw_casting(world, player)
 
@@ -234,6 +236,29 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 	draw_rect(Rect2(at, Vector2(width, 6)), Color(0, 0, 0, 0.5), true)
 	var col := Color(0.6, 0.9, 1.0).lerp(Color(1.0, 0.35, 0.3), 1.0 - left)
 	draw_rect(Rect2(at, Vector2(width * left, 6)), col, true)
+
+
+# Dash siap atau tidak. Tanpa penunjuk ini pemain menekan SPACE dan tidak tahu
+# kenapa tidak terjadi apa-apa — dan sekarang niatnya memang ditolak, bukan
+# ditunda, jadi tidak ada umpan balik lain yang menjelaskannya.
+func _draw_dash(world, player: int) -> void:
+	var at := Vector2(48, 512)
+	var w := 96.0
+
+	if world.entity_have_component(ViewConfig.DASH_COOLDOWN, player):
+		var cd = world.get_component_value(ViewConfig.DASH_COOLDOWN, player)
+		var ratio: float = 0.0
+		if cd.duration > 0.0:
+			ratio = clampf(cd.elapsed / cd.duration, 0.0, 1.0)
+		draw_rect(Rect2(at, Vector2(w, 6)), Color(0, 0, 0, 0.5), true)
+		draw_rect(Rect2(at, Vector2(w * ratio, 6)), Color(0.5, 0.55, 0.7), true)
+		draw_string(_font, at + Vector2(w + 8, 7), "dash",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.3))
+		return
+
+	draw_rect(Rect2(at, Vector2(w, 6)), Color(0.6, 0.85, 1.0, 0.9), true)
+	draw_string(_font, at + Vector2(w + 8, 7), "dash siap  ·  SPACE",
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.55))
 
 
 # Jeda antara melepas SHIFT dan bola muncul. Digambar supaya ongkos rapalan
