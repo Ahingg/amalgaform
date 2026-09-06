@@ -363,10 +363,9 @@ dijadwalkan, bukan diharapkan.
 
 | Hari | Xaviero | Claude |
 |---|---|---|
-| **Min 6** siang | MAIN DULU 30 menit, catat yang terasa salah. Lalu setel angka: SLOW_TAU, SPREAD, kecepatan musuh, damage | Arena berdinding + tabrakan dinding |
-| **Min 6** malam | Gelombang musuh (3-5 gelombang, masuk bertahap) + layar menang | Juice: partikel kena, screen shake, kilat damage |
-| **Sen 7** | Beresi utang Facing (mouse vs intent), setel ulang setelah gelombang ada | Layar menang/kalah yang layak dilihat |
-| **Sel 8** | **Aset: 2 aset utama buatan sendiri** (glyph rune + penyihir) | Memasang aset, polish tampilan |
+| ~~Min 6~~ | SELESAI: playtest, tata bahasa dirombak, timer lari, dash, gelombang, pemisahan musuh, batas arena | SELESAI: arena digedein, bar rapal, layar menang, penunjuk dash |
+| **Sen 7** | **Aset hari 1** | Juice: partikel kena, screen shake, kilat damage |
+| **Sel 8** | **Aset hari 2** + pasang ke game | Memasang aset, polish tampilan |
 | **Rab 9** | Setel akhir + **FEATURE FREEZE malam ini** | Polish terakhir |
 | **Kam 10** | Build `.app`, siapkan presentasi, isi bagian Refleksi | Bantu build & export |
 
