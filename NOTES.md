@@ -59,3 +59,21 @@ mengganggu jalan ke deadline. Diisi saat ketemu, bukan saat sempat.
   dan isinya sekarang usang: masih membaca Position sebagai Dictionary. Aman
   karena tidak pernah dijalankan, tapi layak dihapus kalau sudah pasti tidak
   dipakai lagi untuk panel rapalan.
+
+## Temuan playtest pertama (6 September, sore)
+
+- **Waktu rapal tidak pernah ada.** CAST_BASE dan CAST_PER_RUNE cuma dipakai
+  untuk menulis angka di panel; tidak ada system yang menunda apa pun. Ditambah
+  root-saat-merapal sudah dibuang, rapalan 4 rune ongkosnya sama persis dengan
+  1 rune: nol. Itu membunuh hook utama proyek dan bikin SPREAD tidak ada
+  gunanya.
+- **Suku konstan cast_time kemakan transit tangan.** Player memang harus pindah
+  dari JKL ke mouse, jadi ~0.25 detik pertama gratis. Yang menggigit cuma bagian
+  marginalnya. Karena itu CAST_BASE diturunkan dan CAST_PER_RUNE dinaikkan.
+- **Bola air yang meleset hilang tanpa jejak.** on_expire-nya {Dead}, jadi
+  genangan cuma bisa ditaruh di tempat musuh berada — padahal penolakan area
+  justru soal menaruh sesuatu di jalur yang belum dilewati.
+- **Musuh menumpuk di satu titik** setelah dikejar beberapa lama, jadi terlihat
+  seperti satu musuh. Scatter acak cuma menambal gejala; penyebabnya penumpukan.
+- **Ignis mengenai semua musuh yang bertumpuk** — seharusnya satu target, dan
+  area jadi jatah Ventus sebagai wujud.
