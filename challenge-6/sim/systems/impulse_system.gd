@@ -14,6 +14,8 @@ static func process(world: World, _delta: float) -> void:
 			var t = impulse.elapsed/impulse.duration
 			v.x += impulse.x * impulse.strength * pow(1.0-t, 2)
 			v.y += impulse.y * impulse.strength * pow(1.0-t, 2)
+			#v.x += impulse.x * impulse.strength * t / 3
+			#v.y += impulse.y * impulse.strength * t / 3
 		
 	
 	

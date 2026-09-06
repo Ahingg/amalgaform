@@ -5,6 +5,7 @@ static func process(world: World, _delta: float) -> void:
 	var dasher := world.get_entities_with_comp([Comp.DASH_INTENT, Comp.MOVE_INTENT, Comp.FACING])
 	
 	for d in dasher:
+		world.detach_component(Comp.DASH_INTENT, d)
 		if world.entity_have_component(Comp.DASH_COOLDOWN, d): 
 			continue
 		
@@ -16,4 +17,3 @@ static func process(world: World, _delta: float) -> void:
 		dash.y = dir.y
 		world.attach_component(Comp.DASH, d, dash)
 		world.attach_component(Comp.DASH_COOLDOWN, d, Countdown.new(Tuning.DASH_COOLDOWN))
-		world.detach_component(Comp.DASH_INTENT, d)
