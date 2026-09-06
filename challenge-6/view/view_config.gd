@@ -31,6 +31,9 @@ const ROUND := "Round"
 const WON := "Won"
 const ROUND_WAVE := "RoundWave"
 const ENEMY := "Enemy"
+const DASH_INTENT := "DashIntent"
+const DASH_COOLDOWN := "DashCooldown"
+const RUN_TIME := "RunTime"
 const LAUNCH_SPELL := "LaunchSpell"
 
 # The rune symbols the player types. These must match sim/comp.gd exactly —

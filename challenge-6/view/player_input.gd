@@ -80,6 +80,24 @@ func _aim_at_mouse(world, id: int) -> void:
 		world.attach_component(ViewConfig.FACING, id, Vec2.new(dir.x, dir.y))
 
 
+# SPACE cuma nempelin NIAT, bukan langsung ngedorong. Yang mutusin boleh apa
+# engga (lagi cooldown, lagi kena efek, dll) itu sim, bukan lapisan input.
+# Penanda kejadian, dimakan dan dicabut DashSystem di frame yang sama.
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	if event.keycode != KEY_SPACE:
+		return
+
+	var world = _get_world()
+	if world == null:
+		return
+	var query: Array[String] = [ViewConfig.PLAYER]
+	for id in world.get_entities_with_comp(query):
+		world.attach_component(ViewConfig.DASH_INTENT, id, {})
+	get_viewport().set_input_as_handled()
+
+
 func _read_direction() -> Vector2:
 	var dir := Vector2.ZERO
 

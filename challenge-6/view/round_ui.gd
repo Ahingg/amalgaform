@@ -67,12 +67,12 @@ func _draw() -> void:
 	# dibersihkan waktu mulai lagi.
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.WON]
 	if not world.get_entities_with_comp(round_q).is_empty():
-		_draw_ended("MENANG", Color(0.55, 0.9, 0.5))
+		_draw_ended(world, "MENANG", Color(0.55, 0.9, 0.5))
 		return
 
 	var player_q: Array[String] = [ViewConfig.PLAYER]
 	if world.get_entities_with_comp(player_q).is_empty():
-		_draw_ended("KALAH", Color(0.95, 0.35, 0.3))
+		_draw_ended(world, "KALAH", Color(0.95, 0.35, 0.3))
 
 
 func _draw_attempt(attempt: int) -> void:
@@ -94,17 +94,33 @@ func _draw_wave(world) -> void:
 	var alive: int = world.get_entities_with_comp(enemy_q).size()
 
 	var shown: int = mini(int(wave.value), Tuning.WAVE_COUNT)
-	draw_string(_font, Vector2(180, 30),
-		"Gelombang %d / %d   ·   musuh %d" % [shown, Tuning.WAVE_COUNT, alive],
+	var line := "Gelombang %d / %d   ·   musuh %d" % [shown, Tuning.WAVE_COUNT, alive]
+
+	# Waktu lari ditampilkan bareng gelombang supaya efisiensi jadi angka, bukan
+	# cuma perasaan. Digabung dengan penghitung percobaan, pemain bisa melihat
+	# dirinya membaik: percobaan ke-12 tapi waktunya separuh percobaan ke-3.
+	if world.entity_have_component(ViewConfig.RUN_TIME, rounds[0]):
+		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
+		line += "   ·   %.1fs" % rt.value
+
+	draw_string(_font, Vector2(180, 30), line,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
 
 
-func _draw_ended(text: String, color: Color) -> void:
+func _draw_ended(world, text: String, color: Color) -> void:
 	var size := get_viewport_rect().size
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.05, 0.08, 0.72), true)
 
 	var center := size * 0.5
 	draw_string(_font, center + Vector2(-80, -10), text,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 42, color)
-	draw_string(_font, center + Vector2(-80, 26), "Tekan R untuk mengulang",
+
+	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.RUN_TIME]
+	var rounds: Array[int] = world.get_entities_with_comp(round_q)
+	if not rounds.is_empty():
+		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
+		draw_string(_font, center + Vector2(-80, 22), "Waktu %.1f detik" % rt.value,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(1, 1, 1, 0.8))
+
+	draw_string(_font, center + Vector2(-80, 52), "Tekan R untuk mengulang",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.7))

@@ -104,6 +104,6 @@ const INVULNERABLE_TIME := 0.5
 const WET_SLOW := 0.5
 const WET_DURATION := 2.0
 
-const MELEE_DAMAGE := 55.0
+const MELEE_DAMAGE := 20.0
 
 const SPELL_HOLD_BASE_MODIFIER := 0.08
