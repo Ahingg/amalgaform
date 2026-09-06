@@ -32,8 +32,10 @@ func build_round() -> void:
 	world = World.new()
 	Spawn.round(world)
 		
-	Spawn.player(world, 2.0, 2.0, 200)
+	Spawn.player(world, 3.0, 2.0, 200)
 	Spawn.enemy(world, 0.5, 0.5, 100)
+	Spawn.enemy(world, 10.0, 1.0, 100)
+	Spawn.enemy(world, 6.0, 6.0, 100)
 
 
 func _physics_process(delta: float) -> void:

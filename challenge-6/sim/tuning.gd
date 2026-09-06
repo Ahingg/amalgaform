@@ -22,7 +22,7 @@ extends RefCounted
 #   0.4 = tighter, punishes hesitation harder
 #   0.8 = roomier, more forgiving
 const SLOW_MIN := 0.12
-const SLOW_TAU := 0.6
+const SLOW_TAU := 0.8
 
 # Time to release a spell, in normal time — this is the cost that makes short
 # chants worth discovering.
@@ -72,7 +72,7 @@ const SPAWN_OFFSET := 0.7
 
 # --- payload base values (before the SPREAD split) --------------------------
 
-const FIRE_DAMAGE := 20.0
+const FIRE_DAMAGE := 8.0
 const KNOCKBACK_STRENGTH := 6.0
 const KNOCKBACK_DURATION := 0.3
 

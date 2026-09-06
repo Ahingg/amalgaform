@@ -174,43 +174,62 @@ mengulang, bukan karena paham.
 Puncaknya (mengikat kombinasi ke satu tombol dengan nama karangan player) tetap
 jadi fitur paling menarik yang tersisa, tapi bukan syarat.
 
-# 5. Teori yang harus ditemukan
+# 5. Teori yang harus ditemukan (ditulis ulang 6 September, setelah main)
 
-Tetap sama, dan sekarang justru lebih tajam karena dipakai di bawah tekanan:
+Versi sebelumnya berbunyi "kerusakan = seberapa lama musuh berada di dalam
+sesuatu yang menyakitkan". Itu **sisa dari desain mesin**, waktu player memasang
+jebakan dan musuh berjalan melewatinya. Setelah pivot ke aksi arena, tidak ada
+lagi sumber kerusakan yang bertahan, jadi teori itu tidak pernah bisa dipakai.
+Ketahuan saat playtest pertama: membasahi musuh tidak membuat dia lebih cepat
+mati, karena api mengenai sekali lalu pelurunya habis.
 
-| Elemen | Kerjanya |
-|---|---|
-| **Api** | menyakiti apa pun yang menyentuh, berulang selama bersentuhan |
-| **Air** | menempelkan `Wet` — melambat **50% selama 2 detik** |
-| **Angin** | mendorong **menjauhi sumbernya** |
+## Yang menggantikannya: setiap rune punya PERAN
 
-Tidak ada aturan `if api and air`. Yang lahir sendiri:
+| Rune | sebagai WUJUD (cara mengenai) | sebagai MUATAN (apa yang terjadi) |
+|---|---|---|
+| **Ignis** | peluru, **satu target**, mati pada kontak pertama | kerusakan |
+| **Aqua** | bola yang pecah jadi **genangan yang bertahan** | perlambatan |
+| **Ventus** | ledakan **area** di badan | dorongan |
 
-- Basahi dulu → musuh lambat → lebih lama di dalam api → dua kali lebih sakit
-- Dorong ke dalam api → paparan ulang
-- `air api` dalam satu genangan → basah dan terbakar di tempat yang sama
+> **Wujud menentukan cara mengenai. Muatan menentukan apa yang terjadi.**
 
-> **Kerusakan = seberapa lama musuh berada di dalam sesuatu yang menyakitkan.
-> Semua hal lain cuma cara mengatur "seberapa lama" itu.**
+Yang harus ditemukan player:
 
-Player yang paham menang dengan 2 rune. Yang tidak paham menghabiskan 4 rune,
-merapal lebih lama, dan kena duluan. **Pemahaman terbayar sebagai kecepatan.**
+- Mau mengenai banyak musuh? Jangan pakai Ignis sebagai wujud — pakai Ventus.
+- Mau meninggalkan jebakan? Aqua di depan.
+- Mau menusuk satu target? Ignis di depan.
+- Fokus lebih kuat dari campuran (`SPREAD`), jadi rapalan pendek yang tepat
+  mengalahkan rapalan panjang yang serakah.
 
----
+## Kombinasi lahir dari peran, bukan dari tabel
+
+"Genangan lava" tidak butuh aturan `air + api = lava`. Dia cuma **Aqua sebagai
+wujud** (area yang bertahan) bertemu **Ignis sebagai muatan** (kerusakan).
+Tidak ada baris kode yang menyebut lava, dan tidak ada yang perlu ditambahkan
+kalau nanti ada rune keempat.
+
+Karena itu genangan **mewarisi seluruh muatan**, bukan hanya muatan rune
+pertama. Keputusan sebaliknya (5 September dini hari) membunuh justru kombinasi
+yang paling menarik.
+
+**Yang tetap dilarang:** memberi satu rune dua arti sebagai muatan. Ventus tidak
+boleh kadang berarti dorongan kadang berarti "perbesar area" — begitu artinya
+berubah-ubah, player berhenti bisa menebak dan kembali menghafal. Area besar
+sudah punya jalurnya sendiri: Ventus sebagai wujud.
 
 # 6. MDA
 
 ## Mechanics — aturan yang ditulis
 
 Antrian rune · rune pertama menentukan wujud · waktu rapal sebanding panjang
-antrian · perlambatan yang luntur · api menyakiti · air memperlambat · angin
-mendorong · musuh mengejar player lewat A\* · gelombang bertingkat · mati dan
-ulang instan · proficiency menaikkan kecepatan, tidak pernah kekuatan.
+antrian · perlambatan yang luntur · kekuatan dibagi jumlah jenis · api merusak ·
+air memperlambat dan meninggalkan genangan · angin mendorong dan mengenai area ·
+musuh mengejar player · mati dan ulang instan.
 
 ## Dynamics — yang muncul saat dimainkan
 
-- **Membasahi dulu, membakar kemudian** — ditemukan sendiri, tidak pernah
-  diajarkan
+- **Memilih wujud sesuai situasi** — satu musuh pakai Ignis, kerumunan pakai
+  Ventus, jalur sempit ditinggali genangan
 - **Kiting sebagai alat, bukan pengecut** — mundur untuk membeli waktu rapal
 - **Panik vs lancar** — pemula membeku di panel; yang mahir sudah melepas
   sebelum perlambatan luntur
@@ -223,7 +242,7 @@ ulang instan · proficiency menaikkan kecepatan, tidak pernah kekuatan.
 
 | Dikejar | Kenapa |
 |---|---|
-| **Discovery** (utama) | seluruh gamenya tentang menemukan bahwa kerusakan = waktu paparan |
+| **Discovery** (utama) | menemukan bahwa wujud dan muatan itu dua sumbu terpisah, dan tiap rune punya peran |
 | **Challenge** (utama) | tahu saja tidak cukup, harus bisa mengeluarkannya sebelum monster sampai |
 | **Fantasy** (pendukung) | jadi penyihir yang **mengerti** sihirnya, bukan yang menghafal mantra |
 | **Expression** (pendukung) | mengarang nama untuk kombinasi temuan sendiri |
