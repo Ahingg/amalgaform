@@ -27,6 +27,10 @@ const CAST_QUEUE := "CastQueue"
 const CAST_RELEASE := "CastRelease"
 const HELD_SPELL := "HeldSpell"
 const CASTING := "Casting"
+const ROUND := "Round"
+const WON := "Won"
+const ROUND_WAVE := "RoundWave"
+const ENEMY := "Enemy"
 const LAUNCH_SPELL := "LaunchSpell"
 
 # The rune symbols the player types. These must match sim/comp.gd exactly —

@@ -18,5 +18,5 @@ static func process(world: World, _delta: float) -> void:
 		size.h = Tuning.PUDDLE_SIZE
 		#world.attach_component(Comp.SIZE, puddle, Size.new(Tuning.PUDDLE_SIZE, Tuning.PUDDLE_SIZE))
 		world.attach_component(Comp.LIFETIME, e, Countdown.new(Tuning.PUDDLE_LIFETIME, {Comp.DEAD: {}}))
-		var burst: Dictionary = world.get_component_value(Comp.BURST, e)
+		#var burst: Dictionary = world.get_component_value(Comp.BURST, e)
 		#world.attach_component(Comp.ON_HIT, puddle, Make.on_hit({}, burst["inflict"]))

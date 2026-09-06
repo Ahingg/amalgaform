@@ -12,6 +12,8 @@ const VENTUS := "Ventus"
 
 # Tag
 const ROUND := "Round"
+const ROUND_WAVE := "RoundWave"
+const WON := "Won"
 
 const LIFETIME := "Lifetime"
 const MACHINE := "Machine"

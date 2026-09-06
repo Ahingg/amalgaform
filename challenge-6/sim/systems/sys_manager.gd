@@ -2,6 +2,7 @@ class_name SystemManager
 extends RefCounted
 
 static func process(world: World, delta: float) -> void:
+	WaveSystem.process(world, delta)
 	CastSystem.process(world, delta)
 	var sdelta := delta * RoundState.time_scale(world)
 	TimerSystem.process(world, sdelta)
@@ -12,6 +13,7 @@ static func process(world: World, delta: float) -> void:
 	SpeedModifierSystem.process(world, sdelta)
 	IntentSystem.process(world, sdelta)
 	KnockedSystem.process(world, sdelta)
+	SeparationSystem.process(world, sdelta)
 	MoveSystem.process(world, sdelta)
 	ContactSystem.process(world, sdelta)
 	BurstSystem.process(world, sdelta)

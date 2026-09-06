@@ -59,12 +59,20 @@ func _draw() -> void:
 
 	var attempt: int = main.get("attempt")
 	_draw_attempt(attempt)
+	_draw_wave(world)
 
-	var query: Array[String] = ["Player"]
-	if not world.get_entities_with_comp(query).is_empty():
+	# Menang dan kalah dua-duanya dibaca dari keadaan dunia, bukan dari flag yang
+	# disimpan di sini. Kalah = tidak ada entity ber-Player. Menang = entity
+	# ronde punya Won. Tidak ada yang perlu diberi tahu, dan tidak ada yang perlu
+	# dibersihkan waktu mulai lagi.
+	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.WON]
+	if not world.get_entities_with_comp(round_q).is_empty():
+		_draw_ended("MENANG", Color(0.55, 0.9, 0.5))
 		return
 
-	_draw_lost()
+	var player_q: Array[String] = [ViewConfig.PLAYER]
+	if world.get_entities_with_comp(player_q).is_empty():
+		_draw_ended("KALAH", Color(0.95, 0.35, 0.3))
 
 
 func _draw_attempt(attempt: int) -> void:
@@ -72,12 +80,31 @@ func _draw_attempt(attempt: int) -> void:
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
 
 
-func _draw_lost() -> void:
+# Nomor gelombang plus berapa musuh yang masih hidup. Tanpa ini pemain tidak
+# punya cara tahu dia sudah sejauh apa, dan gelombang terakhir terasa sama saja
+# dengan gelombang pertama.
+func _draw_wave(world) -> void:
+	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.ROUND_WAVE]
+	var rounds: Array[int] = world.get_entities_with_comp(round_q)
+	if rounds.is_empty():
+		return
+	var wave = world.get_component_value(ViewConfig.ROUND_WAVE, rounds[0])
+
+	var enemy_q: Array[String] = [ViewConfig.ENEMY]
+	var alive: int = world.get_entities_with_comp(enemy_q).size()
+
+	var shown: int = mini(int(wave.value), Tuning.WAVE_COUNT)
+	draw_string(_font, Vector2(180, 30),
+		"Gelombang %d / %d   ·   musuh %d" % [shown, Tuning.WAVE_COUNT, alive],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
+
+
+func _draw_ended(text: String, color: Color) -> void:
 	var size := get_viewport_rect().size
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.05, 0.08, 0.72), true)
 
 	var center := size * 0.5
-	draw_string(_font, center + Vector2(-70, -10), "KALAH",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 42, Color(0.95, 0.35, 0.3))
-	draw_string(_font, center + Vector2(-70, 26), "Tekan R untuk mengulang",
+	draw_string(_font, center + Vector2(-80, -10), text,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 42, color)
+	draw_string(_font, center + Vector2(-80, 26), "Tekan R untuk mengulang",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.7))

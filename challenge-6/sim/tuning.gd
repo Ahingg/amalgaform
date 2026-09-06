@@ -12,6 +12,15 @@ extends RefCounted
 # Rule: if a number appears in more than one file, it belongs here.
 # ============================================================================
 
+# world data
+const ARENA_W := 20
+const ARENA_H := 12
+
+# round manager
+const WAVE_COUNT := 4
+const WAVE_GAP := 3.0
+const ENEMIES_BASE := 2.0
+
 # --- casting ----------------------------------------------------------------
 
 # Slow motion while the rune queue is open, decaying back to normal:
@@ -72,7 +81,7 @@ const SPAWN_OFFSET := 0.7
 
 # --- payload base values (before the SPREAD split) --------------------------
 
-const FIRE_DAMAGE := 8.0
+const FIRE_DAMAGE := 10.0
 const KNOCKBACK_STRENGTH := 6.0
 const KNOCKBACK_DURATION := 0.3
 
@@ -96,7 +105,5 @@ const WET_SLOW := 0.5
 const WET_DURATION := 2.0
 
 const MELEE_DAMAGE := 55.0
-const MAX_SLOW := 0.9
-
 
 const SPELL_HOLD_BASE_MODIFIER := 0.08

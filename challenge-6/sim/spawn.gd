@@ -66,5 +66,6 @@ static func player(world: World,
 static func round(world: World) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ROUND, e)
+	world.attach_component(Comp.ROUND_WAVE, e, Scalar.new(1))
 	world.attach_component(Comp.TIME_SCALE, e, Scalar.new(1.0))
 	return e 
