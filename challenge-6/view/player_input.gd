@@ -17,6 +17,9 @@ extends Node
 # sim/ still needs a system that turns MoveIntent into Velocity. That system is
 # where speed, casting penalties and knockback get reconciled — and it is a
 # design decision, so it is not written here.
+#
+# NOTE: keeping the wizard inside the arena is NOT done here. Bounds are a game
+# rule, so they belong to a system in sim/ — this layer only ever states intent.
 # ============================================================================
 
 # Component names come from ViewConfig.

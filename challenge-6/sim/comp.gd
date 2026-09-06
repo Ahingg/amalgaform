@@ -39,6 +39,7 @@ const CHASE := "Chase"
 
 const CAST_QUEUE := "CastQueue"
 const CAST_RELEASE := "CastRelease"
+const CASTING := "Casting"
 const TIME_SCALE := "TimeScale"
 const FACING := "Facing" 
 
@@ -52,3 +53,4 @@ const MELEE := "Melee"
 const WET := "Wet"
 const KNOCKED := "Knocked"
 const ON_HIT := "OnHit"
+const SINGLE_TARGET := "SingleTarget"

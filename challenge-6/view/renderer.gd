@@ -18,9 +18,9 @@ extends Node2D
 # ============================================================================
 
 
-@export var grid_width: int = 12
-@export var grid_height: int = 8
-@export var tile_size: float = 64.0
+@export var grid_width: int = 20
+@export var grid_height: int = 12
+@export var tile_size: float = 52.0
 @export var margin: Vector2 = Vector2(24, 24)
 @export var show_badges: bool = true
 

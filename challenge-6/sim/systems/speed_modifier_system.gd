@@ -2,7 +2,7 @@
 extends RefCounted
 class_name SpeedModifierSystem
 
-const SPEED_MODIFIERS := [Comp.WET]
+const SPEED_MODIFIERS := [Comp.WET, Comp.HELD_SPELL]
 
 static func process(world: World, _delta: float) -> void:
 
@@ -14,7 +14,6 @@ static func process(world: World, _delta: float) -> void:
 		for name in SPEED_MODIFIERS:
 			if world.entity_have_component(name, e):
 				v *= (1.0 - world.get_component_value(name, e).slow)
-				
 		speed.value = v
 		
 		

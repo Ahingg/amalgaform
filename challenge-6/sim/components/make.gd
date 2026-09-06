@@ -23,4 +23,4 @@ static func cast_release() -> Dictionary:
 	return {"runes": []}
 
 static func held_spell(spell: Dictionary, runes: Array) -> Dictionary:
-	return {"runes": runes, "recipe": spell}
+	return {"runes": runes, "recipe": spell, "slow": runes.size() * Tuning.SPELL_HOLD_BASE_MODIFIER}

@@ -12,13 +12,14 @@ static var FORM := {
 			Comp.SPEED: Speed.new(Tuning.BULLET_SPEED),
 			Comp.LIFETIME: Countdown.new(Tuning.BULLET_LIFETIME, {Comp.DEAD: {}}),
 			Comp.ON_HIT: Make.on_hit({Comp.DEAD: {}}, {}),
+			Comp.SINGLE_TARGET: {}
 		},
 	Comp.AQUA: func() -> Dictionary:
 		return {
 			Comp.POSITION: Vec2.new(0.0, 0.0),
 			Comp.SIZE: Size.new(Tuning.WATERBALL_SIZE, Tuning.WATERBALL_SIZE),
 			Comp.SPEED: Speed.new(Tuning.WATERBALL_SPEED),
-			Comp.LIFETIME: Countdown.new(Tuning.WATERBALL_LIFETIME, {Comp.DEAD: {}}),
+			Comp.LIFETIME: Countdown.new(Tuning.WATERBALL_LIFETIME, {Comp.BURST: {}}),
 			Comp.ON_HIT: Make.on_hit({Comp.BURST: {}}, {}),
 		},
 	Comp.VENTUS: func() -> Dictionary:
@@ -78,8 +79,8 @@ static func build(runes: Array) -> Dictionary:
 			
 	var first: String = runes[0]
 	var power_first: float = rune_presence[first] / pow(unique, Tuning.SPREAD)
-	if on_self.has(Comp.BURST):
-		on_self[Comp.BURST] = {"inflict": Grammar.PAYLOAD[first].call(power_first)["target"]}
-			
+	#if on_self.has(Comp.BURST):
+		#on_self[Comp.BURST] = {"inflict": Grammar.PAYLOAD[first].call(power_first)["target"]}
+			#
 	recipe[Comp.ON_HIT] = Make.on_hit(on_self, on_target)
 	return recipe

@@ -10,5 +10,6 @@ static func process(world: World, _delta: float) -> void:
 			continue
 			
 		var recipe := Grammar.build(body["runes"])
-		world.attach_component(Comp.HELD_SPELL, e, Make.held_spell(recipe, body["runes"].duplicate(true)))
+		var cast_time: float = Tuning.CAST_BASE + Tuning.CAST_PER_RUNE * body["runes"].size()
+		world.attach_component(Comp.CASTING, e, Countdown.new(cast_time, { Comp.HELD_SPELL: Make.held_spell(recipe, body["runes"].duplicate(true))}))
 		world.detach_component(Comp.CAST_RELEASE, e)

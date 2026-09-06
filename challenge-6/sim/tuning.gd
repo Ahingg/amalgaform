@@ -27,8 +27,8 @@ const SLOW_TAU := 0.8
 # Time to release a spell, in normal time — this is the cost that makes short
 # chants worth discovering.
 #     cast_time = CAST_BASE + CAST_PER_RUNE * rune_count
-const CAST_BASE := 0.25
-const CAST_PER_RUNE := 0.25
+const CAST_BASE := 0.1
+const CAST_PER_RUNE := 0.35
 
 const MAX_RUNES := 4
 
@@ -97,3 +97,6 @@ const WET_DURATION := 2.0
 
 const MELEE_DAMAGE := 55.0
 const MAX_SLOW := 0.9
+
+
+const SPELL_HOLD_BASE_MODIFIER := 0.08

@@ -62,6 +62,10 @@ func _open(world, player: int) -> void:
 	# for a better moment — instead of a stockpile.
 	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
 		return
+	# Juga ditolak selagi rapalan sebelumnya masih terbentuk. Tanpa ini, chant
+	# kedua menimpa Casting yang pertama dan spell pertamanya hilang diam-diam.
+	if world.entity_have_component(ViewConfig.CASTING, player):
+		return
 	# Attached fresh rather than reusing an old one, so a queue can never carry
 	# leftovers from the previous cast.
 	world.attach_component(ViewConfig.CAST_QUEUE, player, {"runes": [], "open": true})
@@ -158,6 +162,9 @@ func _draw() -> void:
 	if player == -1:
 		return
 
+	if world.entity_have_component(ViewConfig.CASTING, player):
+		_draw_casting(world, player)
+
 	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
 		_draw_held(world, player)
 
@@ -229,9 +236,27 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 	draw_rect(Rect2(at, Vector2(width * left, 6)), col, true)
 
 
+# Jeda antara melepas SHIFT dan bola muncul. Digambar supaya ongkos rapalan
+# panjang jadi sesuatu yang KELIHATAN, bukan cuma terasa lambat.
+func _draw_casting(world, player: int) -> void:
+	var c = world.get_component_value(ViewConfig.CASTING, player)
+	if c.duration <= 0.0:
+		return
+	var ratio: float = clampf(c.elapsed / c.duration, 0.0, 1.0)
+	var at := Vector2(48, 534)
+	var w := Tuning.MAX_RUNES * 52.0 + (Tuning.MAX_RUNES - 1) * 8.0
+
+	draw_rect(Rect2(at, Vector2(w, 8)), Color(0, 0, 0, 0.55), true)
+	draw_rect(Rect2(at, Vector2(w * ratio, 8)), Color(0.75, 0.6, 1.0), true)
+	draw_string(_font, at + Vector2(w + 8, 9), "merapal %.2fs" % c.duration,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.5))
+
+
 func _draw_hint(world, player: int) -> void:
 	var text := "Tahan SHIFT untuk merapal"
-	if world.entity_have_component(ViewConfig.HELD_SPELL, player):
+	if world.entity_have_component(ViewConfig.CASTING, player):
+		text = "Merapal..."
+	elif world.entity_have_component(ViewConfig.HELD_SPELL, player):
 		text = "Bola siap  ·  arahkan mouse  ·  klik kiri untuk melepas"
 	draw_string(_font, Vector2(48, 596), text,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.35))
