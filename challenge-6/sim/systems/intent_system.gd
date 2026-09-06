@@ -17,10 +17,9 @@ static func process(world: World, _delta: float) -> void:
 		var face: Vec2 = world.get_component_value(Comp.FACING, e)
 		var v: Vec2 = world.get_component_value(Comp.VELOCITY, e)
 
-		# TODO: ceili(-0.7) = 0, jadi arah negatif ilang. Trus baris ini nimpa
-		# Facing yang ditulis mouse tiap frame, jadi rebutan.
-		face.x = intent.x
-		face.y = intent.y
+		if world.entity_have_component(Comp.FACE_MOVEMENT, e):
+			face.x = intent.x
+			face.y = intent.y
 
 		v.x = intent.x * speed.value
 		v.y = intent.y * speed.value

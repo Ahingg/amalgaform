@@ -48,6 +48,7 @@ const CAST_RELEASE := "CastRelease"
 const CASTING := "Casting"
 const TIME_SCALE := "TimeScale"
 const FACING := "Facing" 
+const FACE_MOVEMENT := "FaceMovement"
 
 const HELD_SPELL := "HeldSpell"
 const LAUNCH_SPELL := "LaunchSpell"

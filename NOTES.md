@@ -42,7 +42,10 @@ mengganggu jalan ke deadline. Diisi saat ketemu, bukan saat sempat.
 
 ## Ditemukan saat migrasi ke class (6 September)
 
-- **`IntentSystem` dan mouse berebut `Facing`.** `IntentSystem` menulis
+- ~~**`IntentSystem` dan mouse berebut `Facing`.**~~ LUNAS 7 September:
+  penanda `FaceMovement` menentukan siapa yang menulis Facing. Musuh dari arah
+  gerak, player dari mouse. Tidak ada lagi yang benar karena urutan node.
+  (catatan aslinya:) `IntentSystem` menulis
   `face.x = ceili(intent.x)` tiap frame, sementara `player_input` menulis
   `Facing` dari posisi mouse tiap frame juga. Keduanya menimpa satu sama lain.
   Dan `ceili(-0.7)` = 0, jadi arah negatif hilang — bergerak ke kiri memberi

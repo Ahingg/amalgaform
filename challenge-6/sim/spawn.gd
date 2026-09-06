@@ -34,6 +34,7 @@ static func enemy(
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ENEMY, e)
+	world.attach_component(Comp.FACE_MOVEMENT, e)
 	world.attach_component(Comp.FACING, e, Vec2.new(1.0, 0))
 	world.attach_component(Comp.MELEE, e, Make.melee(Make.on_hit({}, {Comp.DAMAGED: Damaged.new(Tuning.MELEE_DAMAGE)})))
 	world.attach_component(Comp.POSITION, e, Vec2.new(x, y))
