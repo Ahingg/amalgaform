@@ -272,7 +272,7 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 		# decides the shape, the rest only decide the contents.
 		if i == 0:
 			draw_string(_font, at + Vector2(1, -6), "FORM",
-				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
 
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
@@ -318,7 +318,7 @@ func _draw_dash(world, player: int) -> void:
 		draw_rect(Rect2(at, Vector2(w, 6)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 		draw_rect(Rect2(at, Vector2(w * ratio, 6)), Color(0.5, 0.55, 0.7), true)
 		draw_string(_font, at + Vector2(w + 8, 7), "dash",
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.35))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 0.8))
 		return
 
 	draw_rect(Rect2(at, Vector2(w, 6)), Color(0.6, 0.85, 1.0, 0.9), true)
@@ -342,7 +342,7 @@ func _draw_casting(world, player: int) -> void:
 	draw_rect(Rect2(at, Vector2(w, 8)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 	draw_rect(Rect2(at, Vector2(w * ratio, 8)), Color(0.75, 0.6, 1.0), true)
 	draw_string(_font, at + Vector2(w + 8, 9), "merapal %.2fs" % c.duration,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.55))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 0.9))
 
 
 func _draw_hint(world, player: int) -> void:

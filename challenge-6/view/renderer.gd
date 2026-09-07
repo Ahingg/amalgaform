@@ -78,6 +78,8 @@ func _ready() -> void:
 	add_child(PlayerInput.new())
 	add_child(CastUI.new())
 	add_child(RoundUI.new())
+	if DemoInput.enabled():
+		add_child(DemoInput.new())
 
 
 func _process(_delta: float) -> void:
@@ -117,8 +119,36 @@ func _draw() -> void:
 		_draw_message("Belum ada entity yang punya Position.")
 		return
 
+	# Urutan gambar itu kedalaman. Dua aturan:
+	#   1. Efek yang menempel di LANTAI (genangan) selalu paling bawah — kalau
+	#      tidak, dia bisa menutupi pemain dan menutupi apa yang harus dihindari.
+	#   2. Sisanya diurutkan dari posisi y, jadi yang lebih dekat ke kamera
+	#      (lebih bawah) menimpa yang lebih jauh. Itu yang bikin tampak atas
+	#      terasa punya kedalaman tanpa satu pun perhitungan tambahan.
+	var ground: Array[int] = []
+	var actors: Array[int] = []
 	for id in ids:
+		if _is_ground_effect(world, id):
+			ground.append(id)
+		else:
+			actors.append(id)
+
+	actors.sort_custom(func(a, b):
+		var pa: Vec2 = world.get_component_value(ViewConfig.POSITION, a)
+		var pb: Vec2 = world.get_component_value(ViewConfig.POSITION, b)
+		return pa.y < pb.y)
+
+	for id in ground:
 		_draw_entity(world, id)
+	for id in actors:
+		_draw_entity(world, id)
+
+
+func _is_ground_effect(world, id: int) -> bool:
+	if not world.entity_have_component(ViewConfig.RUNES, id):
+		return false
+	# Spell tanpa Velocity berarti dia sudah diam di lantai.
+	return not world.entity_have_component(ViewConfig.VELOCITY, id)
 
 
 # --- geometry helpers, shared with the input layer -----------------------------
@@ -246,6 +276,11 @@ func _draw_entity(world, id: int) -> void:
 		draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
 		draw_rect(rect, Color(INK.r, INK.g, INK.b, 0.55), false, 1.5)
 
+	# Kotak tabrakan ikut badge: berguna untuk memeriksa perataan sprite, tapi
+	# tidak ada urusannya dengan pemain.
+	if show_badges:
+		draw_rect(rect, Color(1, 0.2, 0.2, 0.9), false, 2.0)
+
 	# Delay is drawn as a progress bar above the entity.
 	if world.entity_have_component(ViewConfig.DELAY, id):
 		_draw_delay_bar(world, id, top_left, size.x)
@@ -260,8 +295,14 @@ func _draw_entity(world, id: int) -> void:
 		draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(INK.r, INK.g, INK.b, 0.8))
 
+	# Bar HP musuh hanya muncul setelah dia terluka. Empat sampai delapan bar
+	# penuh di layar itu kebisingan: tidak satu pun sedang memberi tahu apa-apa.
+	# Bar pemain selalu tampak — itu nyawa sendiri, selalu relevan.
 	if world.entity_have_component(ViewConfig.HEALTH, id):
-		_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
+		var hp0: Health = world.get_component_value(ViewConfig.HEALTH, id)
+		var is_player0: bool = world.entity_have_component(ViewConfig.PLAYER, id)
+		if is_player0 or hp0.current < hp0.max:
+			_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
 
 	if show_badges:
 		var badges := _component_badges(world, id)
@@ -349,8 +390,12 @@ func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
 		# Bola air yang belum pecah masih punya Velocity; genangan sudah diam.
 		var is_puddle: bool = not world.entity_have_component(ViewConfig.VELOCITY, id)
 		if is_puddle:
+			# Lebih transparan daripada tokoh: genangan itu keadaan lantai, dan
+			# kalau dia sepekat karakter, mata berhenti bisa memisahkan mana
+			# yang harus dihindari dari mana yang cuma latar.
+			var pt := Color(tint.r, tint.g, tint.b, 0.55)
 			for layer in Sprites.puddle_layers(t):
-				_blit(layer, rect, Sprites.PUDDLE_SCALE, false, tint)
+				_blit(layer, rect, Sprites.PUDDLE_SCALE, false, pt)
 			return true
 		for layer in Sprites.fireball_layers(t):
 			_blit(layer, rect, Sprites.SPELL_SCALE, false, tint)
@@ -409,18 +454,24 @@ func _blit(texture: Texture2D, box: Rect2, scale: float, flip: bool, tint: Color
 	var cx: float = c.position.x + c.size.x * 0.5
 	var cy: float = c.position.y + c.size.y
 
-	# Saat dicerminkan, isi gambar ikut pindah ke seberang kanvas. Kalau
-	# jangkarnya tidak ikut dicerminkan, karakternya melompat ke samping tiap
-	# kali berbalik arah.
-	var anchor_x: float = (1.0 - cx) if flip else cx
-	var at := Vector2(box.position.x + box.size.x * 0.5 - side * anchor_x,
+	var at := Vector2(box.position.x + box.size.x * 0.5 - side * cx,
 		box.position.y + box.size.y - side * cy)
-
 	var dst := Rect2(at, Vector2(side, side))
-	if flip:
-		dst.position.x += dst.size.x
-		dst.size.x = -dst.size.x
+
+	if not flip:
+		draw_texture_rect(texture, dst, false, tint)
+		return
+
+	# draw_texture_rect TIDAK mendukung lebar negatif untuk mencerminkan — dia
+	# mengabaikan tandanya dan tetap menggambar ke kanan, jadi sprite yang
+	# menghadap kiri melenceng persis selebar dirinya sendiri.
+	#
+	# Dicerminkan lewat matriks, di sumbu tegak yang lewat tengah kotak
+	# tabrakan, supaya posisinya tidak ikut bergeser.
+	var axis: float = box.position.x + box.size.x * 0.5
+	draw_set_transform_matrix(Transform2D(Vector2(-1, 0), Vector2(0, 1), Vector2(axis * 2.0, 0)))
 	draw_texture_rect(texture, dst, false, tint)
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 # Satu cincin per rune yang sedang diantrikan, tiap lapis berputar dengan
@@ -469,7 +520,7 @@ func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
 	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(INK.r, INK.g, INK.b, 0.35), true)
 	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.55, 0.72, 0.50), true)
 	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(hp.max)],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(INK.r, INK.g, INK.b, 0.6))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(LINE.r, LINE.g, LINE.b, 0.7))
 
 
 func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: Color) -> void:
