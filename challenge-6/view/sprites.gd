@@ -107,6 +107,58 @@ static func rune_mark(rune: String) -> Texture2D:
 	return tex("runes/runes_%s_mark.png" % rune.to_lower())
 
 
+# --- spell ------------------------------------------------------------------
+
+const SPELL_SCALE := 2.6      # peluru: kecil, jadi butuh perbesaran lebih
+const PUDDLE_SCALE := 1.5
+const BURST_SCALE := 1.25
+
+# Bola api bertumpuk: bg -> dua lapis berdenyut -> fg. Dua lapis tengah punya
+# dua frame masing-masing, jadi apinya bergolak tanpa perlu spritesheet penuh.
+static func fireball_layers(t: float) -> Array:
+	var a := 1 if fmod(t * 9.0, 2.0) < 1.0 else 2
+	var b := 1 if fmod(t * 7.0 + 0.5, 2.0) < 1.0 else 2
+	return [
+		tex("fireball/bg.png"),
+		tex("fireball/layer1f%d.png" % a),
+		tex("fireball/layer2f%d.png" % b),
+		tex("fireball/fg.png"),
+	]
+
+
+# Genangan: alas tetap, riak dan sorotan bergantian pelan supaya airnya
+# kelihatan bergerak tanpa gambarnya berubah bentuk.
+static func puddle_layers(t: float) -> Array:
+	var r := 1 if fmod(t * 2.2, 2.0) < 1.0 else 2
+	var h := 1 if fmod(t * 1.7 + 0.7, 2.0) < 1.0 else 2
+	return [
+		tex("puddle/base.png"),
+		tex("puddle/ripple%d.png" % r),
+		tex("puddle/highlight%d.png" % h),
+	]
+
+
+# Ledakan cuma hidup 0.3 detik, jadi dua frame itu pas: satu untuk mengembang,
+# satu untuk memudar. Dipilih dari umurnya sendiri, bukan dari jam.
+static func burst_frame(ratio: float) -> Texture2D:
+	return tex("burst/burst%d.png" % (1 if ratio < 0.45 else 2))
+
+
+# --- bola di tangan ---------------------------------------------------------
+
+static func held_frame(t: float) -> Texture2D:
+	var i := int(fmod(t * 6.0, 3.0)) + 1
+	return tex("held/frame%d.png" % i)
+
+
+static func held_core() -> Texture2D:
+	return tex("held/core.png")
+
+
+static func held_support() -> Texture2D:
+	return tex("held/support_floating.png")
+
+
 # --- lingkaran rapalan ------------------------------------------------------
 
 static func cast_circle(rune: String) -> Texture2D:

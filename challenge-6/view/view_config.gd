@@ -27,6 +27,9 @@ const CAST_QUEUE := "CastQueue"
 const CAST_RELEASE := "CastRelease"
 const HELD_SPELL := "HeldSpell"
 const CASTING := "Casting"
+const RUNES := "Runes"
+const VELOCITY := "Velocity"
+const LIFETIME := "Lifetime"
 const ROUND := "Round"
 const WON := "Won"
 const ROUND_WAVE := "RoundWave"
@@ -78,7 +81,7 @@ const BADGE_ORDER := [
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
 	"Machine", "Recipe", "Lifetime", "Dead", 
 	"Player", "Enemy", "MoveIntent", "Facing", "HeldSpell", "Chase",
-	"Ignis", "Aqua", "Ventus", "Damage", "Wet", "Knocked", "Dash", "DashCooldown", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
+	"Ignis", "Aqua", "Ventus", "Runes", "Damage", "Wet", "Knocked", "Dash", "DashCooldown", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
 ]
 
 

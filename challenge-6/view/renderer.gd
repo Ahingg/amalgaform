@@ -245,10 +245,10 @@ func _draw_aim(world, id: int, center: Vector2) -> void:
 func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 	var is_player: bool = world.entity_have_component(ViewConfig.PLAYER, id)
 	var is_enemy: bool = world.entity_have_component(ViewConfig.ENEMY, id)
-	if not (is_player or is_enemy):
-		return false
-
 	var t: float = float(Time.get_ticks_msec()) / 1000.0
+
+	if not (is_player or is_enemy):
+		return _draw_spell(world, id, rect, t)
 
 	if is_player:
 		var moving := false
@@ -283,6 +283,58 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, eflip, rim)
 	_blit(etex, rect, Sprites.ENEMY_SCALE, eflip, Color(SHADOW.r, SHADOW.g, SHADOW.b, alpha))
 	return true
+
+
+# Spell digambar dari daftar rune yang membentuknya. runes[0] menentukan wujud
+# (jadi sprite mana yang dipakai); seluruh daftar menentukan warnanya, jadi
+# warna spell menunjukkan ISInya, bukan cuma bentuknya.
+func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
+	if not world.entity_have_component(ViewConfig.RUNES, id):
+		return false
+	var runes: Array = world.get_component_value(ViewConfig.RUNES, id)
+	if runes.is_empty():
+		return false
+
+	var tint := _blend_runes(runes)
+	var form: String = String(runes[0]).to_lower()
+
+	if form == "aqua":
+		# Bola air yang belum pecah masih punya Velocity; genangan sudah diam.
+		var is_puddle: bool = not world.entity_have_component(ViewConfig.VELOCITY, id)
+		if is_puddle:
+			for layer in Sprites.puddle_layers(t):
+				_blit(layer, rect, Sprites.PUDDLE_SCALE, false, tint)
+			return true
+		for layer in Sprites.fireball_layers(t):
+			_blit(layer, rect, Sprites.SPELL_SCALE, false, tint)
+		return true
+
+	if form == "ventus":
+		var ratio := 0.0
+		if world.entity_have_component(ViewConfig.LIFETIME, id):
+			var lt: Countdown = world.get_component_value(ViewConfig.LIFETIME, id)
+			if lt.duration > 0.0:
+				ratio = clampf(lt.elapsed / lt.duration, 0.0, 1.0)
+		_blit(Sprites.burst_frame(ratio), rect, Sprites.BURST_SCALE, false,
+			Color(tint.r, tint.g, tint.b, 1.0 - ratio * 0.5))
+		return true
+
+	for layer in Sprites.fireball_layers(t):
+		_blit(layer, rect, Sprites.SPELL_SCALE, false, tint)
+	return true
+
+
+# Rata-rata warna semua rune di dalamnya. Rune kembar menariknya lebih kuat ke
+# warnanya sendiri, jadi "api api" lebih merah daripada "api air".
+func _blend_runes(runes: Array) -> Color:
+	var r := 0.0
+	var g := 0.0
+	var b := 0.0
+	for rune in runes:
+		var c: Color = ViewConfig.color_of(String(rune))
+		r += c.r; g += c.g; b += c.b
+	var n := float(runes.size())
+	return Color(r / n, g / n, b / n)
 
 
 # Cermin kiri-kanan mengikuti arah hadap. Cuma dicerminkan, tidak diputar —
