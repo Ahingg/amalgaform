@@ -225,7 +225,7 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 			draw_rect(rect, Color(col.r, col.g, col.b, 0.8), true)
 			draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6), false, 1.5)
 			draw_string(_font, at + Vector2(7, 32), rune.substr(0, 2).to_upper(),
-				HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.95, 0.93, 0.88))
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.12, 0.11, 0.14))
 
 		# The first slot is marked because it is structurally different: it
 		# decides the shape, the rest only decide the contents.

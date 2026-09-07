@@ -18,10 +18,23 @@ extends Node2D
 # ============================================================================
 
 
-# Dunia monokrom, sihir satu-satunya yang berwarna. Kertas dan tinta dipakai
-# untuk semua yang bukan spell, jadi mata langsung tertarik ke mekanik inti.
-const PAPER := Color(0.90, 0.87, 0.80)
-const INK := Color(0.13, 0.12, 0.14)
+# Dunia gelap, dan pemain satu-satunya yang terang.
+#
+# Nilai ditumpuk begini: latar di TENGAH, dua ekstrem dipakai untuk yang harus
+# ketemu cepat. Pemain hampir putih, musuh hampir hitam — dua-duanya menonjol
+# dari latar, dan pemain tidak pernah hilang di antara kerumunan musuh.
+#
+# Kalau latarnya terang, musuh hitam menang telak dan pemain putih justru
+# tenggelam. Itu yang terjadi di versi kertas.
+const BG := Color(0.16, 0.15, 0.19)          # latar, nilai tengah-gelap
+const ARENA := Color(0.21, 0.20, 0.25)       # lantai arena, sedikit lebih terang
+const LINE := Color(0.86, 0.84, 0.80)        # teks, garis tepi, bingkai
+const FILL := Color(0.97, 0.96, 0.93)        # isi badan pemain
+const SHADOW := Color(0.06, 0.05, 0.08)      # musuh: hampir hitam
+
+# Nama lama dipertahankan supaya berkas lain tidak perlu diubah semuanya.
+const PAPER := BG
+const INK := LINE
 
 @export var grid_width: int = 20
 @export var grid_height: int = 12
@@ -126,14 +139,14 @@ func _draw_grid() -> void:
 	# Seluruh jendela adalah halaman, bukan cuma arenanya. Tanpa ini ada pita
 	# abu-abu di bawah arena tempat panel duduk, dan itu terbaca sebagai belum
 	# jadi, bukan sebagai pilihan.
-	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), PAPER, true)
+	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), BG, true)
 
 	var w := grid_width * tile_size
 	var h := grid_height * tile_size
 
 	# Arena sedikit lebih gelap dari halaman, plus garis tepi tinta — supaya
 	# batas lapangan jelas tanpa perlu dinding yang digambar.
-	draw_rect(Rect2(margin, Vector2(w, h)), PAPER.darkened(0.05), true)
+	draw_rect(Rect2(margin, Vector2(w, h)), ARENA, true)
 
 	var line_color := Color(INK.r, INK.g, INK.b, 0.10)
 	for i in range(grid_width + 1):
@@ -179,7 +192,10 @@ func _draw_entity(world, id: int) -> void:
 		var t: float = inv.elapsed
 		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
 
-	if not _draw_sprite(world, id, rect, alpha):
+	# Sprite digambar penuh; alpha 0.85 itu sisa dari zaman kotak dan bikin isi
+	# putih pemain turun jadi abu-abu. Kedip i-frame tetap lewat.
+	var sprite_alpha: float = 1.0 if alpha > 0.5 else alpha
+	if not _draw_sprite(world, id, rect, sprite_alpha):
 		draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
 		draw_rect(rect, Color(INK.r, INK.g, INK.b, 0.55), false, 1.5)
 
@@ -249,14 +265,23 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 			_draw_cast_circles(world, id, rect, t)
 
 		var pair: Array = Sprites.player_pose(moving, casting)
-		_blit(pair[0], rect, Sprites.PLAYER_SCALE, _facing_flip(world, id),
-			Color(0.97, 0.96, 0.93, alpha))          # isi terang: pemain satu-satunya yang bukan tinta
-		_blit(pair[1], rect, Sprites.PLAYER_SCALE, _facing_flip(world, id),
-			Color(INK.r, INK.g, INK.b, alpha))
+		var flip := _facing_flip(world, id)
+		# Garis jadi acuan untuk keduanya, supaya isi tidak lepas dari garisnya.
+		var align := Sprites.content_rect(pair[1])
+		# Isi putih, GARIS tetap gelap. Kalau garisnya ikut terang, coretan tinta
+		# di dalam badan hilang dan figurnya jadi satu gumpalan pucat.
+		_blit(pair[0], rect, Sprites.PLAYER_SCALE, flip, Color(FILL.r, FILL.g, FILL.b, alpha), align)
+		_blit(pair[1], rect, Sprites.PLAYER_SCALE, flip, Color(SHADOW.r, SHADOW.g, SHADOW.b, alpha), align)
 		return true
 
-	_blit(Sprites.enemy_walk(id, t), rect, Sprites.ENEMY_SCALE,
-		_facing_flip(world, id), Color(INK.r, INK.g, INK.b, alpha))
+	# Musuh hampir hitam, tapi diberi tepi terang tipis: siluet hitam pekat di
+	# latar gelap gampang lumer jadi satu massa saat berkerumun.
+	var etex := Sprites.enemy_walk(id, t)
+	var eflip := _facing_flip(world, id)
+	var rim := Color(LINE.r, LINE.g, LINE.b, alpha * 0.30)
+	for off in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 2)]:
+		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, eflip, rim)
+	_blit(etex, rect, Sprites.ENEMY_SCALE, eflip, Color(SHADOW.r, SHADOW.g, SHADOW.b, alpha))
 	return true
 
 
@@ -272,16 +297,26 @@ func _facing_flip(world, id: int) -> bool:
 # Sprite dijangkar di KAKI (tengah-bawah kotak tabrakan), bukan di tengah.
 # Perataannya memakai kotak ISI gambar, bukan kanvasnya — figur yang digambar
 # agak ke pinggir kanvas tetap berdiri pas di atas kotak tabrakannya.
-func _blit(texture: Texture2D, box: Rect2, scale: float, flip: bool, tint: Color) -> void:
+# `align` memaksa perataan memakai kotak isi milik tekstur LAIN. Dipakai untuk
+# pasangan isi+garis: keduanya punya kotak isi sendiri yang beda beberapa
+# piksel, dan kalau masing-masing diratakan sendiri, isinya melenceng dari
+# garisnya. Satu acuan untuk keduanya.
+func _blit(texture: Texture2D, box: Rect2, scale: float, flip: bool, tint: Color,
+		align: Rect2 = Rect2()) -> void:
 	if texture == null:
 		return
-	var c := Sprites.content_rect(texture)
+	var c := align if align.size.x > 0.0 else Sprites.content_rect(texture)
 	var side: float = box.size.x * scale
-	# Geser kanvas supaya tengah-bawah ISI yang jatuh di tengah-bawah kotak.
 	var cx: float = c.position.x + c.size.x * 0.5
 	var cy: float = c.position.y + c.size.y
-	var at := Vector2(box.position.x + box.size.x * 0.5 - side * cx,
+
+	# Saat dicerminkan, isi gambar ikut pindah ke seberang kanvas. Kalau
+	# jangkarnya tidak ikut dicerminkan, karakternya melompat ke samping tiap
+	# kali berbalik arah.
+	var anchor_x: float = (1.0 - cx) if flip else cx
+	var at := Vector2(box.position.x + box.size.x * 0.5 - side * anchor_x,
 		box.position.y + box.size.y - side * cy)
+
 	var dst := Rect2(at, Vector2(side, side))
 	if flip:
 		dst.position.x += dst.size.x
@@ -312,10 +347,17 @@ func _draw_cast_circles(world, id: int, box: Rect2, t: float) -> void:
 		var spin: float = t * (0.6 + 0.35 * i) * (1.0 if i % 2 == 0 else -1.0)
 		var s: float = side * (1.0 - 0.16 * i)
 
-		draw_set_transform(center, spin, Vector2(1.0, Sprites.RING_SQUASH))
+		# draw_set_transform menyusun basisnya sebagai rotasi * skala, artinya
+		# gambarnya dipipihkan DULU baru diputar — dan cincinnya jadi terlihat
+		# jungkir balik di udara. Yang benar kebalikannya: putar dulu di bidang
+		# lantai, baru proyeksikan jadi elips. Matriksnya disusun tangan.
+		var k: float = Sprites.RING_SQUASH
+		var basis_x := Vector2(cos(spin), k * sin(spin))
+		var basis_y := Vector2(-sin(spin), k * cos(spin))
+		draw_set_transform_matrix(Transform2D(basis_x, basis_y, center))
 		draw_texture_rect(texture, Rect2(Vector2(-s, -s) * 0.5, Vector2(s, s)),
-			false, Color(col.r, col.g, col.b, 0.75))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			false, Color(col.r, col.g, col.b, 0.8))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
@@ -326,7 +368,7 @@ func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
 	var ratio: float = clampf(current / hp.max, 0.0, 1.0)
 
 	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(INK.r, INK.g, INK.b, 0.35), true)
-	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.35, 0.45, 0.32), true)
+	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.55, 0.72, 0.50), true)
 	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(hp.max)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(INK.r, INK.g, INK.b, 0.6))
 

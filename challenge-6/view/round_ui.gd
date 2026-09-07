@@ -67,12 +67,12 @@ func _draw() -> void:
 	# dibersihkan waktu mulai lagi.
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.WON]
 	if not world.get_entities_with_comp(round_q).is_empty():
-		_draw_ended(world, "MENANG", Color(0.20, 0.45, 0.25))
+		_draw_ended(world, "MENANG", Color(0.55, 0.92, 0.55))
 		return
 
 	var player_q: Array[String] = [ViewConfig.PLAYER]
 	if world.get_entities_with_comp(player_q).is_empty():
-		_draw_ended(world, "KALAH", Color(0.65, 0.18, 0.15))
+		_draw_ended(world, "KALAH", Color(1.0, 0.42, 0.35))
 
 
 func _draw_attempt(attempt: int) -> void:
@@ -109,7 +109,7 @@ func _draw_wave(world) -> void:
 
 func _draw_ended(world, text: String, color: Color) -> void:
 	var size := get_viewport_rect().size
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.90, 0.87, 0.80, 0.86), true)
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.10, 0.09, 0.12, 0.86), true)
 
 	var center := size * 0.5
 	draw_string(_font, center + Vector2(-150, -20), text,
