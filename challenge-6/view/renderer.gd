@@ -179,20 +179,23 @@ func _draw_entity(world, id: int) -> void:
 		var t: float = inv.elapsed
 		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
 
-	draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
-	draw_rect(rect, Color(INK.r, INK.g, INK.b, 0.55), false, 1.5)
+	if not _draw_sprite(world, id, rect, alpha):
+		draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
+		draw_rect(rect, Color(INK.r, INK.g, INK.b, 0.55), false, 1.5)
 
 	# Delay is drawn as a progress bar above the entity.
 	if world.entity_have_component(ViewConfig.DELAY, id):
 		_draw_delay_bar(world, id, top_left, size.x)
 
-	# Aim has to be visible or aiming is guesswork — especially now that WASD
-	# does double duty and the direction is not implied by where you are moving.
-	if world.entity_have_component(ViewConfig.FACING, id):
+	# Panah arah cuma untuk player: di sana dia menunjukkan ke mana spell akan
+	# pergi. Di musuh dia cuma coretan tambahan yang meramaikan layar.
+	if world.entity_have_component(ViewConfig.FACING, id) \
+			and world.entity_have_component(ViewConfig.PLAYER, id):
 		_draw_aim(world, id, top_left + size * 0.5)
 
-	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(INK.r, INK.g, INK.b, 0.8))
+	if show_badges:
+		draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(INK.r, INK.g, INK.b, 0.8))
 
 	if world.entity_have_component(ViewConfig.HEALTH, id):
 		_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
@@ -218,6 +221,101 @@ func _draw_aim(world, id: int, center: Vector2) -> void:
 	var side := dir.orthogonal() * tile_size * 0.16
 	draw_line(far, far - dir * tile_size * 0.22 + side, Color(INK.r, INK.g, INK.b, 0.55), 3.0)
 	draw_line(far, far - dir * tile_size * 0.22 - side, Color(INK.r, INK.g, INK.b, 0.55), 3.0)
+
+
+# Menggambar sprite kalau entity ini punya. Balikan false artinya tidak ada
+# sprite yang cocok, dan pemanggil menggambar kotak seperti dulu — jadi entity
+# yang belum punya gambar tetap kelihatan, bukan menghilang.
+func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
+	var is_player: bool = world.entity_have_component(ViewConfig.PLAYER, id)
+	var is_enemy: bool = world.entity_have_component(ViewConfig.ENEMY, id)
+	if not (is_player or is_enemy):
+		return false
+
+	var t: float = float(Time.get_ticks_msec()) / 1000.0
+
+	if is_player:
+		var moving := false
+		if world.entity_have_component(ViewConfig.MOVE_INTENT, id):
+			var mi: Vec2 = world.get_component_value(ViewConfig.MOVE_INTENT, id)
+			moving = absf(mi.x) > 0.01 or absf(mi.y) > 0.01
+		var casting: bool = world.entity_have_component(ViewConfig.CASTING, id)
+		if not casting and world.entity_have_component(ViewConfig.CAST_QUEUE, id):
+			var q: Dictionary = world.get_component_value(ViewConfig.CAST_QUEUE, id)
+			casting = q.get("open", false)
+
+		# Lingkaran rapalan digambar DULU supaya dia ada di lantai, di bawah kaki.
+		if casting:
+			_draw_cast_circles(world, id, rect, t)
+
+		var pair: Array = Sprites.player_pose(moving, casting)
+		_blit(pair[0], rect, Sprites.PLAYER_SCALE, _facing_flip(world, id),
+			Color(0.97, 0.96, 0.93, alpha))          # isi terang: pemain satu-satunya yang bukan tinta
+		_blit(pair[1], rect, Sprites.PLAYER_SCALE, _facing_flip(world, id),
+			Color(INK.r, INK.g, INK.b, alpha))
+		return true
+
+	_blit(Sprites.enemy_walk(id, t), rect, Sprites.ENEMY_SCALE,
+		_facing_flip(world, id), Color(INK.r, INK.g, INK.b, alpha))
+	return true
+
+
+# Cermin kiri-kanan mengikuti arah hadap. Cuma dicerminkan, tidak diputar —
+# figurnya digambar menghadap kamera, jadi memutarnya akan terlihat rebah.
+func _facing_flip(world, id: int) -> bool:
+	if not world.entity_have_component(ViewConfig.FACING, id):
+		return false
+	var f: Vec2 = world.get_component_value(ViewConfig.FACING, id)
+	return f.x < 0.0
+
+
+# Sprite dijangkar di KAKI (tengah-bawah kotak tabrakan), bukan di tengah.
+# Perataannya memakai kotak ISI gambar, bukan kanvasnya — figur yang digambar
+# agak ke pinggir kanvas tetap berdiri pas di atas kotak tabrakannya.
+func _blit(texture: Texture2D, box: Rect2, scale: float, flip: bool, tint: Color) -> void:
+	if texture == null:
+		return
+	var c := Sprites.content_rect(texture)
+	var side: float = box.size.x * scale
+	# Geser kanvas supaya tengah-bawah ISI yang jatuh di tengah-bawah kotak.
+	var cx: float = c.position.x + c.size.x * 0.5
+	var cy: float = c.position.y + c.size.y
+	var at := Vector2(box.position.x + box.size.x * 0.5 - side * cx,
+		box.position.y + box.size.y - side * cy)
+	var dst := Rect2(at, Vector2(side, side))
+	if flip:
+		dst.position.x += dst.size.x
+		dst.size.x = -dst.size.x
+	draw_texture_rect(texture, dst, false, tint)
+
+
+# Satu cincin per rune yang sedang diantrikan, tiap lapis berputar dengan
+# kecepatan berbeda. Warnanya mengikuti rune-nya — jadi lingkaran ini
+# menunjukkan apa yang sedang disusun tanpa pemain perlu melirik panel.
+func _draw_cast_circles(world, id: int, box: Rect2, t: float) -> void:
+	if not world.entity_have_component(ViewConfig.CAST_QUEUE, id):
+		return
+	var q: Dictionary = world.get_component_value(ViewConfig.CAST_QUEUE, id)
+	var runes: Array = q.get("runes", [])
+	if runes.is_empty():
+		return
+
+	var center := Vector2(box.position.x + box.size.x * 0.5,
+		box.position.y + box.size.y * 0.9)
+	var side: float = box.size.x * Sprites.RING_SCALE
+
+	for i in runes.size():
+		var texture := Sprites.cast_circle(runes[i])
+		if texture == null:
+			continue
+		var col: Color = ViewConfig.color_of(runes[i])
+		var spin: float = t * (0.6 + 0.35 * i) * (1.0 if i % 2 == 0 else -1.0)
+		var s: float = side * (1.0 - 0.16 * i)
+
+		draw_set_transform(center, spin, Vector2(1.0, Sprites.RING_SQUASH))
+		draw_texture_rect(texture, Rect2(Vector2(-s, -s) * 0.5, Vector2(s, s)),
+			false, Color(col.r, col.g, col.b, 0.75))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:

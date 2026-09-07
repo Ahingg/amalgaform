@@ -191,7 +191,7 @@ func _draw() -> void:
 
 
 func _draw_runes(origin: Vector2, runes: Array) -> void:
-	var box := Vector2(52, 52)
+	var box := Vector2(58, 58)
 	var gap := 8.0
 
 	for i in Tuning.MAX_RUNES:
@@ -205,10 +205,27 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 
 		var rune: String = runes[i]
 		var col: Color = ViewConfig.color_of(rune)
-		draw_rect(rect, Color(col.r, col.g, col.b, 0.8), true)
-		draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6), false, 1.5)
-		draw_string(_font, at + Vector2(7, 32), rune.substr(0, 2).to_upper(),
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.95, 0.93, 0.88))
+		var stone := Sprites.rune_stone(rune)
+		var mark := Sprites.rune_mark(rune)
+
+		if stone != null and mark != null:
+			# Batu bertinta, tanda berwarna. Tandanya digambar putih di berkasnya
+			# lalu diwarnai di sini, jadi warnanya bisa disetel dan dibuat menyala
+			# tanpa gambarnya digambar ulang.
+			draw_texture_rect(stone, rect, false,
+				Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.92))
+			# Rune terakhir yang masuk berdenyut sebentar, jadi pemain tahu
+			# ketikannya kebaca tanpa perlu menghitung kotak.
+			var glow := 1.0
+			if i == runes.size() - 1:
+				glow = 1.0 + 0.35 * absf(sin(float(Time.get_ticks_msec()) / 140.0))
+			draw_texture_rect(mark, rect, false,
+				Color(col.r * glow, col.g * glow, col.b * glow, 1.0))
+		else:
+			draw_rect(rect, Color(col.r, col.g, col.b, 0.8), true)
+			draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6), false, 1.5)
+			draw_string(_font, at + Vector2(7, 32), rune.substr(0, 2).to_upper(),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.95, 0.93, 0.88))
 
 		# The first slot is marked because it is structurally different: it
 		# decides the shape, the rest only decide the contents.
