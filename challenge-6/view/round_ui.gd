@@ -58,8 +58,7 @@ func _draw() -> void:
 		return
 
 	var attempt: int = main.get("attempt")
-	_draw_attempt(attempt)
-	_draw_wave(world)
+	_draw_top_bar(world, attempt)
 
 	# Menang dan kalah dua-duanya dibaca dari keadaan dunia, bukan dari flag yang
 	# disimpan di sini. Kalah = tidak ada entity ber-Player. Menang = entity
@@ -75,36 +74,41 @@ func _draw() -> void:
 		_draw_ended(world, "KALAH", Color(1.0, 0.42, 0.35))
 
 
-func _draw_attempt(attempt: int) -> void:
-	draw_string(_font, Vector2(48, 34), "Percobaan %d" % attempt,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 17, WorldRenderer.INK * Color(1,1,1,0.65))
+# Bar atas dibagi tiga: percobaan di kiri, gelombang di tengah, waktu di kanan.
+# Semuanya redup — ini informasi yang dilirik sesekali, bukan yang dipelototi.
+func _draw_top_bar(world, attempt: int) -> void:
+	var r := get_parent() as WorldRenderer
+	if r == null:
+		return
+	var vw: float = r.get_viewport_rect().size.x
+	var y := 30.0
+	var dim := Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 1.0)
+	var bright := Color(WorldRenderer.LINE.r, WorldRenderer.LINE.g, WorldRenderer.LINE.b, 0.9)
 
+	draw_string(_font, Vector2(28, y), "PERCOBAAN %d" % attempt,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, dim)
 
-# Nomor gelombang plus berapa musuh yang masih hidup. Tanpa ini pemain tidak
-# punya cara tahu dia sudah sejauh apa, dan gelombang terakhir terasa sama saja
-# dengan gelombang pertama.
-func _draw_wave(world) -> void:
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.ROUND_WAVE]
 	var rounds: Array[int] = world.get_entities_with_comp(round_q)
 	if rounds.is_empty():
 		return
-	var wave = world.get_component_value(ViewConfig.ROUND_WAVE, rounds[0])
 
+	var wave = world.get_component_value(ViewConfig.ROUND_WAVE, rounds[0])
 	var enemy_q: Array[String] = [ViewConfig.ENEMY]
 	var alive: int = world.get_entities_with_comp(enemy_q).size()
-
 	var shown: int = mini(int(wave.value), Tuning.WAVE_COUNT)
-	var line := "Gelombang %d / %d   ·   musuh %d" % [shown, Tuning.WAVE_COUNT, alive]
 
-	# Waktu lari ditampilkan bareng gelombang supaya efisiensi jadi angka, bukan
-	# cuma perasaan. Digabung dengan penghitung percobaan, pemain bisa melihat
-	# dirinya membaik: percobaan ke-12 tapi waktunya separuh percobaan ke-3.
+	var mid := "GELOMBANG %d / %d          MUSUH %d" % [shown, Tuning.WAVE_COUNT, alive]
+	var mw := _font.get_string_size(mid, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
+	draw_string(_font, Vector2(vw * 0.5 - mw * 0.5, y), mid,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, bright)
+
 	if world.entity_have_component(ViewConfig.RUN_TIME, rounds[0]):
 		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
-		line += "   ·   %.1fs" % rt.value
-
-	draw_string(_font, Vector2(210, 34), line,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 17, WorldRenderer.INK * Color(1,1,1,0.65))
+		var right := "%.1fs" % rt.value
+		var rw := _font.get_string_size(right, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
+		draw_string(_font, Vector2(vw - 28.0 - rw, y), right,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 16, dim)
 
 
 func _draw_ended(world, text: String, color: Color) -> void:

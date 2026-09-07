@@ -26,11 +26,13 @@ extends Node2D
 #
 # Kalau latarnya terang, musuh hitam menang telak dan pemain putih justru
 # tenggelam. Itu yang terjadi di versi kertas.
-const BG := Color(0.16, 0.15, 0.19)          # latar, nilai tengah-gelap
-const ARENA := Color(0.21, 0.20, 0.25)       # lantai arena, sedikit lebih terang
-const LINE := Color(0.86, 0.84, 0.80)        # teks, garis tepi, bingkai
-const FILL := Color(0.97, 0.96, 0.93)        # isi badan pemain
-const SHADOW := Color(0.06, 0.05, 0.08)      # musuh: hampir hitam
+const BG := Color(0.075, 0.070, 0.095)       # di luar arena: paling gelap
+const ARENA := Color(0.155, 0.150, 0.190)    # lantai arena
+const ARENA_EDGE := Color(0.105, 0.100, 0.130)  # tepi arena, buat vignette
+const LINE := Color(0.88, 0.86, 0.83)        # teks utama, bingkai
+const DIM := Color(0.52, 0.50, 0.56)         # teks sekunder
+const FILL := Color(0.98, 0.97, 0.95)        # isi badan pemain
+const SHADOW := Color(0.045, 0.040, 0.060)   # musuh: hampir hitam
 
 # Nama lama dipertahankan supaya berkas lain tidak perlu diubah semuanya.
 const PAPER := BG
@@ -38,14 +40,33 @@ const INK := LINE
 
 @export var grid_width: int = 20
 @export var grid_height: int = 12
-@export var tile_size: float = 52.0
-@export var margin: Vector2 = Vector2(24, 24)
 # Daftar komponen di bawah tiap entity: alat debug ECS paling berguna selama
 # ngoding, tapi bikin layar berantakan dan tidak terbaca. Default mati, F1 untuk
 # menyalakan.
 @export var show_badges: bool = false
 
+# Ruang yang disisakan untuk HUD di atas dan di bawah arena. HUD digambar
+# MENUMPUK di atas latar, bukan di pita terpisah — pita bikin arenanya menyusut
+# dan menyisakan pelataran kosong yang terbaca sebagai belum jadi.
+const TOP_BAR := 46.0
+const BOTTOM_BAR := 150.0
+const SIDE_PAD := 28.0
+
+# Dihitung ulang tiap gambar dari ukuran jendela, jadi arenanya selalu mengisi
+# dan tidak pernah ketinggalan kalau jendelanya diubah.
+var tile_size: float = 52.0
+var margin: Vector2 = Vector2(24, 24)
+
 var _font: Font
+
+
+func _fit_arena() -> void:
+	var vp := get_viewport_rect().size
+	var usable := Vector2(vp.x - SIDE_PAD * 2.0, vp.y - TOP_BAR - BOTTOM_BAR)
+	tile_size = floorf(minf(usable.x / float(grid_width), usable.y / float(grid_height)))
+	var w := tile_size * grid_width
+	var h := tile_size * grid_height
+	margin = Vector2((vp.x - w) * 0.5, TOP_BAR + (usable.y - h) * 0.5)
 
 
 func _ready() -> void:
@@ -66,13 +87,22 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo \
-			and event.keycode == KEY_F1:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if event.keycode == KEY_F1:
 		show_badges = not show_badges
+		get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_F11:
+		# Untuk presentasi: jendela kecil di proyektor tidak terbaca.
+		var w := DisplayServer.window_get_mode()
+		DisplayServer.window_set_mode(
+			DisplayServer.WINDOW_MODE_WINDOWED if w == DisplayServer.WINDOW_MODE_FULLSCREEN
+			else DisplayServer.WINDOW_MODE_FULLSCREEN)
 		get_viewport().set_input_as_handled()
 
 
 func _draw() -> void:
+	_fit_arena()
 	_draw_grid()
 
 	var world = _get_world()
@@ -98,6 +128,16 @@ func _draw() -> void:
 # Dipakai lapisan UI supaya panel selalu duduk di bawah arena, berapa pun
 # ukuran gridnya. Sebelumnya koordinatnya angka mati dari grid 12x8 yang lama,
 # jadi panelnya menimpa lapangan begitu arena digedein.
+# Titik-titik jangkar HUD. Semua dihitung dari jendela, bukan dari arena, jadi
+# HUD tetap menempel di tepi layar berapa pun ukuran arenanya.
+func hud_bottom() -> float:
+	return get_viewport_rect().size.y
+
+
+func hud_center_x() -> float:
+	return get_viewport_rect().size.x * 0.5
+
+
 func ui_origin() -> Vector2:
 	return Vector2(margin.x, margin.y + grid_height * tile_size + 20.0)
 
@@ -136,19 +176,26 @@ func _get_world():
 # --- drawing -----------------------------------------------------------------
 
 func _draw_grid() -> void:
-	# Seluruh jendela adalah halaman, bukan cuma arenanya. Tanpa ini ada pita
-	# abu-abu di bawah arena tempat panel duduk, dan itu terbaca sebagai belum
-	# jadi, bukan sebagai pilihan.
 	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), BG, true)
 
 	var w := grid_width * tile_size
 	var h := grid_height * tile_size
+	var arena := Rect2(margin, Vector2(w, h))
 
-	# Arena sedikit lebih gelap dari halaman, plus garis tepi tinta — supaya
-	# batas lapangan jelas tanpa perlu dinding yang digambar.
-	draw_rect(Rect2(margin, Vector2(w, h)), ARENA, true)
+	draw_rect(arena, ARENA, true)
 
-	var line_color := Color(INK.r, INK.g, INK.b, 0.10)
+	# Vignette: tepi arena diredupkan berlapis supaya mata tertarik ke tengah
+	# dan batas lapangan terasa tanpa perlu dinding yang digambar.
+	var layers := 7
+	for i in layers:
+		var f := float(i) / float(layers)
+		var inset := f * tile_size * 1.6
+		var a := 0.055 * (1.0 - f)
+		draw_rect(Rect2(arena.position + Vector2(inset, inset),
+			arena.size - Vector2(inset, inset) * 2.0),
+			Color(ARENA_EDGE.r, ARENA_EDGE.g, ARENA_EDGE.b, a), false, tile_size * 0.34)
+
+	var line_color := Color(LINE.r, LINE.g, LINE.b, 0.055)
 	for i in range(grid_width + 1):
 		var x := margin.x + i * tile_size
 		draw_line(Vector2(x, margin.y), Vector2(x, margin.y + h), line_color, 1.0)
@@ -156,7 +203,7 @@ func _draw_grid() -> void:
 		var y := margin.y + j * tile_size
 		draw_line(Vector2(margin.x, y), Vector2(margin.x + w, y), line_color, 1.0)
 
-	draw_rect(Rect2(margin, Vector2(w, h)), Color(INK.r, INK.g, INK.b, 0.35), false, 2.0)
+	draw_rect(arena, Color(LINE.r, LINE.g, LINE.b, 0.22), false, 2.0)
 
 
 func _draw_entity(world, id: int) -> void:

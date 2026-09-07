@@ -83,4 +83,5 @@ static func build(runes: Array) -> Dictionary:
 		#on_self[Comp.BURST] = {"inflict": Grammar.PAYLOAD[first].call(power_first)["target"]}
 			#
 	recipe[Comp.ON_HIT] = Make.on_hit(on_self, on_target)
+	recipe[Comp.RUNES] = runes.duplicate()
 	return recipe

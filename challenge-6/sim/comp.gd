@@ -52,6 +52,7 @@ const FACE_MOVEMENT := "FaceMovement"
 
 const HELD_SPELL := "HeldSpell"
 const LAUNCH_SPELL := "LaunchSpell"
+const RUNES := "Runes"
 
 const DAMAGE := "Damage"
 const FORCE := "Force" 
