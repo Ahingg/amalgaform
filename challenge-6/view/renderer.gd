@@ -18,11 +18,19 @@ extends Node2D
 # ============================================================================
 
 
+# Dunia monokrom, sihir satu-satunya yang berwarna. Kertas dan tinta dipakai
+# untuk semua yang bukan spell, jadi mata langsung tertarik ke mekanik inti.
+const PAPER := Color(0.90, 0.87, 0.80)
+const INK := Color(0.13, 0.12, 0.14)
+
 @export var grid_width: int = 20
 @export var grid_height: int = 12
 @export var tile_size: float = 52.0
 @export var margin: Vector2 = Vector2(24, 24)
-@export var show_badges: bool = true
+# Daftar komponen di bawah tiap entity: alat debug ECS paling berguna selama
+# ngoding, tapi bikin layar berantakan dan tidak terbaca. Default mati, F1 untuk
+# menyalakan.
+@export var show_badges: bool = false
 
 var _font: Font
 
@@ -44,19 +52,26 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo \
+			and event.keycode == KEY_F1:
+		show_badges = not show_badges
+		get_viewport().set_input_as_handled()
+
+
 func _draw() -> void:
 	_draw_grid()
 
 	var world = _get_world()
 	if world == null:
-		_draw_message("No World on Main yet. Renderer is waiting.")
+		_draw_message("Menunggu World.")
 		return
 
 	var query: Array[String] = [ViewConfig.POSITION]
 	var ids: Array[int] = world.get_entities_with_comp(query)
 
 	if ids.is_empty():
-		_draw_message("No entity has the \"%s\" component yet." % ViewConfig.POSITION)
+		_draw_message("Belum ada entity yang punya Position.")
 		return
 
 	for id in ids:
@@ -66,6 +81,13 @@ func _draw() -> void:
 # --- geometry helpers, shared with the input layer -----------------------------
 # The UI must not recompute tile maths on its own; if the grid moves, only this
 # file should need to know.
+
+# Dipakai lapisan UI supaya panel selalu duduk di bawah arena, berapa pun
+# ukuran gridnya. Sebelumnya koordinatnya angka mati dari grid 12x8 yang lama,
+# jadi panelnya menimpa lapangan begitu arena digedein.
+func ui_origin() -> Vector2:
+	return Vector2(margin.x, margin.y + grid_height * tile_size + 20.0)
+
 
 func tile_at(screen_pos: Vector2) -> Vector2i:
 	var local := screen_pos - margin
@@ -101,18 +123,27 @@ func _get_world():
 # --- drawing -----------------------------------------------------------------
 
 func _draw_grid() -> void:
+	# Seluruh jendela adalah halaman, bukan cuma arenanya. Tanpa ini ada pita
+	# abu-abu di bawah arena tempat panel duduk, dan itu terbaca sebagai belum
+	# jadi, bukan sebagai pilihan.
+	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), PAPER, true)
+
 	var w := grid_width * tile_size
 	var h := grid_height * tile_size
 
-	draw_rect(Rect2(margin, Vector2(w, h)), Color(0.11, 0.12, 0.15), true)
+	# Arena sedikit lebih gelap dari halaman, plus garis tepi tinta — supaya
+	# batas lapangan jelas tanpa perlu dinding yang digambar.
+	draw_rect(Rect2(margin, Vector2(w, h)), PAPER.darkened(0.05), true)
 
-	var line_color := Color(1, 1, 1, 0.07)
+	var line_color := Color(INK.r, INK.g, INK.b, 0.10)
 	for i in range(grid_width + 1):
 		var x := margin.x + i * tile_size
 		draw_line(Vector2(x, margin.y), Vector2(x, margin.y + h), line_color, 1.0)
 	for j in range(grid_height + 1):
 		var y := margin.y + j * tile_size
 		draw_line(Vector2(margin.x, y), Vector2(margin.x + w, y), line_color, 1.0)
+
+	draw_rect(Rect2(margin, Vector2(w, h)), Color(INK.r, INK.g, INK.b, 0.35), false, 2.0)
 
 
 func _draw_entity(world, id: int) -> void:
@@ -133,9 +164,11 @@ func _draw_entity(world, id: int) -> void:
 
 	var color := _color_for(world, id)
 
-	# Tiles touched by this entity (binary occupancy: touching means inside).
-	# Highlighted faintly so you can see when one entity straddles two tiles.
-	_highlight_occupied_tiles(px, py, w, h, color)
+	# Sorot petak yang tersentuh dulunya alat debug untuk keputusan posisi
+	# pecahan. Sekarang cuma bikin kotak pucat yang membingungkan, jadi ikut
+	# badge: mati kecuali F1.
+	if show_badges:
+		_highlight_occupied_tiles(px, py, w, h, color)
 
 	# While the i-frame window is open the entity blinks, so you can see exactly
 	# when it can be hurt again. Blink is driven by the component's own elapsed
@@ -147,7 +180,7 @@ func _draw_entity(world, id: int) -> void:
 		alpha = 0.85 if fmod(t, 0.16) < 0.08 else 0.2
 
 	draw_rect(rect, Color(color.r, color.g, color.b, alpha), true)
-	draw_rect(rect, Color(1, 1, 1, 0.5), false, 1.5)
+	draw_rect(rect, Color(INK.r, INK.g, INK.b, 0.55), false, 1.5)
 
 	# Delay is drawn as a progress bar above the entity.
 	if world.entity_have_component(ViewConfig.DELAY, id):
@@ -159,7 +192,7 @@ func _draw_entity(world, id: int) -> void:
 		_draw_aim(world, id, top_left + size * 0.5)
 
 	draw_string(_font, top_left + Vector2(5, 16), "#%d" % id,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0, 0, 0, 0.75))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(INK.r, INK.g, INK.b, 0.8))
 
 	if world.entity_have_component(ViewConfig.HEALTH, id):
 		_draw_health_bar(world, id, top_left + Vector2(0, size.y + 3), size.x)
@@ -180,11 +213,11 @@ func _draw_aim(world, id: int, center: Vector2) -> void:
 
 	var near := center + dir * tile_size * 0.55
 	var far := center + dir * tile_size * 1.35
-	draw_line(near, far, Color(1, 0.95, 0.75, 0.75), 3.0)
+	draw_line(near, far, Color(INK.r, INK.g, INK.b, 0.55), 3.0)
 	# A small head, so the direction reads at a glance instead of being a stick.
 	var side := dir.orthogonal() * tile_size * 0.16
-	draw_line(far, far - dir * tile_size * 0.22 + side, Color(1, 0.95, 0.75, 0.75), 3.0)
-	draw_line(far, far - dir * tile_size * 0.22 - side, Color(1, 0.95, 0.75, 0.75), 3.0)
+	draw_line(far, far - dir * tile_size * 0.22 + side, Color(INK.r, INK.g, INK.b, 0.55), 3.0)
+	draw_line(far, far - dir * tile_size * 0.22 - side, Color(INK.r, INK.g, INK.b, 0.55), 3.0)
 
 
 func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
@@ -194,10 +227,10 @@ func _draw_health_bar(world, id: int, at: Vector2, width_px: float) -> void:
 	var current: float = hp.current
 	var ratio: float = clampf(current / hp.max, 0.0, 1.0)
 
-	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)
-	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.4, 0.85, 0.35), true)
+	draw_rect(Rect2(at, Vector2(width_px, 5)), Color(INK.r, INK.g, INK.b, 0.35), true)
+	draw_rect(Rect2(at, Vector2(width_px * ratio, 5)), Color(0.35, 0.45, 0.32), true)
 	draw_string(_font, at + Vector2(width_px + 5, 6), "%d/%d" % [int(current), int(hp.max)],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.55))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(INK.r, INK.g, INK.b, 0.6))
 
 
 func _highlight_occupied_tiles(px: float, py: float, w: float, h: float, color: Color) -> void:
@@ -219,7 +252,7 @@ func _draw_delay_bar(world, id: int, top_left: Vector2, width_px: float) -> void
 	var ratio: float = clampf(d.elapsed / d.duration, 0.0, 1.0)
 
 	var bar_top := top_left + Vector2(0, -9)
-	draw_rect(Rect2(bar_top, Vector2(width_px, 5)), Color(0, 0, 0, 0.55), true)
+	draw_rect(Rect2(bar_top, Vector2(width_px, 5)), Color(INK.r, INK.g, INK.b, 0.35), true)
 	draw_rect(Rect2(bar_top, Vector2(width_px * ratio, 5)), Color(0.95, 0.85, 0.3), true)
 
 
@@ -240,4 +273,4 @@ func _component_badges(world, id: int) -> String:
 
 func _draw_message(text: String) -> void:
 	draw_string(_font, margin + Vector2(8, -14), text,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(INK.r, INK.g, INK.b, 0.6))

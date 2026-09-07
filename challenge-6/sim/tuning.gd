@@ -46,7 +46,7 @@ const SLOW_TAU := 0.9
 const CAST_BASE := 0.1
 const CAST_PER_RUNE := 0.35
 
-const MAX_RUNES := 2
+const MAX_RUNES := 4
 
 # Power is split by how many DIFFERENT runes are in the queue, never by how many
 # runes there are:

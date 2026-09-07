@@ -48,8 +48,10 @@ const VENTUS := "Ventus"
 # --- palette -----------------------------------------------------------------
 
 # Order matters: the first component an entity has wins the colour.
+# Hanya rune yang berwarna. Segala yang bukan sihir memakai tinta, supaya
+# mekanik intinya jadi satu-satunya yang menarik mata.
 const COLORS := {
-	"Player": Color(0.95, 0.9, 0.7),
+	"Player": Color(0.13, 0.12, 0.14),
 	"Ignis": Color(0.95, 0.3, 0.2),
 	"Aqua": Color(0.25, 0.6, 1.0),
 	"Ventus": Color(0.4, 0.85, 0.75),
@@ -62,10 +64,11 @@ const COLORS := {
 	"Wind": Color(0.4, 0.85, 0.75),
 	"Damaged": Color(1.0, 0.85, 0.2),
 	"Machine": Color(0.65, 0.55, 0.85),
+	"Enemy": Color(0.28, 0.26, 0.30),
 	"Health": Color(0.55, 0.8, 0.4),
 }
 
-const NEUTRAL := Color(0.75, 0.75, 0.8)
+const NEUTRAL := Color(0.30, 0.28, 0.32)
 
 
 # Component names printed under each entity, so the shape of an entity is

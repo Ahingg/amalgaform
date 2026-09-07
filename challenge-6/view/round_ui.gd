@@ -67,17 +67,17 @@ func _draw() -> void:
 	# dibersihkan waktu mulai lagi.
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.WON]
 	if not world.get_entities_with_comp(round_q).is_empty():
-		_draw_ended(world, "MENANG", Color(0.55, 0.9, 0.5))
+		_draw_ended(world, "MENANG", Color(0.20, 0.45, 0.25))
 		return
 
 	var player_q: Array[String] = [ViewConfig.PLAYER]
 	if world.get_entities_with_comp(player_q).is_empty():
-		_draw_ended(world, "KALAH", Color(0.95, 0.35, 0.3))
+		_draw_ended(world, "KALAH", Color(0.65, 0.18, 0.15))
 
 
 func _draw_attempt(attempt: int) -> void:
-	draw_string(_font, Vector2(48, 30), "Percobaan %d" % attempt,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
+	draw_string(_font, Vector2(48, 34), "Percobaan %d" % attempt,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 17, WorldRenderer.INK * Color(1,1,1,0.65))
 
 
 # Nomor gelombang plus berapa musuh yang masih hidup. Tanpa ini pemain tidak
@@ -103,24 +103,24 @@ func _draw_wave(world) -> void:
 		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
 		line += "   ·   %.1fs" % rt.value
 
-	draw_string(_font, Vector2(180, 30), line,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
+	draw_string(_font, Vector2(210, 34), line,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 17, WorldRenderer.INK * Color(1,1,1,0.65))
 
 
 func _draw_ended(world, text: String, color: Color) -> void:
 	var size := get_viewport_rect().size
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.05, 0.05, 0.08, 0.72), true)
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.90, 0.87, 0.80, 0.86), true)
 
 	var center := size * 0.5
-	draw_string(_font, center + Vector2(-80, -10), text,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 42, color)
+	draw_string(_font, center + Vector2(-150, -20), text,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 72, color)
 
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.RUN_TIME]
 	var rounds: Array[int] = world.get_entities_with_comp(round_q)
 	if not rounds.is_empty():
 		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
-		draw_string(_font, center + Vector2(-80, 22), "Waktu %.1f detik" % rt.value,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(1, 1, 1, 0.8))
+		draw_string(_font, center + Vector2(-150, 22), "Waktu %.1f detik" % rt.value,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 22, WorldRenderer.INK * Color(1,1,1,0.9))
 
-	draw_string(_font, center + Vector2(-80, 52), "Tekan R untuk mengulang",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.7))
+	draw_string(_font, center + Vector2(-150, 56), "Tekan R untuk mengulang",
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 18, WorldRenderer.INK * Color(1,1,1,0.7))

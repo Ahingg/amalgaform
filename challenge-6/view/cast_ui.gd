@@ -130,6 +130,11 @@ func _cancel(world, player: int) -> void:
 
 # --- lookups -----------------------------------------------------------------
 
+func _renderer_origin() -> Vector2:
+	var r := get_parent() as WorldRenderer
+	return Vector2(48, 512) if r == null else r.ui_origin()
+
+
 func _get_world():
 	var renderer := get_parent()
 	if renderer == null:
@@ -176,7 +181,7 @@ func _draw() -> void:
 		return
 
 	var runes: Array = q.get("runes", [])
-	var origin := Vector2(48, 560)
+	var origin := _renderer_origin() + Vector2(0, 46)
 
 	if q.has("open_time"):
 		_draw_window_bar(origin + Vector2(0, -26), float(q["open_time"]))
@@ -194,35 +199,35 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 		var rect := Rect2(at, box)
 
 		if i >= runes.size():
-			draw_rect(rect, Color(1, 1, 1, 0.05), true)
-			draw_rect(rect, Color(1, 1, 1, 0.12), false, 1.0)
+			draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.05), true)
+			draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.18), false, 1.0)
 			continue
 
 		var rune: String = runes[i]
 		var col: Color = ViewConfig.color_of(rune)
 		draw_rect(rect, Color(col.r, col.g, col.b, 0.8), true)
-		draw_rect(rect, Color(1, 1, 1, 0.65), false, 1.5)
+		draw_rect(rect, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6), false, 1.5)
 		draw_string(_font, at + Vector2(7, 32), rune.substr(0, 2).to_upper(),
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0, 0, 0, 0.8))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(0.95, 0.93, 0.88))
 
 		# The first slot is marked because it is structurally different: it
 		# decides the shape, the rest only decide the contents.
 		if i == 0:
 			draw_string(_font, at + Vector2(1, -6), "FORM",
-				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.55))
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
 
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
 	if runes.is_empty():
 		draw_string(_font, at, "J api  ·  K air  ·  L angin  ·  WASD arah  ·  ESC batal",
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.4))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
 		return
 
 	var form: String = ViewConfig.FORM_OF.get(runes[0], "?")
 	var cast_time: float = Tuning.CAST_BASE + Tuning.CAST_PER_RUNE * runes.size()
 
 	draw_string(_font, at, "%s   ·   lepas %.2fs" % [form, cast_time],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 0.92, 0.7, 0.9))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.85))
 
 
 # Shows how much of the useful slow-motion window is left. Filled while time is
@@ -233,7 +238,7 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 	var left: float = clampf(1.0 - (scale - Tuning.SLOW_MIN) / (1.0 - Tuning.SLOW_MIN), 0.0, 1.0)
 	var width := Tuning.MAX_RUNES * 52.0 + (Tuning.MAX_RUNES - 1) * 8.0
 
-	draw_rect(Rect2(at, Vector2(width, 6)), Color(0, 0, 0, 0.5), true)
+	draw_rect(Rect2(at, Vector2(width, 6)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 	var col := Color(0.6, 0.9, 1.0).lerp(Color(1.0, 0.35, 0.3), 1.0 - left)
 	draw_rect(Rect2(at, Vector2(width * left, 6)), col, true)
 
@@ -242,7 +247,7 @@ func _draw_window_bar(at: Vector2, open_time: float) -> void:
 # kenapa tidak terjadi apa-apa — dan sekarang niatnya memang ditolak, bukan
 # ditunda, jadi tidak ada umpan balik lain yang menjelaskannya.
 func _draw_dash(world, player: int) -> void:
-	var at := Vector2(48, 512)
+	var at := _renderer_origin() + Vector2(0, 4)
 	var w := 96.0
 
 	if world.entity_have_component(ViewConfig.DASH_COOLDOWN, player):
@@ -250,15 +255,15 @@ func _draw_dash(world, player: int) -> void:
 		var ratio: float = 0.0
 		if cd.duration > 0.0:
 			ratio = clampf(cd.elapsed / cd.duration, 0.0, 1.0)
-		draw_rect(Rect2(at, Vector2(w, 6)), Color(0, 0, 0, 0.5), true)
+		draw_rect(Rect2(at, Vector2(w, 6)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 		draw_rect(Rect2(at, Vector2(w * ratio, 6)), Color(0.5, 0.55, 0.7), true)
 		draw_string(_font, at + Vector2(w + 8, 7), "dash",
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.3))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.35))
 		return
 
 	draw_rect(Rect2(at, Vector2(w, 6)), Color(0.6, 0.85, 1.0, 0.9), true)
 	draw_string(_font, at + Vector2(w + 8, 7), "dash siap  ·  SPACE",
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.55))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.65))
 
 
 # Jeda antara melepas SHIFT dan bola muncul. Digambar supaya ongkos rapalan
@@ -268,13 +273,13 @@ func _draw_casting(world, player: int) -> void:
 	if c.duration <= 0.0:
 		return
 	var ratio: float = clampf(c.elapsed / c.duration, 0.0, 1.0)
-	var at := Vector2(48, 534)
+	var at := _renderer_origin() + Vector2(0, 26)
 	var w := Tuning.MAX_RUNES * 52.0 + (Tuning.MAX_RUNES - 1) * 8.0
 
-	draw_rect(Rect2(at, Vector2(w, 8)), Color(0, 0, 0, 0.55), true)
+	draw_rect(Rect2(at, Vector2(w, 8)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 	draw_rect(Rect2(at, Vector2(w * ratio, 8)), Color(0.75, 0.6, 1.0), true)
 	draw_string(_font, at + Vector2(w + 8, 9), "merapal %.2fs" % c.duration,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.5))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.55))
 
 
 func _draw_hint(world, player: int) -> void:
@@ -283,8 +288,28 @@ func _draw_hint(world, player: int) -> void:
 		text = "Merapal..."
 	elif world.entity_have_component(ViewConfig.HELD_SPELL, player):
 		text = "Bola siap  ·  arahkan mouse  ·  klik kiri untuk melepas"
-	draw_string(_font, Vector2(48, 596), text,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1, 0.35))
+	draw_string(_font, _renderer_origin() + Vector2(0, 46), text,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.75))
+	_draw_legend()
+
+
+# Legenda kontrol. Ini jawaban termurah untuk masukan "terlalu kompleks": yang
+# rumit bukan sistemnya, tapi lima langkah input yang tidak pernah dijelaskan
+# ke siapa pun. Ditulis permanen, bukan tutorial bertahap, karena pemain yang
+# lupa di tengah pertarungan tidak akan membuka menu bantuan.
+func _draw_legend() -> void:
+	var at := _renderer_origin() + Vector2(0, 84)
+	var ink := WorldRenderer.INK
+	var dim := Color(ink.r, ink.g, ink.b, 0.42)
+	var lines := [
+		"WASD  bergerak          SPACE  dash",
+		"SHIFT (tahan)  buka rapalan     J / K / L  antrikan rune",
+		"lepas SHIFT  bentuk bola        klik kiri  lepaskan ke arah kursor",
+		"R  ulangi ronde",
+	]
+	for i in lines.size():
+		draw_string(_font, at + Vector2(0, i * 21), lines[i],
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 14, dim)
 
 
 # The orb, and a line to where it will go. Without the line the player has no
@@ -322,4 +347,4 @@ func _draw_held(world, player: int) -> void:
 	draw_circle(orb, 13.0, Color(col.r, col.g, col.b, 0.85))
 	draw_arc(orb, 15.0, 0.0, TAU, 24, Color(1, 1, 1, 0.6), 2.0)
 	draw_string(_font, orb + Vector2(-6, 5), str(runes.size()),
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0, 0, 0, 0.8))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.93, 0.88))
