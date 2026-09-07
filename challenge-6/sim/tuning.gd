@@ -23,8 +23,8 @@ const ENEMIES_BASE := 2.0
 
 
 # DASH VARIABLE
-const DASH_COOLDOWN := 1.0
-const DASH_STRENGTH := 12
+const DASH_COOLDOWN := 2.0
+const DASH_STRENGTH := 16.5
 const DASH_DURATION := 0.15
 
 
@@ -38,7 +38,7 @@ const DASH_DURATION := 0.15
 #   0.4 = tighter, punishes hesitation harder
 #   0.8 = roomier, more forgiving
 const SLOW_MIN := 0.12
-const SLOW_TAU := 0.8
+const SLOW_TAU := 0.9
 
 # Time to release a spell, in normal time — this is the cost that makes short
 # chants worth discovering.
@@ -46,7 +46,7 @@ const SLOW_TAU := 0.8
 const CAST_BASE := 0.1
 const CAST_PER_RUNE := 0.35
 
-const MAX_RUNES := 4
+const MAX_RUNES := 2
 
 # Power is split by how many DIFFERENT runes are in the queue, never by how many
 # runes there are:
@@ -97,7 +97,7 @@ const KNOCKBACK_DURATION := 0.3
 
 # The enemy MUST be slower than the player, otherwise kiting is impossible and
 # the whole casting window stops mattering. Aim for 60-75% of player speed.
-const PLAYER_SPEED := 3.2
+const PLAYER_SPEED := 3.4
 const ENEMY_SPEED := 2.85
 
 
