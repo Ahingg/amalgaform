@@ -353,7 +353,7 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 			_draw_cast_circles(world, id, rect, t)
 
 		var pair: Array = Sprites.player_pose(moving, casting)
-		var flip := _facing_flip(world, id)
+		var flip := _facing_flip(world, id, Sprites.PLAYER_FACES_LEFT)
 		# Garis jadi acuan untuk keduanya, supaya isi tidak lepas dari garisnya.
 		var align := Sprites.content_rect(pair[1])
 		# Isi putih, GARIS tetap gelap. Kalau garisnya ikut terang, coretan tinta
@@ -365,11 +365,15 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 	# Musuh hampir hitam, tapi diberi tepi terang tipis: siluet hitam pekat di
 	# latar gelap gampang lumer jadi satu massa saat berkerumun.
 	var etex := Sprites.enemy_walk(id, t)
-	var eflip := _facing_flip(world, id)
+	var eflip := _facing_flip(world, id, Sprites.ENEMY_FACES_LEFT)
 	var rim := Color(LINE.r, LINE.g, LINE.b, alpha * 0.30)
 	for off in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 2)]:
 		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, eflip, rim)
-	_blit(etex, rect, Sprites.ENEMY_SCALE, eflip, Color(SHADOW.r, SHADOW.g, SHADOW.b, alpha))
+
+	# Digambar dengan warna aslinya, TIDAK diwarnai. Modulate itu perkalian,
+	# jadi mewarnai dengan warna gelap ikut menghapus goresan putih di wajahnya
+	# — dan justru putih itu yang bikin musuhnya terlihat hidup.
+	_blit(etex, rect, Sprites.ENEMY_SCALE, eflip, Color(1, 1, 1, alpha))
 	return true
 
 
@@ -431,11 +435,15 @@ func _blend_runes(runes: Array) -> Color:
 
 # Cermin kiri-kanan mengikuti arah hadap. Cuma dicerminkan, tidak diputar —
 # figurnya digambar menghadap kamera, jadi memutarnya akan terlihat rebah.
-func _facing_flip(world, id: int) -> bool:
+func _facing_flip(world, id: int, faces_left: bool) -> bool:
 	if not world.entity_have_component(ViewConfig.FACING, id):
 		return false
 	var f: Vec2 = world.get_component_value(ViewConfig.FACING, id)
-	return f.x < 0.0
+	var wants_left: bool = f.x < 0.0
+	# Dicerminkan hanya kalau arah yang diinginkan berbeda dari arah asli
+	# gambarnya. Tanpa ini, gambar yang aslinya menghadap kiri akan selalu
+	# terbalik dari arah jalannya.
+	return wants_left != faces_left
 
 
 # Sprite dijangkar di KAKI (tengah-bawah kotak tabrakan), bukan di tengah.

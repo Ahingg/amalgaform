@@ -27,6 +27,12 @@ const RING_SCALE := 3.0
 # kelihatan jungkir balik di udara, bukan berputar rata di lantai.
 const RING_SQUASH := 0.42
 
+# Ke arah mana tiap gambar MENGHADAP aslinya. Penyihir digambar menghadap kanan,
+# musuh menghadap kiri — jadi keduanya tidak bisa dicerminkan dengan aturan yang
+# sama. Ditulis di sini, bukan disembunyikan sebagai "if musuh" di renderer.
+const PLAYER_FACES_LEFT := false
+const ENEMY_FACES_LEFT := true
+
 static var _cache := {}
 static var _bounds := {}
 

@@ -80,3 +80,33 @@ mengganggu jalan ke deadline. Diisi saat ketemu, bukan saat sempat.
   seperti satu musuh. Scatter acak cuma menambal gejala; penyebabnya penumpukan.
 - **Ignis mengenai semua musuh yang bertumpuk** — seharusnya satu target, dan
   area jadi jatah Ventus sebagai wujud.
+
+## Rencana juice (belum dikerjakan sama sekali, 8 September)
+
+Sampai titik ini yang dikerjakan baru ASET dan TATA LETAK. Belum ada satu pun
+efek rasa-main. Urut dari dampak per menit tertinggi:
+
+| # | Efek | Punya siapa | Kira-kira | Diturunkan dari |
+|---|---|---|---|---|
+| 1 | **Kilat kena** — musuh berkedip putih sesaat saat terluka | Claude | 15 mnt | `Invulnerable.elapsed < 0.1` |
+| 2 | **Hit stop** — dunia membeku ~40ms saat kena keras | Xaviero | 20 mnt | `time_scale` di entity ronde |
+| 3 | **Guncang layar** — saat kena dan saat musuh mati | Claude | 20 mnt | sama seperti #1 |
+| 4 | **Ledakan mati** — percikan saat musuh lenyap | Claude | 30 mnt | id yang hilang antar frame |
+| 5 | **Bayangan dash** — 3 siluet tertinggal | Claude | 20 mnt | riwayat posisi di lapisan tampilan |
+| 6 | **Tampilan basah** — musuh ber-`Wet` jadi kebiruan + menetes | Claude | 15 mnt | komponen `Wet` |
+| 7 | **Kilat lepas** — cahaya sesaat di titik spell lahir | Claude | 10 mnt | `LaunchSpell` |
+
+**#2 itu yang paling kuat dan paling murah**, dan dia satu-satunya yang ada di
+lane sim: saat sesuatu kena keras, `time_scale` dijatuhkan ke ~0.05 selama
+40ms lalu kembali. Efek impact terkuat di game aksi 2D, dan nol frame animasi.
+
+**Angka kerusakan melayang sengaja TIDAK masuk daftar** — skill game-ui-design
+menyebutnya anti-pola "cluttered HUD", dan di layar yang sudah ada 8 musuh dia
+menambah kebisingan tanpa memberi tahu apa pun yang belum terlihat dari bar HP.
+
+### Aset yang berguna kalau sempat (putih, transparan, 1024x1024)
+
+- `impact.png` — percikan kecil untuk saat kena. Dipakai berkali-kali, diputar
+  dan diwarnai lewat kode
+- `death_splatter.png` — cipratan tinta untuk musuh yang lenyap
+- Sisanya (basah, bayangan dash, kilat lepas) bisa prosedural, tidak perlu aset
