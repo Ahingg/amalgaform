@@ -17,12 +17,12 @@ static func process(world: World, _delta: float) -> void:
 			continue
 		if world.entity_have_component(Comp.WON, r): 
 			continue
-		if wave.value > Tuning.WAVE_COUNT:
+		if wave.value >= Tuning.WAVE_COUNT:
 			world.attach_component(Comp.WON, r)
 			continue
-		var data: Dictionary = WAVES[wave.value-1]
+		var data: Dictionary = WAVES[wave.value]
 		for i in data["count"]:
 			Spawn.enemy(world, data["at"][i][0], data["at"][i][1], data["hp"])
-		wave.value += 1	
+		wave.value += 1
 		world.attach_component(Comp.DELAY, r, Countdown.new(Tuning.WAVE_GAP))
 		

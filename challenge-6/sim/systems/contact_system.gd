@@ -18,6 +18,6 @@ static func process(world: World, _delta: float) -> void:
 			var size_t: Size = world.get_component_value(Comp.SIZE, t)
 			if not Helper.overlap(pos_s, size_s, pos_t, size_t):
 				continue
-			Inflict.apply(world, action, s, t, pos_s, pos_t)
+			Inflict.apply(world, action, s, t, Helper.center(pos_s, size_s), Helper.center(pos_t, size_t))
 			if world.entity_have_component(Comp.SINGLE_TARGET, s):
 				break

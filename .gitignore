@@ -1,2 +1,15 @@
 .DS_Store
 *.tmp
+
+# Cache impor Godot. Dibangun ulang otomatis dari berkas aset, dan isinya
+# beda-beda per mesin — masuk repo cuma bikin konflik yang tidak ada artinya.
+challenge-6/.godot/
+
+# Hasil ekspor
+build/
+*.app/
+
+# Rekaman mentah: 79 MB, dan yang dipakai game cuma hasil olahannya di
+# assets/sfx/. Skrip pengolahnya ada di tools/, jadi prosesnya tetap tercatat
+# walaupun bahan mentahnya tidak ikut.
+challenge-6/assets/sfx/mentah/

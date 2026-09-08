@@ -52,6 +52,12 @@ const TOP_BAR := 46.0
 const BOTTOM_BAR := 150.0
 const SIDE_PAD := 28.0
 
+# Pita yang disisakan DI ATAS arena untuk muka dinding. Dinding digambar di luar
+# lapangan, bukan di petak paling atas — kalau dia mengambil petak, dia jadi
+# bagian yang bisa ditempati dan sim harus tahu dia ada. Di luar lapangan, dia
+# murni gambar: sim tidak pernah dengar soal dinding.
+const WALL_BAND := 96.0
+
 # Dihitung ulang tiap gambar dari ukuran jendela, jadi arenanya selalu mengisi
 # dan tidak pernah ketinggalan kalau jendelanya diubah.
 var tile_size: float = 52.0
@@ -60,13 +66,46 @@ var margin: Vector2 = Vector2(24, 24)
 var _font: Font
 
 
+# --- efek yang butuh ingatan antar frame -------------------------------------
+#
+# Lapisan tampilan BOLEH punya ingatan; sim tidak. Yang disimpan di bawah ini
+# semuanya cuma JEJAK — hasil membandingkan dunia frame ini dengan frame lalu.
+# Tidak ada satu pun keadaan permainan yang tinggal di sini: kalau seluruh blok
+# ini dihapus, simulasinya jalan persis sama, cuma jadi hambar.
+#
+# Semuanya diurus dengan delta ASLI, bukan delta terskala. Guncangan yang ikut
+# melambat saat hit stop akan hilang justru di saat dia paling dibutuhkan.
+
+const SHAKE_HIT := 6.0        # piksel, saat sesuatu kena keras
+const SHAKE_DEATH := 10.0     # piksel, saat musuh lenyap
+const SHAKE_DECAY := 40.0     # piksel per detik
+const BURST_LIFE := 0.45
+const LAUNCH_LIFE := 0.14     # lebih lama dari ini, kilatnya berhenti terbaca
+							  # sebagai "lahir" dan mulai terbaca sebagai benda
+const TRAIL_LIFE := 0.24
+const HIT_FLASH := 0.12
+
+const KIND_DEATH := 0
+const KIND_LAUNCH := 1
+
+var _shake: float = 0.0
+var _shake_offset: Vector2 = Vector2.ZERO
+var _seen_enemies: Dictionary = {}   # id -> pusat terakhir, dalam petak
+var _seen_spells: Dictionary = {}    # id -> true
+var _bursts: Array = []
+var _trail: Array = []
+var _had_hit_stop: bool = false
+var _last_world = null
+
+
 func _fit_arena() -> void:
 	var vp := get_viewport_rect().size
-	var usable := Vector2(vp.x - SIDE_PAD * 2.0, vp.y - TOP_BAR - BOTTOM_BAR)
+	var usable := Vector2(vp.x - SIDE_PAD * 2.0,
+		vp.y - TOP_BAR - WALL_BAND - BOTTOM_BAR)
 	tile_size = floorf(minf(usable.x / float(grid_width), usable.y / float(grid_height)))
 	var w := tile_size * grid_width
 	var h := tile_size * grid_height
-	margin = Vector2((vp.x - w) * 0.5, TOP_BAR + (usable.y - h) * 0.5)
+	margin = Vector2((vp.x - w) * 0.5, TOP_BAR + WALL_BAND + (usable.y - h) * 0.5)
 
 
 func _ready() -> void:
@@ -78,14 +117,122 @@ func _ready() -> void:
 	add_child(PlayerInput.new())
 	add_child(CastUI.new())
 	add_child(RoundUI.new())
+	# Penuntun rapalan pertama. Menghilang sendiri begitu satu spell dilempar,
+	# dan tidak pernah muncul lagi di percobaan berikutnya.
+	add_child(Onboarding.new())
 	if DemoInput.enabled():
 		add_child(DemoInput.new())
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# The simulation advances in Main's _physics_process. Here we only ask for
 	# a repaint every rendered frame.
+	_update_fx(delta)
 	queue_redraw()
+
+
+func _update_fx(delta: float) -> void:
+	if _shake > 0.0:
+		_shake = maxf(0.0, _shake - SHAKE_DECAY * delta)
+		var a := randf() * TAU
+		_shake_offset = Vector2(cos(a), sin(a)) * _shake
+	else:
+		_shake_offset = Vector2.ZERO
+
+	for b in _bursts:
+		b["t"] += delta
+	_bursts = _bursts.filter(func(b): return b["t"] < BURST_LIFE)
+	for s in _trail:
+		s["t"] += delta
+	_trail = _trail.filter(func(s): return s["t"] < TRAIL_LIFE)
+
+	var world = _get_world()
+
+	# Retry membuang World lama dan bikin yang baru. Tanpa penjagaan ini, SEMUA
+	# id dari ronde lama terbaca "hilang" sekaligus dan layarnya meledak jadi
+	# ledakan kematian massal.
+	if world != _last_world:
+		_last_world = world
+		_seen_enemies.clear()
+		_seen_spells.clear()
+		_bursts.clear()
+		_trail.clear()
+		_had_hit_stop = false
+		return
+	if world == null:
+		return
+
+	_watch_hit_stop(world)
+	_watch_deaths(world)
+	_watch_launches(world)
+	_watch_dash(world)
+
+
+func _center_of(world, id: int) -> Vector2:
+	var p: Vec2 = world.get_component_value(ViewConfig.POSITION, id)
+	var s := Vector2.ONE
+	if world.entity_have_component(ViewConfig.SIZE, id):
+		var sz: Size = world.get_component_value(ViewConfig.SIZE, id)
+		s = Vector2(sz.w, sz.h)
+	return Vector2(p.x, p.y) + s * 0.5
+
+
+# HitStop muncul di entity ronde persis saat sesuatu kena keras. Guncangan
+# dipicu dari keadaan yang SAMA, bukan dari kejadian tersendiri — jadi dua-duanya
+# tidak pernah bisa lepas sinkron, dan menyetel salah satunya di Tuning otomatis
+# menyetel keduanya.
+func _watch_hit_stop(world) -> void:
+	var q: Array[String] = [ViewConfig.ROUND]
+	var rounds: Array[int] = world.get_entities_with_comp(q)
+	var now := false
+	if not rounds.is_empty():
+		now = world.entity_have_component(ViewConfig.HIT_STOP, rounds[0])
+	if now and not _had_hit_stop:
+		_shake = maxf(_shake, SHAKE_HIT)
+	_had_hit_stop = now
+
+
+# Kematian tidak punya komponen dan tidak perlu punya: musuh yang mati itu id
+# yang ADA frame lalu dan TIDAK ADA sekarang. Posisi terakhirnya disimpan di
+# sini karena setelah entity-nya lenyap, tidak ada lagi yang bisa ditanya.
+func _watch_deaths(world) -> void:
+	var q: Array[String] = [ViewConfig.ENEMY, ViewConfig.POSITION]
+	var alive := {}
+	for e in world.get_entities_with_comp(q):
+		alive[e] = _center_of(world, e)
+	for id in _seen_enemies:
+		if alive.has(id):
+			continue
+		_bursts.append({"at": _seen_enemies[id], "t": 0.0,
+			"kind": KIND_DEATH, "seed": float(id) * 1.7})
+		_shake = maxf(_shake, SHAKE_DEATH)
+	_seen_enemies = alive
+
+
+func _watch_launches(world) -> void:
+	var q: Array[String] = [ViewConfig.RUNES, ViewConfig.POSITION]
+	var now := {}
+	for e in world.get_entities_with_comp(q):
+		now[e] = true
+		if _seen_spells.has(e):
+			continue
+		var runes: Array = world.get_component_value(ViewConfig.RUNES, e)
+		_bursts.append({"at": _center_of(world, e), "t": 0.0,
+			"kind": KIND_LAUNCH, "seed": float(e) * 1.7,
+			"color": _blend_runes(runes)})
+	_seen_spells = now
+
+
+func _watch_dash(world) -> void:
+	var q: Array[String] = [ViewConfig.PLAYER, ViewConfig.DASH, ViewConfig.POSITION]
+	for e in world.get_entities_with_comp(q):
+		var p: Vec2 = world.get_component_value(ViewConfig.POSITION, e)
+		var at := Vector2(p.x, p.y)
+		# Disaring per jarak, bukan per frame: kalau tidak, dash 0.15 detik
+		# meninggalkan sembilan siluet yang saling menumpuk jadi satu gumpalan.
+		if not _trail.is_empty() and _trail[-1]["at"].distance_to(at) < 0.3:
+			return
+		_trail.append({"at": at, "t": 0.0})
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -109,14 +256,14 @@ func _draw() -> void:
 
 	var world = _get_world()
 	if world == null:
-		_draw_message("Menunggu World.")
+		_draw_message("Waiting for World.")
 		return
 
 	var query: Array[String] = [ViewConfig.POSITION]
 	var ids: Array[int] = world.get_entities_with_comp(query)
 
 	if ids.is_empty():
-		_draw_message("Belum ada entity yang punya Position.")
+		_draw_message("No entity has a Position yet.")
 		return
 
 	# Urutan gambar itu kedalaman. Dua aturan:
@@ -140,8 +287,80 @@ func _draw() -> void:
 
 	for id in ground:
 		_draw_entity(world, id)
+	_draw_trail()
 	for id in actors:
 		_draw_entity(world, id)
+	_draw_bursts()
+
+
+# Bayangan dash: siluet garis pemain yang tertinggal, memudar kuadratik supaya
+# yang paling belakang hilang cepat dan ekornya tidak terlihat menggantung.
+func _draw_trail() -> void:
+	if _trail.is_empty():
+		return
+	var pair: Array = Sprites.player_pose(true, false)
+	var align := Sprites.content_rect(pair[1])
+	var org := screen_of_tile(Vector2i.ZERO)
+	for s in _trail:
+		var f: float = 1.0 - float(s["t"]) / TRAIL_LIFE
+		var at: Vector2 = s["at"]
+		var rect := Rect2(org + at * tile_size, Vector2(tile_size, tile_size))
+		_blit(pair[1], rect, Sprites.PLAYER_SCALE, false,
+			Color(FILL.r, FILL.g, FILL.b, 0.28 * f * f), align)
+
+
+func _draw_bursts() -> void:
+	var org := screen_of_tile(Vector2i.ZERO)
+	for b in _bursts:
+		var at: Vector2 = org + (b["at"] as Vector2) * tile_size
+		if int(b["kind"]) == KIND_LAUNCH:
+			_draw_launch_flash(at, float(b["t"]), b.get("color", LINE))
+		else:
+			_draw_death_burst(at, float(b["t"]), float(b["seed"]))
+
+
+# Kilat lepas: satu titik cahaya di tempat spell lahir. Gunanya menjawab
+# "barusan keluar dari mana", yang di layar penuh musuh tidak selalu jelas.
+func _draw_launch_flash(at: Vector2, age: float, c: Color) -> void:
+	var g: float = age / LAUNCH_LIFE
+	if g >= 1.0:
+		return
+	var fade: float = 1.0 - g
+	draw_circle(at, tile_size * (0.30 + 0.45 * g), Color(c.r, c.g, c.b, 0.40 * fade))
+	draw_arc(at, tile_size * (0.35 + 0.85 * g), 0.0, TAU, 20,
+		Color(1, 1, 1, 0.55 * fade), 2.0)
+
+
+# Ledakan mati. Warnanya TERANG, bukan warna musuhnya — musuh hampir hitam di
+# atas latar gelap, jadi percikan sewarna musuh sama saja dengan tidak ada.
+func _draw_death_burst(at: Vector2, age: float, seed: float) -> void:
+	var f: float = age / BURST_LIFE
+	var ease: float = 1.0 - pow(1.0 - f, 3.0)
+	var a: float = pow(1.0 - f, 1.6)
+	draw_arc(at, tile_size * (0.2 + 1.1 * ease), 0.0, TAU, 28,
+		Color(LINE.r, LINE.g, LINE.b, 0.5 * a), 2.5)
+
+	# Aset percikan yang sama seperti kilat kena, dipakai jauh lebih besar dan
+	# lebih lama. Satu bahasa visual untuk "kena" dan "mati" — yang membedakan
+	# cuma ukuran dan lamanya, dan itu memang perbedaan yang sebenarnya.
+	var box := Rect2(at - Vector2(tile_size, tile_size) * 0.5,
+		Vector2(tile_size, tile_size))
+	var layers: Array = Sprites.impact_layers(f)
+	if layers[0] != null:
+		var grow: float = 2.6 + 1.8 * ease
+		_blit(layers[0], box, grow, seed > 0.0 and fmod(seed, 2.0) < 1.0,
+			Color(LINE.r, LINE.g, LINE.b, a), Rect2(), false)
+		if layers[1] != null:
+			_blit(layers[1], box, grow * 1.15, false,
+				Color(1, 0.97, 0.92, 0.75 * a), Rect2(), false)
+		return
+
+	for i in 9:
+		var ang: float = seed + float(i) * (TAU / 9.0)
+		var dir := Vector2(cos(ang), sin(ang))
+		var d: float = tile_size * (0.25 + 1.45 * ease)
+		draw_line(at + dir * d * 0.7, at + dir * d,
+			Color(LINE.r, LINE.g, LINE.b, 0.65 * a), 2.0)
 
 
 func _is_ground_effect(world, id: int) -> bool:
@@ -183,8 +402,12 @@ func world_at(screen_pos: Vector2) -> Vector2:
 	return (screen_pos - margin) / tile_size
 
 
+# Guncangan masuk di SINI saja. tile_at() dan world_at() sengaja tetap memakai
+# margin mentah: itu pemetaan INPUT, dan bidikan yang ikut bergoyang bikin
+# guncangan berubah dari rasa jadi cacat kontrol. ui_origin() juga tidak ikut,
+# supaya HUD tetap diam saat lapangannya berguncang.
 func screen_of_tile(tile: Vector2i) -> Vector2:
-	return margin + Vector2(tile) * tile_size
+	return margin + _shake_offset + Vector2(tile) * tile_size
 
 
 func inside_grid(tile: Vector2i) -> bool:
@@ -210,9 +433,12 @@ func _draw_grid() -> void:
 
 	var w := grid_width * tile_size
 	var h := grid_height * tile_size
-	var arena := Rect2(margin, Vector2(w, h))
+	var org := screen_of_tile(Vector2i.ZERO)
+	var arena := Rect2(org, Vector2(w, h))
 
 	draw_rect(arena, ARENA, true)
+	_draw_floor(org)
+	_draw_walls(org)
 
 	# Vignette: tepi arena diredupkan berlapis supaya mata tertarik ke tengah
 	# dan batas lapangan terasa tanpa perlu dinding yang digambar.
@@ -225,15 +451,117 @@ func _draw_grid() -> void:
 			arena.size - Vector2(inset, inset) * 2.0),
 			Color(ARENA_EDGE.r, ARENA_EDGE.g, ARENA_EDGE.b, a), false, tile_size * 0.34)
 
-	var line_color := Color(LINE.r, LINE.g, LINE.b, 0.055)
+	var line_color := Color(LINE.r, LINE.g, LINE.b, 0.022)
 	for i in range(grid_width + 1):
-		var x := margin.x + i * tile_size
-		draw_line(Vector2(x, margin.y), Vector2(x, margin.y + h), line_color, 1.0)
+		var x := org.x + i * tile_size
+		draw_line(Vector2(x, org.y), Vector2(x, org.y + h), line_color, 1.0)
 	for j in range(grid_height + 1):
-		var y := margin.y + j * tile_size
-		draw_line(Vector2(margin.x, y), Vector2(margin.x + w, y), line_color, 1.0)
+		var y := org.y + j * tile_size
+		draw_line(Vector2(org.x, y), Vector2(org.x + w, y), line_color, 1.0)
 
 	draw_rect(arena, Color(LINE.r, LINE.g, LINE.b, 0.22), false, 2.0)
+
+
+# Lantai bertekstur. Satu gambar menutupi BLOK 4x4 petak, bukan satu petak.
+#
+# Versi satu-gambar-per-petak terlihat seperti kertas kado: motifnya berulang
+# tiap 50 piksel dan matanya langsung menangkap kisi-kisinya. Diperbesar jadi
+# blok, motif yang sama baru berulang setiap 200 piksel, dan sambungannya jatuh
+# di tempat yang berbeda dari garis kisi — dua-duanya berhenti terbaca.
+#
+# Digambar DI ATAS warna ARENA dengan alpha, bukan menggantikannya. Warna
+# dasarnya yang menjaga nilai tengah komposisi: pemain hampir putih, musuh
+# hampir hitam, dan lantai harus tetap di antara keduanya. Kalau teksturnya
+# dipasang mentah, lantainya turun terlalu gelap dan musuh mulai lumer ke
+# dalamnya.
+const FLOOR_BLOCK := 4
+
+func _draw_floor(org: Vector2) -> void:
+	var tint := Color(1.18, 1.16, 1.28, 0.72)
+	var bx: int = 0
+	while bx < grid_width:
+		var by: int = 0
+		while by < grid_height:
+			var tex := Sprites.land(bx, by)
+			if tex == null:
+				return
+			# Blok di tepi bisa terpotong kalau ukuran arena tidak habis dibagi
+			# empat. Yang diambil bagian gambarnya, bukan gambarnya diperkecil —
+			# kalau diperkecil, ubin tepi punya skala berbeda dan sambungannya
+			# langsung kelihatan.
+			var cols: int = mini(FLOOR_BLOCK, grid_width - bx)
+			var rows: int = mini(FLOOR_BLOCK, grid_height - by)
+			var src := Rect2(Vector2.ZERO,
+				Vector2(tex.get_width() * float(cols) / FLOOR_BLOCK,
+					tex.get_height() * float(rows) / FLOOR_BLOCK))
+			var dst := Rect2(org + Vector2(bx, by) * tile_size,
+				Vector2(cols, rows) * tile_size + Vector2.ONE)
+			if Sprites.land_mirror(bx, by):
+				var axis: float = dst.position.x + dst.size.x * 0.5
+				draw_set_transform_matrix(Transform2D(Vector2(-1, 0), Vector2(0, 1),
+					Vector2(axis * 2.0, 0)))
+				draw_texture_rect_region(tex, dst, src, tint)
+				draw_set_transform_matrix(Transform2D.IDENTITY)
+			else:
+				draw_texture_rect_region(tex, dst, src, tint)
+			by += FLOOR_BLOCK
+		bx += FLOOR_BLOCK
+
+
+# Muka dinding di tepi atas, satu potong tiap empat petak — alasannya sama
+# seperti lantai. Cuma tepi atas: dari sudut pandang ini dinding yang menghadap
+# kamera cuma ada satu; tiga sisi lain membelakangi dan yang kelihatan cuma tepi
+# lantainya. Menggambar keempatnya bikin arenanya terbaca seperti kotak yang
+# dilihat dari dalam.
+#
+# Dinding hidup DI LUAR lapangan, bukan di petak paling atas. Kalau dia
+# mengambil petak, dia jadi tempat yang bisa ditempati dan sim harus tahu dia
+# ada. Di luar lapangan, dia murni gambar: sim tidak pernah dengar soal dinding.
+# Dua petak per potong: potongannya persegi (256x256) dan pita dindingnya
+# setinggi kira-kira dua petak, jadi di lebar ini gambarnya nyaris tidak
+# diregangkan sama sekali.
+const WALL_BLOCK := 2
+
+func _draw_walls(org: Vector2) -> void:
+	if Sprites.wall(0) == null:
+		return
+	var band: float = minf(WALL_BAND, tile_size * 2.2)
+	var top: float = org.y - band
+
+	# Pita gelap rata di belakang dinding: menutup celah antara puncak dinding
+	# dan HUD, dan memberi juntaiannya sesuatu yang gelap untuk digantungi.
+	draw_rect(Rect2(Vector2(org.x, top - 6.0),
+		Vector2(grid_width * tile_size, band + 6.0)),
+		Color(0.045, 0.042, 0.058), true)
+
+	var bx: int = 0
+	while bx < grid_width:
+		var cols: int = mini(WALL_BLOCK, grid_width - bx)
+		var tex := Sprites.wall(bx)
+		var src := Rect2(Vector2.ZERO,
+			Vector2(tex.get_width() * float(cols) / WALL_BLOCK, tex.get_height()))
+		# Selang-seling dicerminkan supaya juntaiannya tidak terbaca sebagai
+		# satu motif yang diulang sepuluh kali.
+		var dst := Rect2(Vector2(org.x + bx * tile_size, top),
+			Vector2(cols * tile_size + 1.0, band))
+		var tint := Color(1.15, 1.12, 1.28, 1.0)
+		if (bx / WALL_BLOCK) % 2 == 1:
+			var axis: float = dst.position.x + dst.size.x * 0.5
+			draw_set_transform_matrix(Transform2D(Vector2(-1, 0), Vector2(0, 1),
+				Vector2(axis * 2.0, 0)))
+			draw_texture_rect_region(tex, dst, src, tint)
+			draw_set_transform_matrix(Transform2D.IDENTITY)
+		else:
+			draw_texture_rect_region(tex, dst, src, tint)
+		bx += WALL_BLOCK
+
+	# Bayangan yang dijatuhkan dinding ke lantai. Ini yang bikin dinding terbaca
+	# BERDIRI, bukan sekadar tempelan di tepi atas.
+	for i in 6:
+		var f := float(i) / 6.0
+		draw_rect(Rect2(Vector2(org.x, org.y + f * tile_size * 0.7),
+			Vector2(grid_width * tile_size, tile_size * 0.12)),
+			Color(0, 0, 0, 0.16 * (1.0 - f)), true)
 
 
 func _draw_entity(world, id: int) -> void:
@@ -248,7 +576,7 @@ func _draw_entity(world, id: int) -> void:
 		w = s.w
 		h = s.h
 
-	var top_left := margin + Vector2(px, py) * tile_size
+	var top_left := screen_of_tile(Vector2i.ZERO) + Vector2(px, py) * tile_size
 	var size := Vector2(w, h) * tile_size
 	var rect := Rect2(top_left, size)
 
@@ -370,16 +698,86 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 	for off in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 2)]:
 		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, eflip, rim)
 
+	# Kilat kena digambar SEBELUM badannya, jadi cahayanya ada di belakang dan
+	# siluet musuhnya tetap terbaca. Kalau ditumpuk di atas, yang terjadi cuma
+	# gumpalan putih yang menutupi musuhnya sendiri.
+	if world.entity_have_component(ViewConfig.INVULNERABLE, id):
+		var inv: Countdown = world.get_component_value(ViewConfig.INVULNERABLE, id)
+		if inv.elapsed < HIT_FLASH:
+			_draw_hit_flash(etex, rect, eflip, inv.elapsed / HIT_FLASH)
+
 	# Digambar dengan warna aslinya, TIDAK diwarnai. Modulate itu perkalian,
 	# jadi mewarnai dengan warna gelap ikut menghapus goresan putih di wajahnya
 	# — dan justru putih itu yang bikin musuhnya terlihat hidup.
 	_blit(etex, rect, Sprites.ENEMY_SCALE, eflip, Color(1, 1, 1, alpha))
+
+	if world.entity_have_component(ViewConfig.WET, id):
+		_draw_wet(id, rect, t, alpha)
 	return true
 
 
+# Kilat kena: penanda "barusan kena" yang paling murah. Sengaja TIDAK dibuat
+# dengan mewarnai spritenya putih — modulate mengalikan, dan seni musuhnya
+# hampir hitam, jadi dikali apa pun tetap hitam. Yang dipakai: cahaya di
+# belakang badan, plus siluet yang melebar sesaat.
+func _draw_hit_flash(etex: Texture2D, rect: Rect2, flip: bool, ratio: float) -> void:
+	var k: float = 1.0 - ratio
+	var center := rect.position + rect.size * 0.5
+	draw_circle(center, rect.size.x * (0.45 + 0.4 * ratio), Color(1, 1, 1, 0.28 * k))
+	var spread: float = 2.0 + 5.0 * k
+	for off in [Vector2(-spread, 0), Vector2(spread, 0),
+			Vector2(0, -spread), Vector2(0, spread)]:
+		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, flip,
+			Color(1, 1, 1, 0.45 * k))
+
+	# Percikan gambar tangan, empat frame. Frame dipilih dari UMUR luka, bukan
+	# dari jam dinding — dua musuh yang kena di waktu berbeda tidak boleh
+	# melangkah serempak.
+	var layers: Array = Sprites.impact_layers(ratio)
+	if layers[0] == null:
+		return
+	var grow: float = 1.0 + 0.45 * ratio
+	_blit(layers[0], rect, 1.9 * grow, flip, Color(1, 1, 1, k), Rect2(), false)
+	if layers[1] != null:
+		_blit(layers[1], rect, 2.2 * grow, flip,
+			Color(1, 0.96, 0.88, 0.8 * k), Rect2(), false)
+
+
+# Basah tidak bisa ditunjukkan di badan musuhnya, alasan yang sama seperti di
+# atas. Jadi ditunjukkan di LANTAI (genangan kecil di kaki) dan di tetesan yang
+# jatuh — dua tanda yang dua-duanya berada di luar siluet gelapnya.
+func _draw_wet(id: int, rect: Rect2, t: float, alpha: float) -> void:
+	var wet := ViewConfig.color_of(ViewConfig.AQUA)
+	var feet := Vector2(rect.position.x + rect.size.x * 0.5,
+		rect.position.y + rect.size.y - 2.0)
+	for i in 2:
+		var rw: float = rect.size.x * (0.30 + 0.15 * i)
+		draw_set_transform(feet, 0.0, Vector2(1.0, 0.32))
+		draw_circle(Vector2.ZERO, rw,
+			Color(wet.r, wet.g, wet.b, (0.28 - 0.11 * i) * alpha))
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+	# Dua keadaan tetesan, bergantian, sambil MELUNCUR turun. Pergantian gambar
+	# saja terbaca sebagai kedipan; yang bikin dia terbaca sebagai air jatuh itu
+	# perpindahannya. Fasenya diturunkan dari id, jadi musuh yang basah bareng
+	# tidak menetes serempak.
+	var phase: float = float(id) * 0.61
+	var drop := Sprites.wet_drops(t, phase)
+	if drop == null:
+		return
+	var slide: float = fmod(t * 1.5 + phase, 1.0)
+	var box := Rect2(rect.position + Vector2(0, rect.size.y * slide * 0.55), rect.size)
+	_blit(drop, box, 1.5, false,
+		Color(wet.r, wet.g, wet.b, 0.7 * (1.0 - slide) * alpha), Rect2(), false)
+
+
 # Spell digambar dari daftar rune yang membentuknya. runes[0] menentukan wujud
-# (jadi sprite mana yang dipakai); seluruh daftar menentukan warnanya, jadi
-# warna spell menunjukkan ISInya, bukan cuma bentuknya.
+# (jadi sprite mana yang dipakai); sisanya mewarnai LAPIS PER LAPIS.
+#
+# Dulu semua lapisan dicat satu warna campuran, dan itu salah: merah dicampur
+# biru menghasilkan merah muda — bukan api, bukan air, dan tidak ada di dalam
+# permainan. Ditumpuk per lapisan, mata membaca dua bahan yang saling menindih,
+# yang memang persis yang terjadi di aturannya.
 func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
 	if not world.entity_have_component(ViewConfig.RUNES, id):
 		return false
@@ -387,22 +785,14 @@ func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
 	if runes.is_empty():
 		return false
 
-	var tint := _blend_runes(runes)
 	var form: String = String(runes[0]).to_lower()
 
 	if form == "aqua":
 		# Bola air yang belum pecah masih punya Velocity; genangan sudah diam.
-		var is_puddle: bool = not world.entity_have_component(ViewConfig.VELOCITY, id)
-		if is_puddle:
-			# Lebih transparan daripada tokoh: genangan itu keadaan lantai, dan
-			# kalau dia sepekat karakter, mata berhenti bisa memisahkan mana
-			# yang harus dihindari dari mana yang cuma latar.
-			var pt := Color(tint.r, tint.g, tint.b, 0.55)
-			for layer in Sprites.puddle_layers(t):
-				_blit(layer, rect, Sprites.PUDDLE_SCALE, false, pt)
+		if not world.entity_have_component(ViewConfig.VELOCITY, id):
+			_draw_puddle(rect, t, runes)
 			return true
-		for layer in Sprites.fireball_layers(t):
-			_blit(layer, rect, Sprites.SPELL_SCALE, false, tint)
+		_draw_orb(rect, t, runes)
 		return true
 
 	if form == "ventus":
@@ -411,17 +801,90 @@ func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
 			var lt: Countdown = world.get_component_value(ViewConfig.LIFETIME, id)
 			if lt.duration > 0.0:
 				ratio = clampf(lt.elapsed / lt.duration, 0.0, 1.0)
+		var wc := _blend_runes(runes)
 		_blit(Sprites.burst_frame(ratio), rect, Sprites.BURST_SCALE, false,
-			Color(tint.r, tint.g, tint.b, 1.0 - ratio * 0.5))
+			Color(wc.r, wc.g, wc.b, 1.0 - ratio * 0.5), Rect2(), false)
 		return true
 
-	for layer in Sprites.fireball_layers(t):
-		_blit(layer, rect, Sprites.SPELL_SCALE, false, tint)
+	_draw_orb(rect, t, runes)
 	return true
 
 
-# Rata-rata warna semua rune di dalamnya. Rune kembar menariknya lebih kuat ke
-# warnanya sendiri, jadi "api api" lebih merah daripada "api air".
+# Warna untuk lapisan ke-i. Diambil dari SUSUNAN rune, bukan dari rata-rata:
+# lapisan 0 pakai rune kedua, lapisan 1 pakai rune ketiga, dan berputar balik
+# kalau runenya lebih sedikit. Jadi "api api" tetap merah seluruhnya, sementara
+# "api air" punya satu lapis merah dan satu lapis biru yang bergolak bergantian.
+func _layer_color(runes: Array, i: int) -> Color:
+	return ViewConfig.color_of(String(runes[(i + 1) % runes.size()]))
+
+
+# Warna alas: bara bawaan gambarnya untuk api, dan warna runenya sendiri untuk
+# wujud lain. Alas TIDAK pernah ikut dicampur — dia yang bikin bentuknya masih
+# terbaca sebagai bola api sekalipun isinya campuran.
+func _base_color(runes: Array) -> Color:
+	var form: String = String(runes[0]).to_lower()
+	if form == "ignis":
+		return Color(1, 1, 1)
+	return ViewConfig.color_of(String(runes[0]))
+
+
+# bg -> dua lapis berdenyut -> fg. Cuma dua lapis tengah yang diwarnai rune.
+func _draw_orb(rect: Rect2, t: float, runes: Array) -> void:
+	var layers: Array = Sprites.fireball_layers(t)
+	var base := _base_color(runes)
+
+	# Cahaya palsu. Renderer proyek ini gl_compatibility, dan glow sungguhan di
+	# sana perlu WorldEnvironment plus HDR 2D yang tidak didukung — jadi
+	# cahayanya dibuat dengan menggambar ulang gambar yang sama lebih besar
+	# dengan alpha rendah. Di ukuran segini hasilnya tidak bisa dibedakan, dan
+	# tidak mengubah apa pun di pengaturan proyek.
+	var halo := _blend_runes(runes)
+	for i in 2:
+		_blit(layers[0], rect, Sprites.SPELL_SCALE * (1.2 + 0.25 * i), false,
+			Color(halo.r, halo.g, halo.b, 0.13 - 0.05 * i))
+
+	_blit(layers[0], rect, Sprites.SPELL_SCALE, false, Color(base.r, base.g, base.b, 1.0))
+	for i in 2:
+		var c := _layer_color(runes, i)
+		# Sedikit dicerahkan: lapisan tengah itu inti nyala, dan inti yang lebih
+		# redup dari tepinya akan terbaca sebagai lubang, bukan sebagai panas.
+		_blit(layers[1 + i], rect, Sprites.SPELL_SCALE, false,
+			Color(minf(c.r * 1.25, 1.0), minf(c.g * 1.25, 1.0), minf(c.b * 1.25, 1.0), 0.95))
+	_blit(layers[3], rect, Sprites.SPELL_SCALE, false, Color(base.r, base.g, base.b, 1.0))
+
+
+# Genangan. Alas biru tetap; riak dan sorotan mengikuti rune berikutnya.
+#
+# Kalau ada Ventus di dalamnya, ada satu cincin putih tambahan PALING BAWAH yang
+# berdenyut keluar-masuk. Denyutnya bukan hiasan: dorongan angin itu satu-satunya
+# efek genangan yang bisa memindahkan musuh, dan pemain butuh tahu genangan ini
+# mendorong sebelum dia berdiri di sebelahnya.
+func _draw_puddle(rect: Rect2, t: float, runes: Array) -> void:
+	var layers: Array = Sprites.puddle_layers(t)
+	var has_wind := false
+	for r in runes:
+		if String(r).to_lower() == "ventus":
+			has_wind = true
+			break
+
+	if has_wind:
+		var pulse: float = 0.5 + 0.5 * sin(t * 5.0)
+		_blit(layers[1], rect, Sprites.PUDDLE_SCALE * (1.05 + 0.22 * pulse), false,
+			Color(1, 1, 1, 0.30 - 0.16 * pulse), Rect2(), false)
+
+	# Lebih transparan daripada tokoh: genangan itu keadaan lantai, dan kalau
+	# sepekat karakter, mata berhenti bisa memisahkan mana yang harus dihindari.
+	var base := _base_color(runes)
+	_blit(layers[0], rect, Sprites.PUDDLE_SCALE, false,
+		Color(base.r, base.g, base.b, 0.55), Rect2(), false)
+	for i in 2:
+		var c := _layer_color(runes, i)
+		_blit(layers[1 + i], rect, Sprites.PUDDLE_SCALE, false,
+			Color(c.r, c.g, c.b, 0.5), Rect2(), false)
+
+
+# Rata-rata warna semua rune. Masih dipakai untuk hembusan angin — ledakannya
+# cuma satu gambar tanpa lapisan, jadi di sana tidak ada yang bisa dipisah.
 func _blend_runes(runes: Array) -> Color:
 	var r := 0.0
 	var g := 0.0
@@ -453,17 +916,23 @@ func _facing_flip(world, id: int, faces_left: bool) -> bool:
 # pasangan isi+garis: keduanya punya kotak isi sendiri yang beda beberapa
 # piksel, dan kalau masing-masing diratakan sendiri, isinya melenceng dari
 # garisnya. Satu acuan untuk keduanya.
+# foot=true menjangkarkan gambar di KAKI kotak tabrakan, karena di game tampak
+# atas kotak itu jejak kaki di lantai dan gambarnya boleh meluber ke atas.
+# foot=false menjangkarkan di TENGAH — dipakai efek lantai (genangan, hembusan),
+# yang bukan berdiri di atas kotaknya melainkan MENGISI kotaknya. Genangan yang
+# dijangkar di kaki akan terlihat mengambang di atas kepala pemain.
 func _blit(texture: Texture2D, box: Rect2, scale: float, flip: bool, tint: Color,
-		align: Rect2 = Rect2()) -> void:
+		align: Rect2 = Rect2(), foot: bool = true) -> void:
 	if texture == null:
 		return
 	var c := align if align.size.x > 0.0 else Sprites.content_rect(texture)
 	var side: float = box.size.x * scale
 	var cx: float = c.position.x + c.size.x * 0.5
-	var cy: float = c.position.y + c.size.y
+	var cy: float = c.position.y + (c.size.y if foot else c.size.y * 0.5)
+	var anchor_y: float = box.position.y + box.size.y * (1.0 if foot else 0.5)
 
 	var at := Vector2(box.position.x + box.size.x * 0.5 - side * cx,
-		box.position.y + box.size.y - side * cy)
+		anchor_y - side * cy)
 	var dst := Rect2(at, Vector2(side, side))
 
 	if not flip:

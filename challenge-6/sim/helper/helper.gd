@@ -8,3 +8,7 @@ static func overlap(pos_a: Vec2, size_a: Size, pos_b: Vec2, size_b: Size) -> boo
 		and pos_b.x < pos_a.x + size_a.w \
 		and pos_a.y < pos_b.y + size_b.h \
 		and pos_b.y < pos_a.y + size_a.h
+
+static func center(pos: Vec2, size: Size) -> Vec2:
+	return Vec2.new(pos.x + (size.w / 2), pos.y + (size.h / 2))
+	

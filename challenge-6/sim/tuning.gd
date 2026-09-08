@@ -94,7 +94,7 @@ const SPAWN_OFFSET := 0.7
 
 # --- payload base values (before the SPREAD split) --------------------------
 
-const FIRE_DAMAGE := 10.0
+const FIRE_DAMAGE := 300.0
 const KNOCKBACK_STRENGTH := 21
 const KNOCKBACK_DURATION := 0.3
 
@@ -103,7 +103,7 @@ const KNOCKBACK_DURATION := 0.3
 
 # The enemy MUST be slower than the player, otherwise kiting is impossible and
 # the whole casting window stops mattering. Aim for 60-75% of player speed.
-const PLAYER_SPEED := 3.4
+const PLAYER_SPEED := 4.0
 const ENEMY_SPEED := 2.85
 
 

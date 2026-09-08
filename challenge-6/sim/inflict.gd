@@ -8,7 +8,7 @@ extends RefCounted
 # ga disalin mereka bakal share satu komponen dan timernya jalan berkali lipat.
 
 static func apply(world: World, action: Dictionary, source: int, target: int,
-		pos_s: Vec2, pos_t: Vec2) -> void:
+		center_s: Vec2, center_t: Vec2) -> void:
 	for comp in action["self"]:
 		world.attach_component(comp, source, _copy(action["self"][comp]))
 	
@@ -19,7 +19,7 @@ static func apply(world: World, action: Dictionary, source: int, target: int,
 		var body: Variant = _copy(action["target"][comp])
 		# arah dorongan kalo knocked
 		if body is Impulse:
-			var dir := Vector2(pos_t.x - pos_s.x, pos_t.y - pos_s.y).normalized()
+			var dir := Vector2(center_t.x - center_s.x, center_t.y - center_s.y).normalized()
 			body.x = dir.x
 			body.y = dir.y
 		world.attach_component(comp, target, body)

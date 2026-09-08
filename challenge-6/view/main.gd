@@ -26,6 +26,11 @@ func _ready() -> void:
 	# renderer.gd only READS world, it never writes into sim/.
 	add_child(WorldRenderer.new())
 
+	# Lapisan suara. Sama seperti renderer: cuma membaca World, tidak pernah
+	# menulis. Diletakkan di main, bukan di dalam renderer, karena dia tidak
+	# butuh geometri apa pun — dia tidak peduli di mana sesuatu terjadi.
+	add_child(Sfx.new())
+
 
 func retry() -> void:
 	attempt += 1

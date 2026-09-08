@@ -172,3 +172,43 @@ static func cast_circle(rune: String) -> Texture2D:
 	# tidak perlu tahu apa-apa soal nama berkas.
 	var file: String = {"ignis": "ignis", "aqua": "aqua", "ventus": "wind"}.get(rune.to_lower(), "ignis")
 	return tex("misc/%s_circle.png" % file)
+
+
+# --- lantai & dinding --------------------------------------------------------
+
+const LAND_COUNT := 8
+
+# Ubin lantai dipilih dari KOORDINAT petaknya, bukan diacak. Diacak berarti
+# lantainya berganti tiap frame; diturunkan dari koordinat berarti dia diam,
+# tetap tidak berulang secara kentara, dan tidak perlu disimpan di mana pun.
+static func land(tx: int, ty: int) -> Texture2D:
+	var k: int = absi((tx * 73856093) ^ (ty * 19349663))
+	return tex("map/land%d.png" % (k % LAND_COUNT))
+
+
+# Dicerminkan kiri-kanan untuk separuh petak, dari koordinat juga. Delapan ubin
+# jadi terasa enam belas tanpa satu berkas tambahan.
+static func land_mirror(tx: int, ty: int) -> bool:
+	return absi((tx * 83492791) ^ (ty * 15485863)) % 2 == 0
+
+
+# Potongan dinding: 256x512, jadi satu potong menutupi satu petak lebar dan dua
+# petak tinggi.
+static func wall(tx: int) -> Texture2D:
+	return tex("map/wall%d.png" % (absi(tx * 40503 + 7) % 4))
+
+
+# --- percikan kena -----------------------------------------------------------
+
+# Empat frame, dua lapis tiap frame. Dipilih dari UMUR percikan, bukan dari jam
+# dinding — dua percikan yang lahir di waktu berbeda tidak boleh melangkah
+# serempak.
+static func impact_layers(ratio: float) -> Array:
+	var i: int = clampi(int(ratio * 4.0) + 1, 1, 4)
+	return [tex("Impact/frame%d_1.PNG" % i), tex("Impact/frame%d_2.PNG" % i)]
+
+
+# --- tetesan basah -----------------------------------------------------------
+
+static func wet_drops(t: float, phase: float) -> Texture2D:
+	return tex("Wet/wet%d.PNG" % (1 if fmod(t * 3.4 + phase, 2.0) < 1.0 else 2))

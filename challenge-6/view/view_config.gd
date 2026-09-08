@@ -39,6 +39,8 @@ const DASH_INTENT := "DashIntent"
 const DASH_COOLDOWN := "DashCooldown"
 const RUN_TIME := "RunTime"
 const LAUNCH_SPELL := "LaunchSpell"
+const HIT_STOP := "HitStop"
+const WET := "Wet"
 
 # The rune symbols the player types. These must match sim/comp.gd exactly —
 # they are the only strings that cross the layer boundary as data rather than

@@ -277,14 +277,14 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
 	if runes.is_empty():
-		draw_string(_font, at, "J api  ·  K air  ·  L angin  ·  WASD arah  ·  ESC batal",
+		draw_string(_font, at, "J fire  ·  K water  ·  L wind  ·  WASD aim  ·  ESC cancel",
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
 		return
 
 	var form: String = ViewConfig.FORM_OF.get(runes[0], "?")
 	var cast_time: float = Tuning.CAST_BASE + Tuning.CAST_PER_RUNE * runes.size()
 
-	draw_string(_font, at, "%s   ·   lepas %.2fs" % [form, cast_time],
+	draw_string(_font, at, "%s   ·   release %.2fs" % [form, cast_time],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.85))
 
 
@@ -322,7 +322,7 @@ func _draw_dash(world, player: int) -> void:
 		return
 
 	draw_rect(Rect2(at, Vector2(w, 6)), Color(0.6, 0.85, 1.0, 0.9), true)
-	draw_string(_font, at + Vector2(w + 8, 7), "dash siap  ·  SPACE",
+	draw_string(_font, at + Vector2(w + 8, 7), "dash ready  ·  SPACE",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.65))
 
 
@@ -341,16 +341,16 @@ func _draw_casting(world, player: int) -> void:
 
 	draw_rect(Rect2(at, Vector2(w, 8)), Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.3), true)
 	draw_rect(Rect2(at, Vector2(w * ratio, 8)), Color(0.75, 0.6, 1.0), true)
-	draw_string(_font, at + Vector2(w + 8, 9), "merapal %.2fs" % c.duration,
+	draw_string(_font, at + Vector2(w + 8, 9), "casting %.2fs" % c.duration,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 0.9))
 
 
 func _draw_hint(world, player: int) -> void:
-	var text := "Tahan SHIFT untuk merapal"
+	var text := "Hold SHIFT to cast"
 	if world.entity_have_component(ViewConfig.CASTING, player):
-		text = "Merapal..."
+		text = "Casting..."
 	elif world.entity_have_component(ViewConfig.HELD_SPELL, player):
-		text = "Bola siap  ·  arahkan mouse  ·  klik kiri untuk melepas"
+		text = "Spell ready  ·  aim with mouse  ·  left click to throw"
 	var rr := get_parent() as WorldRenderer
 	if rr != null:
 		var tw := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x
@@ -375,8 +375,8 @@ func _draw_legend() -> void:
 	var c := WorldRenderer.DIM
 	var dim := Color(c.r, c.g, c.b, 0.75)
 	var lines := [
-		"WASD bergerak      SPACE dash      R ulangi",
-		"SHIFT tahan → J/K/L → lepas → klik kiri",
+		"WASD move      SPACE dash      R retry",
+		"Hold SHIFT → J/K/L → release → left click",
 	]
 	var right: float = r.get_viewport_rect().size.x - 28.0
 	var bottom: float = r.hud_bottom() - 46.0
@@ -410,15 +410,85 @@ func _draw_held(world, player: int) -> void:
 		if v != Vector2.ZERO:
 			dir = v.normalized()
 
-	draw_line(here + dir * renderer.tile_size * 0.7,
-		here + dir * renderer.tile_size * 4.0,
-		Color(1, 0.95, 0.7, 0.25), 2.0)
+	var t: float = float(Time.get_ticks_msec()) / 1000.0
 
-	var orb := here + dir * renderer.tile_size * 0.8
-	var col := Color(1, 0.95, 0.75)
-	if not runes.is_empty():
-		col = ViewConfig.color_of(runes[0])
-	draw_circle(orb, 13.0, Color(col.r, col.g, col.b, 0.85))
-	draw_arc(orb, 15.0, 0.0, TAU, 24, Color(1, 1, 1, 0.6), 2.0)
-	draw_string(_font, orb + Vector2(-6, 5), str(runes.size()),
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.95, 0.93, 0.88))
+	# Melayang di atas bahu, bukan menempel di depan badan. Bola yang menempel
+	# terbaca sebagai bagian dari sprite; yang melayang terbaca sebagai sesuatu
+	# yang sedang DITAHAN — dan itu memang keadaannya.
+	# Naik SETINGGI sprite, bukan setinggi kotak tabrakan: kotaknya cuma sepetak,
+	# sedangkan gambar penyihirnya 2.3 petak, jadi lift sepetak mendarat tepat di
+	# wajahnya. Simpangan mendatarnya ikut arah hadap, tapi komponen tegaknya
+	# tidak — kalau ikut, membidik ke atas akan menenggelamkan bola di kepala.
+	var orb := here + Vector2(dir.x * renderer.tile_size * 0.8,
+		-renderer.tile_size * 1.9 + sin(t * 2.6) * 4.0)
+
+	# Garis bidik berangkat dari BOLA, bukan dari badan: yang akan terbang itu
+	# bolanya.
+	draw_line(orb + dir * renderer.tile_size * 0.4,
+		orb + dir * renderer.tile_size * 4.2,
+		Color(1, 0.95, 0.7, 0.22), 2.0)
+
+	var col := _rune_blend(runes)
+	var side: float = renderer.tile_size * 1.35
+	var box := Rect2(orb - Vector2(side, side) * 0.5, Vector2(side, side))
+
+	var frame := Sprites.held_frame(t)
+	if frame == null:
+		draw_circle(orb, 13.0, Color(col.r, col.g, col.b, 0.85))
+		draw_arc(orb, 15.0, 0.0, TAU, 24, Color(1, 1, 1, 0.6), 2.0)
+		return
+
+	# Cahaya palsu: gambar yang sama diulang lebih besar dengan alpha rendah.
+	# Jauh lebih murah daripada shader glow, dan di ukuran segini hasilnya sama.
+	for i in 2:
+		var s: float = side * (1.18 + 0.2 * i)
+		draw_texture_rect(frame, Rect2(orb - Vector2(s, s) * 0.5, Vector2(s, s)),
+			false, Color(col.r, col.g, col.b, 0.09))
+
+	var support := Sprites.held_support()
+	if support != null:
+		var sw: float = side * 1.3
+		draw_texture_rect(support, Rect2(orb - Vector2(sw, sw) * 0.5, Vector2(sw, sw)),
+			false, Color(col.r, col.g, col.b, 0.45))
+
+	# Cangkang dan inti diwarnai TERPISAH, alasan yang sama seperti bola api:
+	# api dicampur air jadi merah muda, yang bukan api dan bukan air. Cangkang
+	# ikut rune terakhir, inti ikut rune pertama — jadi bola api-air punya inti
+	# merah di dalam cangkang biru, dan isinya terbaca sebagai dua bahan.
+	var shell := _rune_at(runes, -1)
+	var core_col := _rune_at(runes, 0)
+	draw_texture_rect(frame, box, false, Color(shell.r, shell.g, shell.b, 0.95))
+
+	var core := Sprites.held_core()
+	if core != null:
+		# Inti dicerahkan mendekati putih: pusat yang lebih terang dari tepinya
+		# itu satu-satunya cara membaca "panas" tanpa shader.
+		draw_texture_rect(core, box, false, Color(
+			minf(core_col.r * 1.7, 1.0), minf(core_col.g * 1.7, 1.0),
+			minf(core_col.b * 1.7, 1.0), 1.0))
+
+
+# Rune ke-i dari antrian; -1 berarti yang terakhir. Kalau antriannya kosong,
+# warna netral.
+func _rune_at(runes: Array, i: int) -> Color:
+	if runes.is_empty():
+		return Color(1, 0.95, 0.75)
+	var n := runes.size()
+	return ViewConfig.color_of(String(runes[(i + n) % n]))
+
+
+# Rata-rata warna semua rune di antrian. Dipakai bola di tangan supaya warnanya
+# menunjukkan ISI rapalan, bukan cuma rune pertama yang menentukan wujud.
+func _rune_blend(runes: Array) -> Color:
+	if runes.is_empty():
+		return Color(1, 0.95, 0.75)
+	var r := 0.0
+	var g := 0.0
+	var b := 0.0
+	for rune in runes:
+		var c: Color = ViewConfig.color_of(String(rune))
+		r += c.r
+		g += c.g
+		b += c.b
+	var n := float(runes.size())
+	return Color(r / n, g / n, b / n)

@@ -78,7 +78,7 @@ func _advance(world, p: int) -> void:
 			var q2: Dictionary = world.get_component_value("CastQueue", p)
 			q2["open"] = false
 			world.attach_component("CastRelease", p, {"runes": q2["runes"].duplicate()})
-			_next = _t + 0.9
+			_next = _t + 2.2
 		4:
 			if world.entity_have_component("HeldSpell", p):
 				world.attach_component("LaunchSpell", p, {})

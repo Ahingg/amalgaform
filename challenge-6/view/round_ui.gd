@@ -66,12 +66,12 @@ func _draw() -> void:
 	# dibersihkan waktu mulai lagi.
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.WON]
 	if not world.get_entities_with_comp(round_q).is_empty():
-		_draw_ended(world, "MENANG", Color(0.55, 0.92, 0.55))
+		_draw_ended(world, "VICTORY", Color(0.55, 0.92, 0.55))
 		return
 
 	var player_q: Array[String] = [ViewConfig.PLAYER]
 	if world.get_entities_with_comp(player_q).is_empty():
-		_draw_ended(world, "KALAH", Color(1.0, 0.42, 0.35))
+		_draw_ended(world, "DEFEAT", Color(1.0, 0.42, 0.35))
 
 
 # Bar atas dibagi tiga: percobaan di kiri, gelombang di tengah, waktu di kanan.
@@ -85,7 +85,7 @@ func _draw_top_bar(world, attempt: int) -> void:
 	var dim := Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 1.0)
 	var bright := Color(WorldRenderer.LINE.r, WorldRenderer.LINE.g, WorldRenderer.LINE.b, 0.9)
 
-	draw_string(_font, Vector2(28, y), "PERCOBAAN %d" % attempt,
+	draw_string(_font, Vector2(28, y), "ATTEMPT %d" % attempt,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, dim)
 
 	var round_q: Array[String] = [ViewConfig.ROUND, ViewConfig.ROUND_WAVE]
@@ -98,7 +98,7 @@ func _draw_top_bar(world, attempt: int) -> void:
 	var alive: int = world.get_entities_with_comp(enemy_q).size()
 	var shown: int = mini(int(wave.value), Tuning.WAVE_COUNT)
 
-	var mid := "GELOMBANG %d / %d          MUSUH %d" % [shown, Tuning.WAVE_COUNT, alive]
+	var mid := "WAVE %d / %d          ENEMIES %d" % [shown, Tuning.WAVE_COUNT, alive]
 	var mw := _font.get_string_size(mid, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
 	draw_string(_font, Vector2(vw * 0.5 - mw * 0.5, y), mid,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, bright)
@@ -123,8 +123,8 @@ func _draw_ended(world, text: String, color: Color) -> void:
 	var rounds: Array[int] = world.get_entities_with_comp(round_q)
 	if not rounds.is_empty():
 		var rt = world.get_component_value(ViewConfig.RUN_TIME, rounds[0])
-		draw_string(_font, center + Vector2(-150, 22), "Waktu %.1f detik" % rt.value,
+		draw_string(_font, center + Vector2(-150, 22), "Time %.1f seconds" % rt.value,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 22, WorldRenderer.INK * Color(1,1,1,0.9))
 
-	draw_string(_font, center + Vector2(-150, 56), "Tekan R untuk mengulang",
+	draw_string(_font, center + Vector2(-150, 56), "Press R to retry",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 18, WorldRenderer.INK * Color(1,1,1,0.7))
