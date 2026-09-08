@@ -15,6 +15,7 @@ const ROUND := "Round"
 const ROUND_WAVE := "RoundWave"
 const WON := "Won"
 const RUN_TIME := "RunTime"
+const HIT_STOP := "HitStop"
 
 const LIFETIME := "Lifetime"
 const MACHINE := "Machine"

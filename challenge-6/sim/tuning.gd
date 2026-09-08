@@ -40,6 +40,12 @@ const DASH_DURATION := 0.15
 const SLOW_MIN := 0.12
 const SLOW_TAU := 0.9
 
+# Hit stop: dunia nyaris membeku sesaat saat sesuatu kena keras. Efek impact
+# terkuat di game aksi 2D, dan nol frame animasi. Kalau terlalu lama, gerakan
+# terasa tersendat; kalau terlalu pendek, tidak terasa sama sekali.
+const HIT_STOP_SCALE := 0.05
+const HIT_STOP_TIME := 0.05
+
 # Time to release a spell, in normal time — this is the cost that makes short
 # chants worth discovering.
 #     cast_time = CAST_BASE + CAST_PER_RUNE * rune_count

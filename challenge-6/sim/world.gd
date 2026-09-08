@@ -2,6 +2,7 @@ class_name World
 extends RefCounted
 
 # component_name: {entity_id: {component_value...}}
+# untuk component a, nanti dia bakal punya entity 1,2,3
 var component_map: Dictionary[String, Dictionary] = {}
 var count: int = 0
 

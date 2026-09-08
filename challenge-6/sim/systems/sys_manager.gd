@@ -5,6 +5,7 @@ static func process(world: World, delta: float) -> void:
 	WaveSystem.process(world, delta)
 	RuntimeSystem.process(world, delta)
 	CastSystem.process(world, delta)
+	TimeScaleSystem.process(world, delta)
 	var sdelta := delta * RoundState.time_scale(world)
 	TimerSystem.process(world, sdelta)
 	#MachineSystem.process(world, sdelta) # untuk sekarang ga kepake, cuma perlu cara kerja doang
