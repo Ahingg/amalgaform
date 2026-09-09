@@ -163,6 +163,10 @@ func _queue(world, player: int) -> Dictionary:
 # --- drawing -----------------------------------------------------------------
 
 func _draw() -> void:
+	# HUD permainan tidak digambar di layar judul: di sana belum ada yang
+	# dimainkan, dan panel rapalan kosong cuma jadi kebisingan di belakang menu.
+	if _di_menu():
+		return
 	var world = _get_world()
 	if world == null:
 		return
@@ -492,3 +496,11 @@ func _rune_blend(runes: Array) -> Color:
 		b += c.b
 	var n := float(runes.size())
 	return Color(r / n, g / n, b / n)
+
+
+func _di_menu() -> bool:
+	var r := get_parent()
+	if r == null:
+		return false
+	var main = r.get_parent()
+	return main != null and main.has_method("is_menu") and main.is_menu()

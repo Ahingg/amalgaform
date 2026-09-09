@@ -44,6 +44,27 @@ Tiga pilihan, urut dari paling murah:
 3. Jangan pasang `HitStop` untuk sumber yang bertahan (lane sim, lebih benar
    tapi butuh sumbernya tahu dia "bertahan" atau "sekali kena").
 
+## Menu dan jeda (9 September)
+
+`view/menu_ui.gd`. Satu berkas untuk dua layar karena keduanya hal yang sama:
+lapisan yang muncul saat ronde TIDAK berjalan.
+
+Keadaannya (`MENU` / `PLAYING` / `PAUSED`) hidup di `main.gd`, sebelah
+`attempt` — dua-duanya milik SESI, bukan milik ronde, jadi tidak ikut dibuang
+waktu World dibuang.
+
+Menjeda cuma berarti `main._physics_process` tidak memanggil SystemManager.
+Tidak ada system yang perlu tahu, tidak ada bendera yang perlu dibaca siapa
+pun, dan tidak ada yang perlu dibereskan saat lanjut. Itu cuma mungkin karena
+tidak ada satu pun keadaan simulasi yang tinggal di luar World — dan ini
+pertama kalinya aturan itu terbayar dalam bentuk fitur yang hampir gratis.
+
+ESC punya dua arti dengan satu aturan: mundur dari apa pun yang sedang kamu
+masuki. Antrian rune terbuka -> batal merapal. Tidak sedang merapal -> jeda.
+
+Musik ikut keadaan sesi, bukan ronde: `theme_menu` di layar judul,
+`music_game` saat main.
+
 ## Utang desain
 
 - **Kontak dinilai ulang tiap frame.** Selama sumber dan target masih

@@ -12,6 +12,40 @@ var world: World
 # with the World.
 var attempt: int = 1
 
+# Keadaan SESI, bukan keadaan ronde. Sama alasannya dengan `attempt`: menu dan
+# jeda hidup di luar satu percobaan, jadi mereka tidak boleh ikut dibuang waktu
+# World-nya dibuang.
+#
+# Yang bikin jeda jadi murah di sini: kalau tidak sedang MAIN, SystemManager
+# cukup tidak dipanggil. Tidak ada satu pun system yang perlu tahu ada jeda,
+# tidak ada bendera yang perlu dibaca siapa pun, dan tidak ada yang perlu
+# dibereskan saat lanjut. Itu cuma mungkin karena tidak ada satu pun keadaan
+# simulasi yang tinggal di luar World.
+enum Mode { MENU, PLAYING, PAUSED }
+var mode: int = Mode.MENU
+
+
+func is_playing() -> bool:
+	return mode == Mode.PLAYING
+
+
+func is_menu() -> bool:
+	return mode == Mode.MENU
+
+
+# Ronde sudah dibangun sejak awal walaupun menunya masih terbuka, supaya
+# arenanya terlihat di belakang menu — dan supaya "mulai" tidak perlu menunggu
+# apa pun dibangun.
+func start() -> void:
+	mode = Mode.PLAYING
+
+
+func toggle_pause() -> void:
+	if mode == Mode.PLAYING:
+		mode = Mode.PAUSED
+	elif mode == Mode.PAUSED:
+		mode = Mode.PLAYING
+
 func _ready() -> void:
 	# Godot menganggap layar ini 1x, jadi jendela seukuran viewport (1120x880)
 	# hanya memakai sepertiga layar Retina dan terlihat kecil. Jendelanya
@@ -35,6 +69,7 @@ func _ready() -> void:
 func retry() -> void:
 	attempt += 1
 	build_round()
+	mode = Mode.PLAYING
 
 
 # Everything that describes one attempt at the room lives here. Retrying is
@@ -51,4 +86,6 @@ func build_round() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if mode != Mode.PLAYING:
+		return
 	SystemManager.process(world, delta)

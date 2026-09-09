@@ -114,6 +114,9 @@ func _ready() -> void:
 	# Penuntun rapalan pertama. Menghilang sendiri begitu satu spell dilempar,
 	# dan tidak pernah muncul lagi di percobaan berikutnya.
 	add_child(Onboarding.new())
+	# Layar judul dan jeda. Ditambahkan TERAKHIR supaya dia yang pertama
+	# menerima input yang belum ditangani siapa pun.
+	add_child(MenuUI.new())
 	if DemoInput.enabled():
 		add_child(DemoInput.new())
 

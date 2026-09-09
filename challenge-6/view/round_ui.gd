@@ -51,7 +51,7 @@ func _main():
 
 func _draw() -> void:
 	var main = _main()
-	if main == null:
+	if main == null or main.is_menu():
 		return
 	var world = main.get("world")
 	if world == null:

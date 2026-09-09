@@ -28,10 +28,12 @@ costs you.
 |---|---|
 | `WASD` | move |
 | `SPACE` | dash |
+| `SPACE` | start, from the title screen |
 | `SHIFT` (hold) | open the rune queue, time slows |
 | `J` `K` `L` | queue fire · water · wind |
 | release `SHIFT` | cast |
 | left click | throw at the cursor |
+| `ESC` | pause (or cancel the rune queue while it is open) |
 | `R` | retry |
 | `F1` | component badges (ECS debug view) |
 | `F11` | fullscreen |

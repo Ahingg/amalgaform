@@ -60,6 +60,7 @@ var _spell_lalu := {}
 var _luka_lalu := {}
 var _selesai_lalu := ""
 var _world_lalu = null
+var _musik_sekarang := ""
 
 
 func _ready() -> void:
@@ -118,6 +119,35 @@ func _bunyi(aliran: AudioStream, nada: float = 1.0, keras: float = 0.0) -> void:
 	p2.play()
 
 
+# Musik mengikuti keadaan SESI, bukan keadaan ronde: tema di layar judul,
+# musik permainan saat main. Judul lagunya diturunkan dari keadaan itu tiap
+# frame, jadi tidak ada satu pun tempat yang harus ingat menghentikan yang lama
+# sebelum memulai yang baru.
+func _tonton_musik() -> void:
+	var main = get_parent()
+	if main == null or not main.has_method("is_menu"):
+		return
+	var mau := "theme_menu" if main.is_menu() else "music_game"
+	if _musik_sekarang == mau and _musik.playing:
+		return
+	if _musik_sekarang == mau:
+		return
+	var m := _muat_musik(mau)
+	if m == null:
+		return
+	_musik_sekarang = mau
+	_musik.stream = m
+	_musik.play()
+
+
+func _muat_musik(nama: String) -> AudioStream:
+	for ext in [".mp3", ".wav"]:
+		var path: String = DIR + nama + ext
+		if ResourceLoader.exists(path):
+			return load(path)
+	return null
+
+
 func _world():
 	var induk := get_parent()
 	return null if induk == null else induk.get("world")
@@ -137,15 +167,11 @@ func _process(_delta: float) -> void:
 		_rune_lalu = 0
 		_antrian_lalu = false
 		_selesai_lalu = ""
-		if world != null and not _musik.playing:
-			var m := _muat("music_game")
-			if m != null:
-				_musik.stream = m
-				_musik.play()
 		return
 	if world == null:
 		return
 
+	_tonton_musik()
 	_tonton_antrian(world)
 	_tonton_spell(world)
 	_tonton_luka(world)

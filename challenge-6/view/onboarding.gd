@@ -63,6 +63,9 @@ func _player(world) -> int:
 func _draw() -> void:
 	if selesai:
 		return
+	var m = _main_node()
+	if m != null and not m.is_playing():
+		return
 	var world = _world()
 	var r := _renderer()
 	if world == null or r == null:
@@ -139,3 +142,8 @@ func _sorot_slot(r: WorldRenderer) -> void:
 	var d: float = 4.0 + 3.0 * sin(t * 5.0)
 	draw_rect(Rect2(asal - Vector2(d, d), Vector2(total + d * 2.0, CastUI.BOX + d * 2.0)),
 		Color(1.0, 0.9, 0.55, 0.55), false, 2.5)
+
+
+func _main_node():
+	var r := _renderer()
+	return null if r == null else r.get_parent()
