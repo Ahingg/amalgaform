@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c83y7ygsat3jf"
-path="res://.godot/imported/land7.png-247ff148a24225c9d5c4af5186c3db7d.ctex"
+uid="uid://fofsnei8e2id"
+path="res://.godot/imported/background2.PNG-b3225b3912ab0f6484a6ac00a03651ec.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/land7.png"
-dest_files=["res://.godot/imported/land7.png-247ff148a24225c9d5c4af5186c3db7d.ctex"]
+source_file="res://assets/background2.PNG"
+dest_files=["res://.godot/imported/background2.PNG-b3225b3912ab0f6484a6ac00a03651ec.ctex"]
 
 [params]
 

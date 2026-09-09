@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://mckemrf3kp5y"
-path="res://.godot/imported/wall2.png-fb1812c4c618cdae1e508d1c80459572.ctex"
+uid="uid://c82vyd853ijnh"
+path="res://.godot/imported/humanoid_walk1_silhouette.png-581307c27e182d77cd30cdee23d75169.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/wall2.png"
-dest_files=["res://.godot/imported/wall2.png-fb1812c4c618cdae1e508d1c80459572.ctex"]
+source_file="res://assets/enemies/humanoid_walk1_silhouette.png"
+dest_files=["res://.godot/imported/humanoid_walk1_silhouette.png-581307c27e182d77cd30cdee23d75169.ctex"]
 
 [params]
 

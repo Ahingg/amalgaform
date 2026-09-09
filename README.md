@@ -3,6 +3,8 @@
 A top-down spell-crafting arena, built in ten working days as a Game track
 rotation at the Apple Developer Academy @ BINUS. Godot 4.7, GDScript.
 
+![Amalgaform](docs/screenshot.png)
+
 **You hold a key, queue up to four runes, release, then throw.** The first rune
 decides the *shape* of the spell. The whole queue decides what is *inside* it.
 Same three runes in a different order give you a completely different spell.

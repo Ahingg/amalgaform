@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c32qkwacqy8ja"
-path="res://.godot/imported/land1.png-aece0588f119417030e3ed690ecd2e7a.ctex"
+uid="uid://bok53c30f1v3n"
+path="res://.godot/imported/splash_body_silhouette.png-fbd8fb8dc1f09ca8c9b537d9b3cdad3d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/land1.png"
-dest_files=["res://.godot/imported/land1.png-aece0588f119417030e3ed690ecd2e7a.ctex"]
+source_file="res://assets/enemies/splash_body_silhouette.png"
+dest_files=["res://.godot/imported/splash_body_silhouette.png-fbd8fb8dc1f09ca8c9b537d9b3cdad3d.ctex"]
 
 [params]
 

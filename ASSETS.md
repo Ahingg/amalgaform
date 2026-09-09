@@ -111,36 +111,46 @@ Waktu yang dibutuhkan: sekitar 30 menit mengunduh. Dampaknya ke rasa main lebih
 besar daripada gambar mana pun.
 
 
-## Peta, percikan, dan basah (8 September)
+## Lantai, garis tepi musuh, dan icon (9 September)
 
-### map.PNG
+### Lantai
 
-Satu kanvas 1024x1024 dibagi 4x4. Pembagiannya:
+`assets/background1.PNG` dan `background2.PNG` — goresan putih transparan di
+kanvas 2048. Ditimpa ke warna dasar gelap, dua lapis dengan **skala ulangan
+berbeda** (6 petak dan 9 petak). Angkanya sengaja bukan kelipatan: kalau sama,
+keduanya berulang di jarak yang sama dan polanya justru jadi lebih kentara.
 
-| Baris | y | Isi | Dipakai jadi |
-|---|---|---|---|
-| 0 | 0-256 | puncak dinding, nyaris hitam rata | tidak dipakai |
-| 1 | 256-512 | muka dinding, juntaian akar | `map/wall0..3.png` |
-| 2-3 | 512-1024 | lantai | `map/land0..7.png` |
+Pendekatan ubin bergambar penuh dibuang. Ubin selalu terbaca sebagai petak
+berapa pun besar bloknya, karena setiap ubin punya batas dan mata menemukan
+batas. Goresan transparan tidak punya batas — yang terlihat cuma guratannya,
+dan latar gelap di bawahnya menyambung tanpa putus.
 
-Dipotong dengan `python3 tools/slice_map.py` (butuh Pillow). Kalau map.PNG
-digambar ulang, jalankan lagi — jangan potong tangan.
+Dinding juga dibuang. Arena sekarang memakai tinggi layar penuh.
 
-Baris 0 sengaja dibuang. Begitu dijejalkan ke pita setinggi 96 piksel di layar
-dia cuma jadi garis gelap tanpa bentuk, dan dindingnya malah terbaca sebagai
-dua pita tipis alih-alih satu dinding.
+### Garis tepi musuh
 
-Di layar, satu gambar lantai menutupi **blok 4x4 petak**, bukan satu petak.
-Satu-gambar-per-petak terlihat seperti kertas kado: motifnya berulang tiap 50
-piksel dan mata langsung menangkap kisi-kisinya. Ubin dipilih dari koordinat
-petaknya (bukan diacak), jadi lantainya diam dan tidak perlu disimpan di mana
-pun.
+Seni musuh 97% hitam pekat (kecerahan rata-rata 4 dari 255). `modulate` di
+Godot itu PERKALIAN, jadi **tidak ada** nilai modulate yang bisa mencerahkan
+piksel hitam. Versi lama menggambar spritenya berkali-kali dengan warna terang
+untuk membuat rim, dan itu menghasilkan halo hitam di atas latar hitam —
+sia-sia selama berhari-hari tanpa ada yang sadar.
 
-Dinding cuma di tepi ATAS. Dari sudut pandang ini dinding yang menghadap kamera
-memang cuma satu; menggambar keempat sisi bikin arenanya terbaca seperti kotak
-yang dilihat dari dalam. Dinding juga hidup di LUAR lapangan, bukan di petak
-paling atas — kalau dia mengambil petak, dia jadi tempat yang bisa ditempati
-dan sim harus tahu dia ada.
+Yang dipakai sekarang: gambar siluet putih yang dibangkitkan dari spritenya
+sendiri.
+
+    python3 tools/make_silhouette.py assets/enemies/
+
+Menghasilkan `*_silhouette.png` — bentuk dan alpha sama persis, seluruh piksel
+putih. Renderer menggambarnya di delapan arah pada skala YANG SAMA di belakang
+badannya. Bukan sekali lebih besar: memperbesar menumbuhkan gambar dari titik
+jangkarnya, dan jangkarnya ada di KAKI, jadi garisnya jadi tebal di kepala dan
+hilang di kaki.
+
+### Icon
+
+`assets/icon.PNG` (2048x2048), dipasang di `project.godot` (`config/icon`) dan
+`export_presets.cfg` (`application/icon`). Godot yang mengubahnya jadi `.icns`
+saat ekspor.
 
 ### Impact/ dan Wet/
 

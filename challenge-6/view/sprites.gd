@@ -176,26 +176,21 @@ static func cast_circle(rune: String) -> Texture2D:
 
 # --- lantai & dinding --------------------------------------------------------
 
-const LAND_COUNT := 8
-
 # Ubin lantai dipilih dari KOORDINAT petaknya, bukan diacak. Diacak berarti
 # lantainya berganti tiap frame; diturunkan dari koordinat berarti dia diam,
 # tetap tidak berulang secara kentara, dan tidak perlu disimpan di mana pun.
-static func land(tx: int, ty: int) -> Texture2D:
-	var k: int = absi((tx * 73856093) ^ (ty * 19349663))
-	return tex("map/land%d.png" % (k % LAND_COUNT))
+# Dua lapis goresan untuk lantai. Yang satu lebih lembut, yang satu lebih tajam;
+# ditumpuk dengan skala berbeda supaya polanya tidak pernah berulang serempak.
+static func floor_layer(i: int) -> Texture2D:
+	return tex("background%d.PNG" % (1 if i == 0 else 2))
 
 
-# Dicerminkan kiri-kanan untuk separuh petak, dari koordinat juga. Delapan ubin
-# jadi terasa enam belas tanpa satu berkas tambahan.
-static func land_mirror(tx: int, ty: int) -> bool:
-	return absi((tx * 83492791) ^ (ty * 15485863)) % 2 == 0
-
-
-# Potongan dinding: 256x512, jadi satu potong menutupi satu petak lebar dan dua
-# petak tinggi.
-static func wall(tx: int) -> Texture2D:
-	return tex("map/wall%d.png" % (absi(tx * 40503 + 7) % 4))
+# Siluet putih, dibuat oleh tools/make_silhouette.py. Ada karena modulate itu
+# perkalian: seni musuh 97% hitam, jadi tidak ada warna modulate yang bisa
+# mencerahkannya. Garis tepi hanya mungkin kalau gambarnya memang sudah terang.
+static func enemy_silhouette(id: int, t: float) -> Texture2D:
+	var phase := fmod(t * 3.2 + float(id) * 0.7, 2.0)
+	return tex("enemies/humanoid_walk%d_silhouette.png" % (1 if phase < 1.0 else 2))
 
 
 # --- percikan kena -----------------------------------------------------------

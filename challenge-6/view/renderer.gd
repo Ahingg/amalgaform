@@ -52,11 +52,6 @@ const TOP_BAR := 46.0
 const BOTTOM_BAR := 150.0
 const SIDE_PAD := 28.0
 
-# Pita yang disisakan DI ATAS arena untuk muka dinding. Dinding digambar di luar
-# lapangan, bukan di petak paling atas — kalau dia mengambil petak, dia jadi
-# bagian yang bisa ditempati dan sim harus tahu dia ada. Di luar lapangan, dia
-# murni gambar: sim tidak pernah dengar soal dinding.
-const WALL_BAND := 96.0
 
 # Dihitung ulang tiap gambar dari ukuran jendela, jadi arenanya selalu mengisi
 # dan tidak pernah ketinggalan kalau jendelanya diubah.
@@ -100,12 +95,11 @@ var _last_world = null
 
 func _fit_arena() -> void:
 	var vp := get_viewport_rect().size
-	var usable := Vector2(vp.x - SIDE_PAD * 2.0,
-		vp.y - TOP_BAR - WALL_BAND - BOTTOM_BAR)
+	var usable := Vector2(vp.x - SIDE_PAD * 2.0, vp.y - TOP_BAR - BOTTOM_BAR)
 	tile_size = floorf(minf(usable.x / float(grid_width), usable.y / float(grid_height)))
 	var w := tile_size * grid_width
 	var h := tile_size * grid_height
-	margin = Vector2((vp.x - w) * 0.5, TOP_BAR + WALL_BAND + (usable.y - h) * 0.5)
+	margin = Vector2((vp.x - w) * 0.5, TOP_BAR + (usable.y - h) * 0.5)
 
 
 func _ready() -> void:
@@ -438,7 +432,6 @@ func _draw_grid() -> void:
 
 	draw_rect(arena, ARENA, true)
 	_draw_floor(org)
-	_draw_walls(org)
 
 	# Vignette: tepi arena diredupkan berlapis supaya mata tertarik ke tengah
 	# dan batas lapangan terasa tanpa perlu dinding yang digambar.
@@ -462,106 +455,45 @@ func _draw_grid() -> void:
 	draw_rect(arena, Color(LINE.r, LINE.g, LINE.b, 0.22), false, 2.0)
 
 
-# Lantai bertekstur. Satu gambar menutupi BLOK 4x4 petak, bukan satu petak.
+# Lantai: warna dasar gelap, lalu dua lapis goresan putih transparan di atasnya.
 #
-# Versi satu-gambar-per-petak terlihat seperti kertas kado: motifnya berulang
-# tiap 50 piksel dan matanya langsung menangkap kisi-kisinya. Diperbesar jadi
-# blok, motif yang sama baru berulang setiap 200 piksel, dan sambungannya jatuh
-# di tempat yang berbeda dari garis kisi — dua-duanya berhenti terbaca.
+# Versi sebelumnya memakai ubin lantai bergambar penuh, dan itu selalu terbaca
+# sebagai petak berapa pun besar bloknya — karena setiap ubin punya batas, dan
+# mata menemukan batas. Goresan transparan tidak punya batas: yang terlihat cuma
+# guratannya, dan latar hitam di bawahnya menyambung tanpa putus.
 #
-# Digambar DI ATAS warna ARENA dengan alpha, bukan menggantikannya. Warna
-# dasarnya yang menjaga nilai tengah komposisi: pemain hampir putih, musuh
-# hampir hitam, dan lantai harus tetap di antara keduanya. Kalau teksturnya
-# dipasang mentah, lantainya turun terlalu gelap dan musuh mulai lumer ke
-# dalamnya.
-const FLOOR_BLOCK := 4
+# Dua lapis dengan SKALA BERBEDA, bukan dua lapis sejajar. Kalau skalanya sama,
+# keduanya berulang di jarak yang sama dan polanya justru jadi lebih kentara,
+# bukan lebih samar.
+const FLOOR_TILE_A := 6      # berapa petak per ulangan, lapis lembut
+const FLOOR_TILE_B := 9      # lapis tajam, sengaja tidak kelipatan A
 
 func _draw_floor(org: Vector2) -> void:
-	var tint := Color(1.18, 1.16, 1.28, 0.72)
-	var bx: int = 0
-	while bx < grid_width:
-		var by: int = 0
-		while by < grid_height:
-			var tex := Sprites.land(bx, by)
-			if tex == null:
-				return
-			# Blok di tepi bisa terpotong kalau ukuran arena tidak habis dibagi
-			# empat. Yang diambil bagian gambarnya, bukan gambarnya diperkecil —
-			# kalau diperkecil, ubin tepi punya skala berbeda dan sambungannya
-			# langsung kelihatan.
-			var cols: int = mini(FLOOR_BLOCK, grid_width - bx)
-			var rows: int = mini(FLOOR_BLOCK, grid_height - by)
-			var src := Rect2(Vector2.ZERO,
-				Vector2(tex.get_width() * float(cols) / FLOOR_BLOCK,
-					tex.get_height() * float(rows) / FLOOR_BLOCK))
-			var dst := Rect2(org + Vector2(bx, by) * tile_size,
-				Vector2(cols, rows) * tile_size + Vector2.ONE)
-			if Sprites.land_mirror(bx, by):
-				var axis: float = dst.position.x + dst.size.x * 0.5
-				draw_set_transform_matrix(Transform2D(Vector2(-1, 0), Vector2(0, 1),
-					Vector2(axis * 2.0, 0)))
-				draw_texture_rect_region(tex, dst, src, tint)
-				draw_set_transform_matrix(Transform2D.IDENTITY)
-			else:
-				draw_texture_rect_region(tex, dst, src, tint)
-			by += FLOOR_BLOCK
-		bx += FLOOR_BLOCK
+	var w: float = grid_width * tile_size
+	var h: float = grid_height * tile_size
+	_floor_layer(org, Vector2(w, h), Sprites.floor_layer(0), FLOOR_TILE_A, 0.10)
+	_floor_layer(org, Vector2(w, h), Sprites.floor_layer(1), FLOOR_TILE_B, 0.07)
 
 
-# Muka dinding di tepi atas, satu potong tiap empat petak — alasannya sama
-# seperti lantai. Cuma tepi atas: dari sudut pandang ini dinding yang menghadap
-# kamera cuma ada satu; tiga sisi lain membelakangi dan yang kelihatan cuma tepi
-# lantainya. Menggambar keempatnya bikin arenanya terbaca seperti kotak yang
-# dilihat dari dalam.
-#
-# Dinding hidup DI LUAR lapangan, bukan di petak paling atas. Kalau dia
-# mengambil petak, dia jadi tempat yang bisa ditempati dan sim harus tahu dia
-# ada. Di luar lapangan, dia murni gambar: sim tidak pernah dengar soal dinding.
-# Dua petak per potong: potongannya persegi (256x256) dan pita dindingnya
-# setinggi kira-kira dua petak, jadi di lebar ini gambarnya nyaris tidak
-# diregangkan sama sekali.
-const WALL_BLOCK := 2
-
-func _draw_walls(org: Vector2) -> void:
-	if Sprites.wall(0) == null:
+func _floor_layer(org: Vector2, size: Vector2, tex: Texture2D,
+		petak: int, alpha: float) -> void:
+	if tex == null:
 		return
-	var band: float = minf(WALL_BAND, tile_size * 2.2)
-	var top: float = org.y - band
-
-	# Pita gelap rata di belakang dinding: menutup celah antara puncak dinding
-	# dan HUD, dan memberi juntaiannya sesuatu yang gelap untuk digantungi.
-	draw_rect(Rect2(Vector2(org.x, top - 6.0),
-		Vector2(grid_width * tile_size, band + 6.0)),
-		Color(0.045, 0.042, 0.058), true)
-
-	var bx: int = 0
-	while bx < grid_width:
-		var cols: int = mini(WALL_BLOCK, grid_width - bx)
-		var tex := Sprites.wall(bx)
-		var src := Rect2(Vector2.ZERO,
-			Vector2(tex.get_width() * float(cols) / WALL_BLOCK, tex.get_height()))
-		# Selang-seling dicerminkan supaya juntaiannya tidak terbaca sebagai
-		# satu motif yang diulang sepuluh kali.
-		var dst := Rect2(Vector2(org.x + bx * tile_size, top),
-			Vector2(cols * tile_size + 1.0, band))
-		var tint := Color(1.15, 1.12, 1.28, 1.0)
-		if (bx / WALL_BLOCK) % 2 == 1:
-			var axis: float = dst.position.x + dst.size.x * 0.5
-			draw_set_transform_matrix(Transform2D(Vector2(-1, 0), Vector2(0, 1),
-				Vector2(axis * 2.0, 0)))
-			draw_texture_rect_region(tex, dst, src, tint)
-			draw_set_transform_matrix(Transform2D.IDENTITY)
-		else:
-			draw_texture_rect_region(tex, dst, src, tint)
-		bx += WALL_BLOCK
-
-	# Bayangan yang dijatuhkan dinding ke lantai. Ini yang bikin dinding terbaca
-	# BERDIRI, bukan sekadar tempelan di tepi atas.
-	for i in 6:
-		var f := float(i) / 6.0
-		draw_rect(Rect2(Vector2(org.x, org.y + f * tile_size * 0.7),
-			Vector2(grid_width * tile_size, tile_size * 0.12)),
-			Color(0, 0, 0, 0.16 * (1.0 - f)), true)
+	var sisi: float = tile_size * petak
+	var kolom: int = int(ceil(size.x / sisi))
+	var baris: int = int(ceil(size.y / sisi))
+	var warna := Color(1, 1, 1, alpha)
+	for by in baris:
+		for bx in kolom:
+			var at := org + Vector2(bx, by) * sisi
+			# Bagian yang lewat tepi arena dipotong lewat REGION, bukan dibiarkan
+			# meluber: arena punya bingkai, dan goresan yang keluar dari bingkai
+			# langsung terbaca sebagai bocor.
+			var lebar: float = minf(sisi, org.x + size.x - at.x)
+			var tinggi: float = minf(sisi, org.y + size.y - at.y)
+			var src := Rect2(Vector2.ZERO,
+				Vector2(tex.get_width() * lebar / sisi, tex.get_height() * tinggi / sisi))
+			draw_texture_rect_region(tex, Rect2(at, Vector2(lebar, tinggi)), src, warna)
 
 
 func _draw_entity(world, id: int) -> void:
@@ -690,13 +622,31 @@ func _draw_sprite(world, id: int, rect: Rect2, alpha: float) -> bool:
 		_blit(pair[1], rect, Sprites.PLAYER_SCALE, flip, Color(SHADOW.r, SHADOW.g, SHADOW.b, alpha), align)
 		return true
 
-	# Musuh hampir hitam, tapi diberi tepi terang tipis: siluet hitam pekat di
-	# latar gelap gampang lumer jadi satu massa saat berkerumun.
+	# Musuh hampir hitam, dan tanpa tepi terang dia lumer jadi satu massa dengan
+	# lantai gelap begitu berkerumun.
+	#
+	# Tepinya TIDAK bisa dibuat dari spritenya sendiri. Modulate itu perkalian
+	# dan seni musuh ini 97% hitam pekat, jadi menggambarnya berkali-kali dengan
+	# warna terang tetap menghasilkan hitam — versi lama berkas ini melakukan
+	# persis itu selama berhari-hari dan tidak menghasilkan apa pun.
+	#
+	# Yang dipakai sekarang: gambar siluet putih (dibuat tools/make_silhouette.py)
+	# digambar SEDIKIT LEBIH BESAR di belakang badannya. Yang menyembul di
+	# pinggirnya itu garis tepinya.
 	var etex := Sprites.enemy_walk(id, t)
 	var eflip := _facing_flip(world, id, Sprites.ENEMY_FACES_LEFT)
-	var rim := Color(LINE.r, LINE.g, LINE.b, alpha * 0.30)
-	for off in [Vector2(-2, 0), Vector2(2, 0), Vector2(0, -2), Vector2(0, 2)]:
-		_blit(etex, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE, eflip, rim)
+	var sil := Sprites.enemy_silhouette(id, t)
+	if sil != null:
+		# Digeser ke delapan arah pada skala YANG SAMA, bukan digambar sekali
+		# lebih besar. Memperbesar akan menumbuhkan gambar dari titik jangkarnya
+		# — dan jangkar di sini ada di KAKI, jadi garisnya jadi tebal di kepala
+		# dan hilang sama sekali di kaki.
+		var d: float = maxf(1.5, tile_size * 0.045)
+		for off in [Vector2(-d, 0), Vector2(d, 0), Vector2(0, -d), Vector2(0, d),
+				Vector2(-d, -d) * 0.7, Vector2(d, -d) * 0.7,
+				Vector2(-d, d) * 0.7, Vector2(d, d) * 0.7]:
+			_blit(sil, Rect2(rect.position + off, rect.size), Sprites.ENEMY_SCALE,
+				eflip, Color(LINE.r, LINE.g, LINE.b, alpha * 0.42))
 
 	# Kilat kena digambar SEBELUM badannya, jadi cahayanya ada di belakang dan
 	# siluet musuhnya tetap terbaca. Kalau ditumpuk di atas, yang terjadi cuma

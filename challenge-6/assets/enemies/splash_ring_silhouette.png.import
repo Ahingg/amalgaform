@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4td4uj8rv6s2"
-path="res://.godot/imported/land5.png-67f6321649da882b5b601ec611892273.ctex"
+uid="uid://fkq1rxl34gbc"
+path="res://.godot/imported/splash_ring_silhouette.png-09b22c90739238c0929bb5e5f72a08fc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/map/land5.png"
-dest_files=["res://.godot/imported/land5.png-67f6321649da882b5b601ec611892273.ctex"]
+source_file="res://assets/enemies/splash_ring_silhouette.png"
+dest_files=["res://.godot/imported/splash_ring_silhouette.png-09b22c90739238c0929bb5e5f72a08fc.ctex"]
 
 [params]
 
