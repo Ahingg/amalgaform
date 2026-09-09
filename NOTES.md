@@ -65,6 +65,64 @@ masuki. Antrian rune terbuka -> batal merapal. Tidak sedang merapal -> jeda.
 Musik ikut keadaan sesi, bukan ronde: `theme_menu` di layar judul,
 `music_game` saat main.
 
+## Playtest dua orang (9 September, malam) — TIDAK diubah sebelum presentasi
+
+Dua orang main bergantian, saling adu waktu dan saling ejek. Itu sendiri temuan:
+mereka membandingkan strategi, bukan cuma menyelesaikan ronde. Dinamikanya jalan.
+
+### 1. Aqua-dulu + Ignis adalah meta, dan selisihnya tidak tipis
+
+Angkanya menjelaskan kenapa, dan ini bukan soal penyetelan:
+
+    PUDDLE_LIFETIME   3.0 detik
+    INVULNERABLE_TIME 0.5 detik
+    -> satu genangan bisa mengenai satu musuh sampai ENAM kali
+
+Genangan membawa `Damaged` dan bertahan tiga detik. `ContactSystem` menilai
+ulang kontak tiap frame, dan yang membatasi cuma `Invulnerable` selama 0,5
+detik. Jadi satu rapalan aqua+ignis memberikan sampai 6x kerusakan peluru api,
+dengan ongkos rapal yang sama. Peluru Ignis murni cuma dapat satu ketukan.
+
+Itu bukan bonus 20%, itu 600%. Wajar kalau dia jadi satu-satunya yang dipakai.
+
+**Akarnya sama persis dengan guncangan yang terasa terlalu sering** (lihat
+catatan 9 September di atas). Satu utang — "kontak dinilai ulang tiap frame" —
+muncul sebagai DUA gejala yang kelihatannya tidak berhubungan: yang satu soal
+rasa, yang satu soal keseimbangan. Ini contoh bagus kenapa utang desain layak
+dicatat walaupun belum menggigit.
+
+Arah perbaikan, nanti:
+1. Sumber yang bertahan punya jeda antar-ketukannya sendiri, terpisah dari
+   `Invulnerable` — jadi genangan bisa disetel tanpa menyentuh i-frame.
+2. Atau `Damaged` dari sumber yang bertahan dibagi rata sepanjang umurnya.
+3. Yang PALING gampang tapi paling tumpul: turunkan `PUDDLE_LIFETIME`. Ini
+   menambal angkanya tanpa menyentuh sebabnya, dan sebabnya akan muncul lagi
+   di bentuk berikutnya yang bertahan.
+
+### 2. Ventus tidak ada yang mau, dan alasannya struktural
+
+    BURST_LIFETIME 0.3 detik
+    hembusan lahir di dekat pemain dan MENDORONG MENJAUH
+
+Permainannya kejar-kejaran. Pemain selalu lari, musuh selalu mengejar.
+Mendorong musuh menjauh berarti MENGULANG kejarannya — pemain membayar satu
+rapalan penuh untuk kembali ke keadaan yang sama. Tidak ada situasi di mana itu
+menguntungkan, kecuali saat terkepung, dan pemain yang bermain benar jarang
+terkepung.
+
+Jadi masalahnya bukan angkanya kurang besar. Perannya yang tidak punya tempat
+di dinamika yang sebenarnya terjadi.
+
+Arah perbaikan, nanti — dan ini keputusan DESAIN, bukan penyetelan:
+1. Angin MENARIK, bukan mendorong. Mengumpulkan musuh jadi satu titik langsung
+   berguna, dan langsung nyambung dengan genangan.
+2. Atau angin jadi alat GERAK: yang terdorong pemainnya sendiri, bukan musuhnya.
+3. Atau dorongannya tetap, tapi musuh yang terdorong kehilangan kendali lebih
+   lama — jadi nilainya bukan jarak, melainkan waktu.
+
+Nomor 1 yang paling kecil ongkosnya: `Inflict` sudah menghitung arah, tinggal
+tandanya. Tapi ini menyentuh rasa main, jadi bukan untuk sekarang.
+
 ## Utang desain
 
 - **Kontak dinilai ulang tiap frame.** Selama sumber dan target masih
