@@ -94,7 +94,7 @@ const SPAWN_OFFSET := 0.7
 
 # --- payload base values (before the SPREAD split) --------------------------
 
-const FIRE_DAMAGE := 300.0
+const FIRE_DAMAGE := 10.0
 const KNOCKBACK_STRENGTH := 21
 const KNOCKBACK_DURATION := 0.3
 

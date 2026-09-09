@@ -27,13 +27,23 @@ const DIR := "res://assets/sfx/"
 # tidak boleh menghabiskan seluruh jatah dan membungkam bunyi rune berikutnya.
 const SUARA := 14
 
-const VOL_SFX := -6.0
-const VOL_MUSIK := -5.0
+const VOL_SFX := -5.0
+# Musik duduk JAUH di bawah efek suara, dan ini bukan selera. Musik itu latar
+# yang terus menerus; efek suara itu kabar. Begitu latarnya sekeras kabarnya,
+# yang hilang bukan musiknya — yang hilang informasinya.
+const VOL_MUSIK := -14.0
 
 # Jeda minimum antar bunyi yang SAMA. Tanpa ini, tiga musuh yang kena dalam
 # satu frame membunyikan berkas yang sama tiga kali dan hasilnya bukan tiga
 # kali lebih keras — hasilnya satu bunyi yang pecah.
 const JEDA_SAMA := 0.05
+
+# Jarak antar geraman menganggur untuk SATU musuh, dan jarak minimum antar
+# geraman siapa pun. Yang kedua yang menjaga kerumunan tetap terdengar seperti
+# kerumunan, bukan seperti paduan suara.
+const GROWL_MIN := 6.0
+const GROWL_MAKS := 14.0
+const GROWL_JEDA := 2.5
 
 var _pemutar: Array[AudioStreamPlayer] = []
 var _berikut := 0
@@ -44,6 +54,8 @@ var _terakhir := {}
 var _rune_lalu := 0
 var _antrian_lalu := false
 var _musuh_lalu := {}
+var _growl_next := {}
+var _growl_gate := 0.0
 var _spell_lalu := {}
 var _luka_lalu := {}
 var _selesai_lalu := ""
@@ -119,6 +131,7 @@ func _process(_delta: float) -> void:
 	if world != _world_lalu:
 		_world_lalu = world
 		_musuh_lalu.clear()
+		_growl_next.clear()
 		_spell_lalu.clear()
 		_luka_lalu.clear()
 		_rune_lalu = 0
@@ -199,7 +212,7 @@ func _tonton_luka(world) -> void:
 			_bunyi(_muat("player_hurt_1"), randf_range(0.95, 1.05), 2.0)
 		else:
 			_bunyi(_varian("impact", 21), randf_range(0.9, 1.1))
-			_bunyi(_muat("enemy_hurt_1"), randf_range(0.92, 1.08), -4.0)
+			_bunyi(_muat("enemy_hurt_1"), randf_range(0.92, 1.08), 0.0)
 	_luka_lalu = sekarang
 
 
@@ -207,15 +220,31 @@ func _tonton_luka(world) -> void:
 # komponen: kematian memang tidak punya komponen, dan tidak perlu punya.
 func _tonton_musuh(world) -> void:
 	var q: Array[String] = [ViewConfig.ENEMY]
+	var t := float(Time.get_ticks_msec()) / 1000.0
 	var sekarang := {}
 	for e in world.get_entities_with_comp(q):
 		sekarang[e] = true
+
 	for id in sekarang:
 		if not _musuh_lalu.has(id):
-			_bunyi(_varian("enemy_growl", 4), randf_range(0.88, 1.12), -7.0)
+			_bunyi(_varian("enemy_growl", 4), randf_range(0.88, 1.12), -2.0)
+			_growl_next[id] = t + randf_range(GROWL_MIN, GROWL_MAKS)
+			continue
+		# Geraman berkala. Sekali saat muncul saja terlalu mudah terlewat —
+		# musuh berjalan diam selama sepuluh detik lalu tiba-tiba memukul.
+		if t < float(_growl_next.get(id, 0.0)) or t < _growl_gate:
+			continue
+		_bunyi(_varian("enemy_growl", 4), randf_range(0.85, 1.15), -5.0)
+		_growl_next[id] = t + randf_range(GROWL_MIN, GROWL_MAKS)
+		# Gerbang global: tanpa ini, delapan musuh yang jadwalnya kebetulan
+		# berdekatan akan menggeram bersahutan tanpa henti dan berhenti terbaca
+		# sebagai makhluk — jadi kebisingan.
+		_growl_gate = t + GROWL_JEDA
+
 	for id in _musuh_lalu:
 		if not sekarang.has(id):
 			_bunyi(_muat("enemy_death_1"), randf_range(0.94, 1.06))
+			_growl_next.erase(id)
 	_musuh_lalu = sekarang
 
 

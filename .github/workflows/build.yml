@@ -1,0 +1,122 @@
+name: build
+
+# Dua pekerjaan yang sengaja dipisah.
+#
+# `check` cepat dan jalan di setiap dorongan: dia cuma menanyakan satu hal —
+# apakah proyeknya masih bisa dibuka dan seluruh skripnya masih terurai. Itu
+# kesalahan yang paling sering terjadi dan paling mahal kalau baru ketahuan
+# saat mau build.
+#
+# `build` lambat karena harus mengunduh export template 1,3 GB, jadi dia hanya
+# jalan di main dan di tag. Templatenya disimpan di cache, jadi unduhannya cuma
+# terjadi sekali sampai versi Godot-nya berubah.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  check:
+    name: parse & import
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ambil Godot
+        run: |
+          curl -sL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip"
+          unzip -q godot.zip
+          echo "GODOT=$PWD/Godot.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+
+      - name: Impor aset
+        # Impor pertama selalu melaporkan "resource not found" untuk berkas yang
+        # belum sempat dibuat saat berkas lain memuatnya. Jalan dua kali
+        # menyelesaikannya, dan itu memang cara yang dianjurkan Godot.
+        run: |
+          "$GODOT" --headless --import --path challenge-6 || true
+          "$GODOT" --headless --import --path challenge-6
+
+      - name: Periksa skrip terurai
+        run: |
+          out=$("$GODOT" --headless --quit-after 120 --path challenge-6 2>&1) || true
+          echo "$out"
+          # "resources still in use at exit" itu peringatan saat menutup, bukan
+          # kesalahan proyek — muncul karena pemutar audio masih memegang
+          # streamnya waktu pohon node dibongkar.
+          if echo "$out" | grep -E "SCRIPT ERROR|Parse Error|Compile Error"; then
+            echo "::error::ada skrip yang gagal terurai"
+            exit 1
+          fi
+
+      - name: Periksa penempatan spell
+        run: "$GODOT" --headless --path challenge-6 --script res://tools/probe_launch.gd
+
+  build:
+    name: macOS app
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ambil Godot
+        run: |
+          curl -sL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip"
+          unzip -q godot.zip
+          echo "GODOT=$PWD/Godot.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+
+      - name: Cache export template
+        id: tpl
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Application Support/Godot/export_templates
+          key: godot-templates-${{ env.GODOT_VERSION }}
+
+      - name: Ambil export template
+        if: steps.tpl.outputs.cache-hit != 'true'
+        run: |
+          curl -sL -o templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q templates.tpz
+          DEST="$HOME/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$DEST"
+          mv templates/* "$DEST/"
+
+      - name: Impor aset
+        run: |
+          "$GODOT" --headless --import --path challenge-6 || true
+          "$GODOT" --headless --import --path challenge-6
+
+      - name: Ekspor
+        run: |
+          mkdir -p build
+          "$GODOT" --headless --path challenge-6 \
+            --export-release "macOS" "$PWD/build/Amalgaform.app"
+
+      - name: Tanda tangan ad-hoc
+        # Runner tidak punya Developer ID milik Xaviero, dan kunci pribadi tidak
+        # akan ditaruh di sini. Jadi hasil CI ini untuk memeriksa bahwa build-nya
+        # TIDAK RUSAK, bukan untuk dibagikan. Rilis yang dibagi ke orang lain
+        # tetap dibuat di mesin sendiri lewat tools/build_mac.sh, yang bisa
+        # menandatangani dan menotarisasi dengan benar.
+        run: |
+          xattr -cr build/Amalgaform.app
+          codesign --force --deep --sign - build/Amalgaform.app
+          codesign --verify --deep --strict build/Amalgaform.app
+
+      - name: Bungkus
+        run: ditto -c -k --keepParent build/Amalgaform.app build/Amalgaform.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Amalgaform-macOS
+          path: build/Amalgaform.zip
+          retention-days: 14
