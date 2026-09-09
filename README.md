@@ -81,6 +81,23 @@ All art is hand-drawn for this project. Monster sounds are my own voice,
 recorded and processed with the scripts in `tools/`. Some sound effects are
 derived from royalty-free libraries (Sonniss GDC bundle, Kenney).
 
+## Builds
+
+Two different things come out of this repo, and they are not interchangeable.
+
+| | Where | Opens on someone else's Mac? |
+|---|---|---|
+| **Release** | `NOTARIZE=1 ./tools/build_mac.sh` → `~/Builds/Amalgaform.zip` | yes, double-click |
+| **CI check** | Actions → artifact | **no** — ad-hoc signed only |
+
+The CI artifact exists to prove the project still exports. It is not signed with
+a Developer ID and not notarized, so macOS refuses it with *"Apple could not
+verify..."*. That is the correct behaviour, not a broken build.
+
+Note that a plain `./tools/build_mac.sh` (without `NOTARIZE=1`) replaces the app
+and **drops the notarization ticket**. Any build meant for other people has to
+go through the notarized path again.
+
 ## Status
 
 Ten day rotation project, not a product. It is finished in the sense that it

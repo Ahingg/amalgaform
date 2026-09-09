@@ -108,19 +108,46 @@ jobs:
       - name: Tanda tangan ad-hoc
         # Runner tidak punya Developer ID milik Xaviero, dan kunci pribadi tidak
         # akan ditaruh di sini. Jadi hasil CI ini untuk memeriksa bahwa build-nya
-        # TIDAK RUSAK, bukan untuk dibagikan. Rilis yang dibagi ke orang lain
-        # tetap dibuat di mesin sendiri lewat tools/build_mac.sh, yang bisa
-        # menandatangani dan menotarisasi dengan benar.
+        # TIDAK RUSAK, bukan untuk dibagikan — kalau dibuka di Mac lain,
+        # Gatekeeper menolaknya dengan "Apple could not verify...". Itu perilaku
+        # yang benar, bukan kerusakan. Rilis yang dibagi ke orang lain dibuat di
+        # mesin sendiri lewat `NOTARIZE=1 ./tools/build_mac.sh`.
         run: |
           xattr -cr build/Amalgaform.app
           codesign --force --deep --sign - build/Amalgaform.app
           codesign --verify --deep --strict build/Amalgaform.app
 
       - name: Bungkus
-        run: ditto -c -k --keepParent build/Amalgaform.app build/Amalgaform.zip
+        run: |
+          # Catatan ikut masuk ke dalam paket. Nama artifact saja tidak cukup:
+          # GitHub membungkus ulang unduhan jadi zip bersarang, dan nama luarnya
+          # hilang begitu orang mengekstrak yang pertama.
+          cat > build/BACA-DULU.txt <<'CATATAN'
+          Build ini dari CI, dan SENGAJA TIDAK DINOTARISASI.
+
+          Dia hanya ditandatangani ad-hoc, jadi kalau dibuka di Mac lain macOS
+          akan menolaknya:
+
+              "Apple could not verify Amalgaform is free of malware"
+
+          Itu perilaku yang benar, bukan build yang rusak. Gunanya build ini
+          cuma satu: membuktikan bahwa proyeknya masih bisa diekspor.
+
+          Yang dibagikan ke orang lain dibuat di mesin sendiri:
+
+              NOTARIZE=1 ./tools/build_mac.sh
+
+          Hasilnya di ~/Builds/Amalgaform.zip, dan itu bisa dibuka dengan
+          klik ganda biasa di Mac mana pun.
+          CATATAN
+          ditto -c -k --keepParent build/Amalgaform.app build/Amalgaform.zip
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Amalgaform-macOS
-          path: build/Amalgaform.zip
+          # Namanya menyebut statusnya. Artifact ini sudah pernah membingungkan
+          # sekali; nama netral seperti "Amalgaform-macOS" terbaca seperti rilis.
+          name: Amalgaform-macOS-UNSIGNED-ci-check-only
+          path: |
+            build/Amalgaform.zip
+            build/BACA-DULU.txt
           retention-days: 14
