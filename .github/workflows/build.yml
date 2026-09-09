@@ -56,7 +56,11 @@ jobs:
           fi
 
       - name: Periksa penempatan spell
-        run: "$GODOT" --headless --path challenge-6 --script res://tools/probe_launch.gd
+        # Blok, bukan satu baris: nilai `run:` yang diawali tanda kutip akan
+        # dibaca YAML sebagai string yang berhenti di kutip penutup, dan sisa
+        # perintahnya jadi sampah yang tidak bisa diurai.
+        run: |
+          "$GODOT" --headless --path challenge-6 --script res://tools/probe_launch.gd
 
   build:
     name: macOS app
