@@ -72,8 +72,9 @@ enemy is an id that existed last frame and does not exist now.
 than measuring — a spell-placement probe, audio trimming and levelling, map
 slicing.
 
-Design notes, the deliberate debt list, and the asset spec live in
-`DESIGN.md`, `NOTES.md` and `ASSETS.md` (written in Indonesian).
+Design notes, the deliberate debt list, and the asset spec are kept locally in
+`Docs/` and are not part of this repository — they are working notes in
+Indonesian, written for one reader.
 
 ## Assets
 

@@ -106,77 +106,59 @@ Repo below. It's a 10 day rotation project, not a product. Be kind.
 
 ---
 
-## Versi utama — Challenge / Choice / Result
+## Versi utama — siap tempel
 
-*Dua paragraf pertama punya lo, gw cuma rapiin yang bikin kebaca dua kali.
-Sisanya gw tulis ngikutin pola lo: "i" huruf kecil, klausa disambung koma,
-penghubung formal dicampur nada santai. Kalau ada kalimat yang kerasa bukan
-lo, itu gw yang meleset — coret aja.*
+*Satu paragraf satu baris, tanpa enter di tengah — LinkedIn yang membungkusnya
+sendiri. Grammar dirapikan, urutannya hampir tidak diubah karena alurnya sudah
+benar. Satu kalimat penutup gw tambahkan; kalau kerasa bukan lo, hapus saja —
+alasannya gw tulis di bawah.*
+
+---
+
+Lately i've been struggling to code by myself, i keep relying on AI for everything, and i know literally zero of the codebase i supposedly built. That feeling of not owning my own work made me feel incompetent. So to fill that gap, i decided to make a game as my project in Apple Developer Academy @ BINUS Tangerang, within 10 days of work.
+
+As my starting point, i had an abstract concept in mind: i like entertainment content that provides a very detailed theory for its magic system, and i wanted to make something like that. So i gathered resources related to it. Furthermore, i specifically chose the topics i had zero knowledge about: Entity Component System (ECS), Godot, Game Mechanics, and Game Juice. In addition to that, i decided to utilize AI as my learning mentor, you can say it's prompted to teach me and to guide me, giving me at most a 1 line code snippet or a pseudocode when it comes to the Game Logic scope.
+
+As for the development, the first two days went entirely to ideation and learning in small steps, building a baseplate and a few examples. I initially thought of attacking by transferring spells into some kind of machine, but after hours of research and discussion, i had to abandon it. The reason was simple: that was not what i wanted to build from the beginning. I wanted freedom inside the game, something player centered.
+
+So i shifted towards a simple PvE game where the player is the one casting the spell, and that literally ignited a spark in my mind, ideas started coming one after another. Furthermore, i thought i would have to restart the project from zero, because exercise code is usually nothing like the real project. But surprisingly, i only needed to comment out and delete some parts, and nothing broke. Only then did i realize one of the real benefits of using ECS in game development.
+
+The game itself was built by combining what i gathered across the internet. Games like Noita, Magicka, and Ars Magica inspired me a lot, and i ended up with a concept where you insert one or more elements stored in runes, combine them into a new spell, and get different variations depending on how you cast it. For now there are three elements: fire (Ignis), water (Aqua), and air (Ventus), and each of them has its own characteristic: destructive, area, and crowd control. Those characteristics are baked into every spell they are inserted into, through what i call the Cast Queue, triggered by simply holding the Shift key. Additionally, your first rune decides the base form of the spell: Bullet, Puddle, or Wind Shock.
+
+I also planned to create my own assets, because i wanted a game with a sketchy and gloomy theme. My discussion with AI and peers concluded that i should focus on only two assets, to keep my timeline safe for learning. But in the end? I managed to finish the game features before the estimated time, and i had the opportunity to create every image asset used in this game, which makes me pretty satisfied because it really suits my taste. I also did not expect to end up recording the player and monster sound effects with my own voice. On top of that i added a simple Continuous Integration system via GitHub Actions to make my work easier, and published it as an app, playable on macOS for now.
+
+The result of this learning journey: the differences between ECS and OOP and where each of them wins or loses, some game theory and mechanics, and Godot itself. But more than that, i can now open any file in this project and explain why it is shaped that way, which is exactly the thing i could not do before i started.
+
+You can download it here: https://github.com/Ahingg/amalgaform/releases/tag/v1.0
 
 ---
 
-Lately i've been struggling to code by myself, i keep relying on AI for
-everything, and i know literally zero of the codebase. That feeling of not
-owning my own work made me feel incompetent. So to fill that gap, i decided to
-make a game as my project in Apple Developer Academy @ BINUS Tangerang, within
-10 days of work.
+### Yang gw ubah, biar lo bisa nolak
 
-As my initial point developing the game, i had some abstract concept in my
-mind: i like entertainment content that provides a very detailed theory for
-their magic system, and i want to make something like that. So i gathered
-resources that correlate with it. Furthermore, i specifically chose the terms
-that i have zero knowledge about previously: Entity Component System (ECS),
-Godot, Game Mechanics, and Game Juice. In addition to that, for this learning,
-i have decided to utilize AI as my learning mentor, you can say it's prompted
-to teach me and to guide me, giving me at most only a 1 line code snippet or a
-pseudocode when it comes to the Game Logic scope.
+**Grammar dan pilihan kata.** Yang paling banyak: `Futhermore` -> `Furthermore`,
+`previously previously` -> sekali, `it self` -> `itself`, `alot` -> `a lot`,
+`3 element present` -> `three elements`, `Only until that i realized` ->
+`Only then did i realize`. Gaya lo dijaga: "i" tetap huruf kecil, klausa tetap
+disambung koma, penghubung formal (`Furthermore`, `In addition to that`) tetap.
 
-The game itself is about spell grammar. You hold a key, the world slows down,
-and you queue up to four runes before you release and throw it. The first rune
-decides the shape of the spell, and the whole queue decides what is inside it:
-fire first gives you a bullet, water first gives you a ball that bursts into a
-lingering puddle, wind first gives you a blast that pushes everything away. So
-the same three runes in a different order will give you a completely different
-spell, and that grammar is basically the entire game.
+**Kalimat pertama dipertajam.** `i know literally zero of the codebase` jadi
+`...of the codebase i supposedly built` — menutup logikanya, dan itu yang bikin
+kata "incompetent" di kalimat berikutnya punya sebab.
 
-As for the development, the first two days went entirely to ideation, and i
-rewrote the design document three times before writing a single line of
-gameplay code. My first concept had machines you place before the round and
-crystals to defend, then i read it back and asked what the machine position was
-actually for, and the honest answer was nothing, so i threw it away. The days
-after that went to the ECS itself, and this is where most of my learning
-happened: entities are just integers, components are pure data, and systems are
-functions that remember nothing between frames. On paper those rules sound
-tidy, in practice i broke almost all of them at least once and had to find out
-the hard way why the game felt wrong.
+**Urutan hampir tidak disentuh.** Alur lo sudah benar: masalah -> pilihan ->
+pivot -> ganjarannya (ECS) -> gamenya -> aset -> hasil. Momen paling kuat di
+tulisan ini adalah "i thought i would have to restart from zero, but nothing
+broke", dan itu sudah duduk di tempat yang tepat, persis setelah pivotnya.
 
-The hardest one took me two and a half hours: a wind blast that always pushed
-enemies to the bottom right, no matter where i aimed. It turned out that
-Position in my world is the top left corner of a box and not the center, and
-three different places had quietly assumed center. i only found it after i
-stopped guessing and wrote a small script that fires the spell in eight
-directions and prints where it lands, and three seconds after that i had the
-answer. That is probably my biggest takeaway from this rotation, and it has
-nothing to do with Godot: when i am stuck for hours it is almost never because
-the concept is too hard, it is because i have no way to see what is happening,
-so i am just guessing. Build the measuring tool first.
+**Satu kalimat penutup ditambah**, sebelum link:
+*"i can now open any file in this project and explain why it is shaped that
+way, which is exactly the thing i could not do before i started."*
+Alasannya: paragraf terakhir lo aslinya daftar hal yang dipelajari, dan daftar
+itu penutup yang datar. Kalimat ini menutup lingkaran ke kalimat pertama —
+"incompetent" di awal, dijawab di akhir. Kalau kerasa terlalu rapi, hapus.
 
-i also planned to scope down hard on the visuals, two hand drawn assets and
-everything else stays as colored rectangles, and i wrote that down on day two
-so i would be accountable to it. i did not keep that promise. i ended up
-drawing all 62 assets myself, and i recorded the monster sounds with my own
-voice at midnight then wrote a script to trim and level them. Technically that
-is a scope violation, but it is the one place where going over the line made
-this project feel like mine instead of a tutorial output.
-
-Where it landed: 23 systems, 13 components, and around 1,600 lines of
-simulation that i can walk through line by line. Waves, dash, three elements
-that each feel different, hit stop, screen shake, and sound. Some nights ended
-at 3am and that part i do not recommend. But the thing i am actually taking
-away is not the game, it is that i can open any file in this project and tell
-you why it is shaped that way. That was the whole point from the beginning.
-
----
+**Link dipisah jadi baris sendiri.** Di dalam paragraf, LinkedIn memotongnya
+saat teks dilipat "see more" dan orang malah tidak melihatnya.
 
 ## Cadangan — versi panjang pertama
 Lately i've been struggling to code by myself, i keep relying on AI for everything, and i know literally zero of the codebase. This feeling of lack of work things made me feel incompetence. So to fill that gap, i decided to make a game as my project in Apple Developer Academy @ BINUS Tangerang, within 10 days of work. 

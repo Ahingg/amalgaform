@@ -13,3 +13,8 @@ build/
 # assets/sfx/. Skrip pengolahnya ada di tools/, jadi prosesnya tetap tercatat
 # walaupun bahan mentahnya tidak ikut.
 challenge-6/assets/sfx/mentah/
+
+# Catatan kerja: dokumen desain, utang teknis, naskah sharing, draft LinkedIn.
+# Berguna selama mengerjakan, tapi bukan bagian dari yang dibaca orang lain —
+# dan draft LinkedIn di dalam repo publik itu aneh.
+Docs/
