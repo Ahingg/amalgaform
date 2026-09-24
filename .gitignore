@@ -11,7 +11,7 @@ build/
 *.app/
 
 # Godot's Windows GDExtension loader keeps a temporary copy beside the library.
-addons/godot-git-plugin-v3.2.1/addons/godot-git-plugin/windows/~libgit_plugin.windows.editor.x86_64.dll
+addons/godot-git-plugin/windows/~libgit_plugin.windows.editor.x86_64.dll
 
 # The repository screenshot is for the README, not a game-imported asset.
 /screenshot.png.import
