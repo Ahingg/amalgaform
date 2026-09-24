@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Terbitkan rilis baru ke GitHub.
 #
-#   ./tools/release.sh v1.1 "catatan singkat"
+#   ./scripts/release.sh v1.1 "catatan singkat"
 #
 # Kenapa ini SKRIP DI MESIN SENDIRI dan bukan pekerjaan CI:
 #
@@ -21,7 +21,7 @@ cd "$(dirname "$0")/.."
 TAG="${1:-}"
 CATATAN="${2:-}"
 if [ -z "$TAG" ]; then
-	echo "pakai: ./tools/release.sh v1.1 \"catatan singkat\"" >&2
+	echo "pakai: ./scripts/release.sh v1.1 \"catatan singkat\"" >&2
 	exit 1
 fi
 
@@ -30,7 +30,7 @@ OUT="${OUT:-$HOME/Builds}"
 ZIP="$OUT/Amalgaform.zip"
 
 echo "==> bangun + notarisasi"
-NOTARIZE=1 ./tools/build_mac.sh
+NOTARIZE=1 ./scripts/build_mac.sh
 
 echo "==> bungkus"
 rm -f "$ZIP"

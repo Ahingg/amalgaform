@@ -40,12 +40,12 @@ jobs:
         # belum sempat dibuat saat berkas lain memuatnya. Jalan dua kali
         # menyelesaikannya, dan itu memang cara yang dianjurkan Godot.
         run: |
-          "$GODOT" --headless --import --path challenge-6 || true
-          "$GODOT" --headless --import --path challenge-6
+          "$GODOT" --headless --import --path . || true
+          "$GODOT" --headless --import --path .
 
       - name: Periksa skrip terurai
         run: |
-          out=$("$GODOT" --headless --quit-after 120 --path challenge-6 2>&1) || true
+          out=$("$GODOT" --headless --quit-after 120 --path . 2>&1) || true
           echo "$out"
           # "resources still in use at exit" itu peringatan saat menutup, bukan
           # kesalahan proyek — muncul karena pemutar audio masih memegang
@@ -60,7 +60,7 @@ jobs:
         # dibaca YAML sebagai string yang berhenti di kutip penutup, dan sisa
         # perintahnya jadi sampah yang tidak bisa diurai.
         run: |
-          "$GODOT" --headless --path challenge-6 --script res://tools/probe_launch.gd
+          "$GODOT" --headless --path . --script res://tools/probe_launch.gd
 
   build:
     name: macOS app
@@ -96,13 +96,13 @@ jobs:
 
       - name: Impor aset
         run: |
-          "$GODOT" --headless --import --path challenge-6 || true
-          "$GODOT" --headless --import --path challenge-6
+          "$GODOT" --headless --import --path . || true
+          "$GODOT" --headless --import --path .
 
       - name: Ekspor
         run: |
           mkdir -p build
-          "$GODOT" --headless --path challenge-6 \
+          "$GODOT" --headless --path . \
             --export-release "macOS" "$PWD/build/Amalgaform.app"
 
       - name: Tanda tangan ad-hoc
@@ -111,7 +111,7 @@ jobs:
         # TIDAK RUSAK, bukan untuk dibagikan — kalau dibuka di Mac lain,
         # Gatekeeper menolaknya dengan "Apple could not verify...". Itu perilaku
         # yang benar, bukan kerusakan. Rilis yang dibagi ke orang lain dibuat di
-        # mesin sendiri lewat `NOTARIZE=1 ./tools/build_mac.sh`.
+        # mesin sendiri lewat `NOTARIZE=1 ./scripts/build_mac.sh`.
         run: |
           xattr -cr build/Amalgaform.app
           codesign --force --deep --sign - build/Amalgaform.app
@@ -135,7 +135,7 @@ jobs:
 
           Yang dibagikan ke orang lain dibuat di mesin sendiri:
 
-              NOTARIZE=1 ./tools/build_mac.sh
+              NOTARIZE=1 ./scripts/build_mac.sh
 
           Hasilnya di ~/Builds/Amalgaform.zip, dan itu bisa dibuka dengan
           klik ganda biasa di Mac mana pun.

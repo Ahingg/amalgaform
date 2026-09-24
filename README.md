@@ -38,18 +38,21 @@ costs you.
 | `F1` | component badges (ECS debug view) |
 | `F11` | fullscreen |
 
+The title menu includes Settings for audio levels and keyboard rebinding; the
+same settings are available while paused.
+
 ## Running it
 
 ```
-godot --path challenge-6
-godot --path challenge-6 -- --demo     # scripted input, no hands needed
+godot --path .
+godot --path . -- --demo     # scripted input, no hands needed
 ```
 
 ## How it is built
 
 The project is split in two halves on purpose.
 
-`challenge-6/sim/` is a hand-written ECS. Entities are bare ints. Components
+`sim/` is a hand-written ECS. Entities are bare ints. Components
 are plain data. Systems are static functions with no memory between frames.
 Rules that are actually enforced:
 
@@ -61,16 +64,16 @@ Rules that are actually enforced:
 - archetypes are not types — nothing anywhere records that an entity "is an
   enemy", there is only an entity with some components
 
-`challenge-6/view/` is strictly read-only. It never writes into the World. If
+`view/` is strictly read-only. It never writes into the World. If
 you deleted the whole folder the simulation would still run — it would just be
 invisible. Effects that need memory (death bursts, dash afterimages, sound)
 keep it in the view layer and derive it by comparing this frame's World to the
 last one. Death, for instance, has no component and does not need one: a dead
 enemy is an id that existed last frame and does not exist now.
 
-`challenge-6/tools/` are small scripts that exist because guessing was slower
-than measuring — a spell-placement probe, audio trimming and levelling, map
-slicing.
+`tools/` contains project-specific helpers such as the spell-placement probe
+and map slicing. Reusable audio-processing and release scripts live in
+`scripts/`.
 
 Design notes, the deliberate debt list, and the asset spec are kept locally in
 `Docs/` and are not part of this repository — they are working notes in
@@ -88,14 +91,14 @@ Two different things come out of this repo, and they are not interchangeable.
 
 | | Where | Opens on someone else's Mac? |
 |---|---|---|
-| **Release** | `NOTARIZE=1 ./tools/build_mac.sh` → `~/Builds/Amalgaform.zip` | yes, double-click |
+| **Release** | `NOTARIZE=1 ./scripts/build_mac.sh` → `~/Builds/Amalgaform.zip` | yes, double-click |
 | **CI check** | Actions → artifact | **no** — ad-hoc signed only |
 
 The CI artifact exists to prove the project still exports. It is not signed with
 a Developer ID and not notarized, so macOS refuses it with *"Apple could not
 verify..."*. That is the correct behaviour, not a broken build.
 
-Note that a plain `./tools/build_mac.sh` (without `NOTARIZE=1`) replaces the app
+Note that a plain `./scripts/build_mac.sh` (without `NOTARIZE=1`) replaces the app
 and **drops the notarization ticket**. Any build meant for other people has to
 go through the notarized path again.
 

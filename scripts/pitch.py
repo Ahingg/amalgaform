@@ -75,7 +75,7 @@ def main():
     ap.add_argument("berkas")
     ap.add_argument("--nama", default="", help="nama keluaran; nomor slot ditambahkan")
     ap.add_argument("--langkah", default="0", help="daftar semiton, dipisah koma")
-    ap.add_argument("--keluar", default="challenge-6/assets/sfx")
+    ap.add_argument("--keluar", default="assets/sfx")
     a = ap.parse_args()
 
     x, rate = baca(a.berkas)

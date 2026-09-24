@@ -8,11 +8,11 @@
 [node name="Main" type="Node" unique_id=1006759249]
 script = ExtResource("1_hax36")
 
-[node name="GameplayView" parent="." instance=ExtResource("2_gameplay")]
+[node name="MenuLayer" type="CanvasLayer" parent="." unique_id=1453985053]
 
-[node name="MenuLayer" type="CanvasLayer" parent="."]
+[node name="MenuUI" parent="MenuLayer" unique_id=45136564 instance=ExtResource("8_menu_ui")]
 
-[node name="MenuUI" parent="MenuLayer" instance=ExtResource("8_menu_ui")]
+[node name="GameplayView" parent="." unique_id=363035874 instance=ExtResource("2_gameplay")]
 
-[node name="Sfx" type="Node" parent="."]
+[node name="Sfx" type="Node" parent="." unique_id=1511695825]
 script = ExtResource("3_sfx")

@@ -220,10 +220,10 @@ func _watch_dash(world) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
-	if event.keycode == KEY_F1:
+	if event.is_action_pressed("debug_badges"):
 		show_badges = not show_badges
 		get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_F11:
+	elif event.is_action_pressed("fullscreen"):
 		# Untuk presentasi: jendela kecil di proyektor tidak terbaca.
 		var w := DisplayServer.window_get_mode()
 		DisplayServer.window_set_mode(
@@ -233,13 +233,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	_fit_arena()
-	_draw_grid()
-
+	# The title is a standalone screen. Do not draw even an idle arena until
+	# Main creates the first World after Start is pressed.
+	var main = get_parent()
+	if main == null or main.is_menu():
+		return
 	var world = _get_world()
 	if world == null:
-		_draw_message("Waiting for World.")
 		return
+
+	_fit_arena()
+	_draw_grid()
 
 	var query: Array[String] = [ViewConfig.POSITION]
 	var ids: Array[int] = world.get_entities_with_comp(query)

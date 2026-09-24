@@ -18,8 +18,6 @@ extends Node2D
 # the intended way to play, so the UI should not flinch at it.
 # ============================================================================
 
-const RETRY_KEY := KEY_R
-
 var _font: Font
 
 
@@ -35,10 +33,10 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
-	if event.keycode != RETRY_KEY:
+	if not event.is_action_pressed("retry"):
 		return
 	var main = _main()
-	if main == null:
+	if main == null or main.is_menu():
 		return
 	main.retry()
 	get_viewport().set_input_as_handled()

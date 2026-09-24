@@ -238,7 +238,7 @@ def main():
     ap.add_argument("--pisah", type=int, default=1, help="pecah jadi berapa suara")
     ap.add_argument("--maks-detik", type=float, default=0.0,
                     help="potong di panjang ini, dengan fade keluar (0 = biarkan)")
-    ap.add_argument("--keluar", default="challenge-6/assets/sfx")
+    ap.add_argument("--keluar", default="assets/sfx")
     a = ap.parse_args()
 
     os.makedirs(a.keluar, exist_ok=True)

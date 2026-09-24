@@ -1,0 +1,220 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://view/menu_ui.gd" id="1_menu_ui"]
+
+[node name="MenuUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu_ui")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.045, 0.04, 0.06, 1)
+
+[node name="MenuContent" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="MenuContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Contents" type="VBoxContainer" parent="MenuContent/Center"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Title" type="Label" parent="MenuContent/Center/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.92, 1)
+theme_override_font_sizes/font_size = 76
+text = "AMALGAFORM"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MenuContent/Center/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.55, 0.63, 1)
+theme_override_font_sizes/font_size = 17
+text = "Shape the spell. Change the fight."
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="MenuContent/Center/Contents"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="MenuContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Play"
+
+[node name="SettingsButton" type="Button" parent="MenuContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="MenuContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Quit"
+
+[node name="Footer" type="Label" parent="MenuContent/Center/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46, 0.43, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "WASD move  ·  Space dash  ·  Shift cast"
+horizontal_alignment = 1
+
+[node name="PauseContent" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="PauseContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Contents" type="VBoxContainer" parent="PauseContent/Center"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Title" type="Label" parent="PauseContent/Center/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.92, 1)
+theme_override_font_sizes/font_size = 64
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Resume"
+
+[node name="SettingsButton" type="Button" parent="PauseContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Settings"
+
+[node name="MainMenuButton" type="Button" parent="PauseContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Main menu"
+
+[node name="QuitButton" type="Button" parent="PauseContent/Center/Contents"]
+custom_minimum_size = Vector2(300, 54)
+layout_mode = 2
+text = "Quit"
+
+[node name="SettingsContent" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="SettingsContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="SettingsContent/Center"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+
+[node name="Margins" type="MarginContainer" parent="SettingsContent/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
+
+[node name="Contents" type="VBoxContainer" parent="SettingsContent/Center/Panel/Margins"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.92, 1)
+theme_override_font_sizes/font_size = 34
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="AudioTitle" type="Label" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.72, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "Audio"
+
+[node name="AudioControls" type="VBoxContainer" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="BindingsTitle" type="Label" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.72, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "Keyboard bindings"
+
+[node name="KeybindScroll" type="ScrollContainer" parent="SettingsContent/Center/Panel/Margins/Contents"]
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="KeybindList" type="VBoxContainer" parent="SettingsContent/Center/Panel/Margins/Contents/KeybindScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Hint" type="Label" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+text = "Click a binding to change it. Spell throw uses the left mouse button."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="SettingsContent/Center/Panel/Margins/Contents"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="SettingsContent/Center/Panel/Margins/Contents/Buttons"]
+custom_minimum_size = Vector2(220, 46)
+layout_mode = 2
+text = "Reset bindings"
+
+[node name="BackButton" type="Button" parent="SettingsContent/Center/Panel/Margins/Contents/Buttons"]
+custom_minimum_size = Vector2(180, 46)
+layout_mode = 2
+text = "Back"

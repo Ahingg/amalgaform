@@ -26,7 +26,7 @@ import wave
 
 RATE = 44100
 KELUAR = os.path.join(os.path.dirname(__file__), "..",
-                      "challenge-6", "assets", "sfx")
+                      "assets", "sfx")
 
 # Akor A mayor: apa pun urutan tekannya, tidak ada pasangan yang sumbang.
 NADA = [

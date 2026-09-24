@@ -80,13 +80,17 @@ func _aim_at_mouse(world, id: int) -> void:
 		world.attach_component(ViewConfig.FACING, id, Vec2.new(dir.x, dir.y))
 
 
-# SPACE cuma nempelin NIAT, bukan langsung ngedorong. Yang mutusin boleh apa
+# Dash cuma nempelin NIAT, bukan langsung ngedorong. Yang mutusin boleh apa
 # engga (lagi cooldown, lagi kena efek, dll) itu sim, bukan lapisan input.
 # Penanda kejadian, dimakan dan dicabut DashSystem di frame yang sama.
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey) or not event.pressed or event.echo:
+	if not event.is_action_pressed("dash"):
 		return
-	if event.keycode != KEY_SPACE:
+	# Space starts the run from MenuUI. Only consume it as a dash while the
+	# simulation is active; unhandled-input callbacks run in reverse tree order,
+	# so child order must not decide whether the menu receives the start key.
+	var main = get_parent().get_parent()
+	if main == null or not main.is_playing():
 		return
 
 	var world = _get_world()
@@ -108,13 +112,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _read_direction() -> Vector2:
 	var dir := Vector2.ZERO
 
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+	if Input.is_action_pressed("move_left"):
 		dir.x -= 1.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+	if Input.is_action_pressed("move_right"):
 		dir.x += 1.0
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+	if Input.is_action_pressed("move_up"):
 		dir.y -= 1.0
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+	if Input.is_action_pressed("move_down"):
 		dir.y += 1.0
 
 	# Without this, holding two keys gives length 1.41 and diagonal movement is

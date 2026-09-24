@@ -33,10 +33,13 @@ func is_menu() -> bool:
 	return mode == Mode.MENU
 
 
-# Ronde sudah dibangun sejak awal walaupun menunya masih terbuka, supaya
-# arenanya terlihat di belakang menu — dan supaya "mulai" tidak perlu menunggu
-# apa pun dibangun.
+# The title screen is a real pre-game state: no simulation exists until the
+# player chooses to start. This keeps menu input and gameplay state separate.
 func start() -> void:
+	if mode != Mode.MENU:
+		return
+	attempt = 1
+	build_round()
 	mode = Mode.PLAYING
 
 
@@ -46,17 +49,15 @@ func toggle_pause() -> void:
 	elif mode == Mode.PAUSED:
 		mode = Mode.PLAYING
 
-func _ready() -> void:
-	build_round()
-
-	# The renderer and sound observer are explicit children in main.tscn.
-	# renderer.gd only READS world; it never writes into sim/.
-
-
 func retry() -> void:
 	attempt += 1
 	build_round()
 	mode = Mode.PLAYING
+
+
+func return_to_menu() -> void:
+	world = null
+	mode = Mode.MENU
 
 
 # Everything that describes one attempt at the room lives here. Retrying is
@@ -73,6 +74,6 @@ func build_round() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if mode != Mode.PLAYING:
+	if mode != Mode.PLAYING or world == null:
 		return
 	SystemManager.process(world, delta)

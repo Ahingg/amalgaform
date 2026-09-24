@@ -66,11 +66,11 @@ var _musik_sekarang := ""
 func _ready() -> void:
 	for i in SUARA:
 		var p := AudioStreamPlayer.new()
-		p.bus = "Master"
+		p.bus = "SFX"
 		add_child(p)
 		_pemutar.append(p)
 	_musik = AudioStreamPlayer.new()
-	_musik.bus = "Master"
+	_musik.bus = "Music"
 	_musik.volume_db = VOL_MUSIK
 	add_child(_musik)
 
@@ -168,10 +168,11 @@ func _process(_delta: float) -> void:
 		_antrian_lalu = false
 		_selesai_lalu = ""
 		return
+
+	_tonton_musik()
 	if world == null:
 		return
 
-	_tonton_musik()
 	_tonton_antrian(world)
 	_tonton_spell(world)
 	_tonton_luka(world)

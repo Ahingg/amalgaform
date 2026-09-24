@@ -23,12 +23,14 @@ func _process(_delta: float) -> void:
 # --- input -------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed \
-			and event.button_index == MOUSE_BUTTON_LEFT:
+	if not _game_is_playing():
+		return
+	if event.is_action_pressed("launch_spell"):
 		_launch()
+		get_viewport().set_input_as_handled()
 		return
 
-	if not (event is InputEventKey) or event.echo:
+	if not event is InputEventKey:
 		return
 
 	var world = _get_world()
@@ -38,9 +40,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if player == -1:
 		return
 
-	var key: int = event.keycode
-
-	if key == KEY_SHIFT:
+	if event.is_action("cast_modifier"):
 		if event.pressed:
 			_open(world, player)
 		else:
@@ -51,11 +51,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.pressed:
 		return
 
-	if key == KEY_ESCAPE:
+	if event.is_action_pressed("pause"):
+		var q := _queue(world, player)
+		if q.is_empty() or not q.get("open", false):
+			return
 		_cancel(world, player)
 		get_viewport().set_input_as_handled()
-	elif ViewConfig.RUNE_KEYS.has(key):
-		_queue_rune(world, player, ViewConfig.RUNE_KEYS[key])
+	elif event.is_action_pressed("rune_fire"):
+		_queue_rune(world, player, ViewConfig.IGNIS)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("rune_water"):
+		_queue_rune(world, player, ViewConfig.AQUA)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("rune_wind"):
+		_queue_rune(world, player, ViewConfig.VENTUS)
 		get_viewport().set_input_as_handled()
 
 
@@ -158,6 +167,14 @@ func _queue(world, player: int) -> Dictionary:
 	if not world.entity_have_component(ViewConfig.CAST_QUEUE, player):
 		return {}
 	return world.get_component_value(ViewConfig.CAST_QUEUE, player)
+
+
+func _game_is_playing() -> bool:
+	var renderer := get_parent()
+	if renderer == null:
+		return false
+	var main = renderer.get_parent()
+	return main != null and main.is_playing()
 
 
 # --- drawing -----------------------------------------------------------------

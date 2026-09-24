@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Bangun, tandatangani, dan (opsional) notarisasi Amalgaform.app.
 #
-#   ./tools/build_mac.sh                 # bangun + tanda tangan
-#   NOTARIZE=1 ./tools/build_mac.sh      # + kirim ke Apple, tunggu, tempel
+#   ./scripts/build_mac.sh                 # bangun + tanda tangan
+#   NOTARIZE=1 ./scripts/build_mac.sh      # + kirim ke Apple, tunggu, tempel
 #
 # Empat langkah, dan tiap langkah ada di sini karena pernah gagal:
 #
@@ -54,7 +54,7 @@ ID="$(security find-identity -v -p codesigning 2>/dev/null \
 
 echo "==> ekspor"
 mkdir -p "$OUT"
-"$GODOT" --headless --path challenge-6 --export-release "macOS" "$APP"
+"$GODOT" --headless --path . --export-release "macOS" "$APP"
 
 echo "==> bersihkan metadata"
 xattr -cr "$APP"
