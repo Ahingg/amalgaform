@@ -23,6 +23,10 @@ var _phase := 0
 var _next := 0.6
 
 
+func _ready() -> void:
+	set_physics_process(enabled())
+
+
 static func enabled() -> bool:
 	return OS.get_cmdline_user_args().has("--demo") or OS.get_cmdline_args().has("--demo")
 
