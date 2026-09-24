@@ -124,5 +124,5 @@ func _draw_ended(world, text: String, color: Color) -> void:
 		draw_string(_font, center + Vector2(-150, 22), "Time %.1f seconds" % rt.value,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 22, WorldRenderer.INK * Color(1,1,1,0.9))
 
-	draw_string(_font, center + Vector2(-150, 56), "Press R to retry",
+	draw_string(_font, center + Vector2(-150, 56), "Press %s to retry" % GameSettings.binding_text("retry"),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 18, WorldRenderer.INK * Color(1,1,1,0.7))

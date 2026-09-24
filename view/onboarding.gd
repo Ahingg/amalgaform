@@ -22,9 +22,6 @@ extends Node2D
 # percobaan kedua.
 # ============================================================================
 
-const LANGKAH_SIAP := "Hold SHIFT to start casting"
-const LANGKAH_RUNE := "Press  J  ·  K  ·  L  to stack runes"
-const LANGKAH_LEPAS := "Release SHIFT to cast"
 const LANGKAH_LEMPAR := "Aim with mouse, left click to throw"
 
 var selesai: bool = false
@@ -94,12 +91,16 @@ func _draw() -> void:
 		var buka: bool = antrian.get("open", false)
 		var runes: Array = antrian.get("runes", [])
 		if not buka:
-			teks = LANGKAH_SIAP
+			teks = "Hold %s to start casting" % GameSettings.binding_text("cast_modifier")
 		elif runes.is_empty():
-			teks = LANGKAH_RUNE
+			teks = "Press %s  ·  %s  ·  %s  to stack runes" % [
+				GameSettings.binding_text("rune_fire"),
+				GameSettings.binding_text("rune_water"),
+				GameSettings.binding_text("rune_wind"),
+			]
 			sorot_slot = true
 		else:
-			teks = LANGKAH_LEPAS
+			teks = "Release %s to cast" % GameSettings.binding_text("cast_modifier")
 
 	if sorot_slot:
 		_sorot_slot(r)

@@ -88,7 +88,9 @@ func _load() -> void:
 	if _config.load(SETTINGS_PATH) != OK:
 		return
 	for action in KEYBIND_LABELS:
-		var saved = _config.get_value("bindings", action, null)
+		if not _config.has_section_key("bindings", action):
+			continue
+		var saved = _config.get_value("bindings", action)
 		if saved is Array:
 			InputMap.action_erase_events(action)
 			for data in saved:

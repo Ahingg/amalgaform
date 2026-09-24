@@ -242,7 +242,12 @@ func _draw_slots_idle(r: WorldRenderer) -> void:
 		draw_rect(rect, Color(c.r, c.g, c.b, 0.09), false, 1.5)
 	# Huruf tombolnya ikut ditampilkan: kaitan tombol -> slot jadi terlihat
 	# sebelum dipakai, bukan sesuatu yang harus dihafal dari daftar kontrol.
-	var keys := ["J", "K", "L", ""]
+	var keys := [
+		GameSettings.binding_text("rune_fire"),
+		GameSettings.binding_text("rune_water"),
+		GameSettings.binding_text("rune_wind"),
+		"",
+	]
 	for i in keys.size():
 		if keys[i] == "":
 			continue
@@ -298,7 +303,13 @@ func _draw_runes(origin: Vector2, runes: Array) -> void:
 
 func _draw_readout(at: Vector2, runes: Array) -> void:
 	if runes.is_empty():
-		draw_string(_font, at, "J fire  ·  K water  ·  L wind  ·  WASD aim  ·  ESC cancel",
+		var hint := "%s fire  ·  %s water  ·  %s wind  ·  mouse aim  ·  %s cancel" % [
+			GameSettings.binding_text("rune_fire"),
+			GameSettings.binding_text("rune_water"),
+			GameSettings.binding_text("rune_wind"),
+			GameSettings.binding_text("pause"),
+		]
+		draw_string(_font, at, hint,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.6))
 		return
 
@@ -343,7 +354,7 @@ func _draw_dash(world, player: int) -> void:
 		return
 
 	draw_rect(Rect2(at, Vector2(w, 6)), Color(0.6, 0.85, 1.0, 0.9), true)
-	draw_string(_font, at + Vector2(w + 8, 7), "dash ready  ·  SPACE",
+	draw_string(_font, at + Vector2(w + 8, 7), "dash ready  ·  %s" % GameSettings.binding_text("dash"),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(WorldRenderer.INK.r, WorldRenderer.INK.g, WorldRenderer.INK.b, 0.65))
 
 
@@ -367,7 +378,7 @@ func _draw_casting(world, player: int) -> void:
 
 
 func _draw_hint(world, player: int) -> void:
-	var text := "Hold SHIFT to cast"
+	var text := "Hold %s to cast" % GameSettings.binding_text("cast_modifier")
 	if world.entity_have_component(ViewConfig.CASTING, player):
 		text = "Casting..."
 	elif world.entity_have_component(ViewConfig.HELD_SPELL, player):
@@ -396,8 +407,20 @@ func _draw_legend() -> void:
 	var c := WorldRenderer.DIM
 	var dim := Color(c.r, c.g, c.b, 0.75)
 	var lines := [
-		"WASD move      SPACE dash      R retry",
-		"Hold SHIFT → J/K/L → release → left click",
+		"%s/%s/%s/%s move      %s dash      %s retry" % [
+			GameSettings.binding_text("move_up"),
+			GameSettings.binding_text("move_left"),
+			GameSettings.binding_text("move_down"),
+			GameSettings.binding_text("move_right"),
+			GameSettings.binding_text("dash"),
+			GameSettings.binding_text("retry"),
+		],
+		"Hold %s → %s/%s/%s → release → left click" % [
+			GameSettings.binding_text("cast_modifier"),
+			GameSettings.binding_text("rune_fire"),
+			GameSettings.binding_text("rune_water"),
+			GameSettings.binding_text("rune_wind"),
+		],
 	]
 	var right: float = r.get_viewport_rect().size.x - 28.0
 	var bottom: float = r.hud_bottom() - 46.0

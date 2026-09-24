@@ -9,6 +9,7 @@ const PAUSE_ACTION := "pause"
 @onready var _audio_controls: VBoxContainer = $SettingsContent/Center/Panel/Margins/Contents/AudioControls
 @onready var _keybind_list: VBoxContainer = $SettingsContent/Center/Panel/Margins/Contents/KeybindScroll/KeybindList
 @onready var _settings_hint: Label = $SettingsContent/Center/Panel/Margins/Contents/Hint
+@onready var _menu_footer: Label = $MenuContent/Center/Contents/Footer
 
 var _settings_open := false
 var _pending_action := ""
@@ -19,6 +20,7 @@ var _volume_labels: Dictionary = {}
 func _ready() -> void:
 	_build_audio_controls()
 	_build_keybind_controls()
+	_refresh_control_hints()
 	$MenuContent/Center/Contents/PlayButton.pressed.connect(_start_game)
 	$MenuContent/Center/Contents/SettingsButton.pressed.connect(_open_settings)
 	$MenuContent/Center/Contents/QuitButton.pressed.connect(_quit_game)
@@ -185,6 +187,7 @@ func _finish_binding() -> void:
 	var changed_action := _pending_action
 	_pending_action = ""
 	_refresh_binding(changed_action)
+	_refresh_control_hints()
 	_settings_hint.text = "Binding saved. Select another control or go back."
 
 
@@ -197,7 +200,19 @@ func _reset_bindings() -> void:
 	GameSettings.reset_bindings()
 	for action in _binding_buttons:
 		_refresh_binding(action)
+	_refresh_control_hints()
 	_settings_hint.text = "Keyboard bindings restored to defaults."
+
+
+func _refresh_control_hints() -> void:
+	_menu_footer.text = "%s/%s/%s/%s move  ·  %s dash  ·  %s cast" % [
+		GameSettings.binding_text("move_up"),
+		GameSettings.binding_text("move_left"),
+		GameSettings.binding_text("move_down"),
+		GameSettings.binding_text("move_right"),
+		GameSettings.binding_text("dash"),
+		GameSettings.binding_text("cast_modifier"),
+	]
 
 
 func _style_buttons() -> void:
