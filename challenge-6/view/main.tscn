@@ -1,39 +1,18 @@
 [gd_scene format=3 uid="uid://dlr0ilb6dfex6"]
 
 [ext_resource type="Script" uid="uid://dl2shmvao4dep" path="res://view/main.gd" id="1_hax36"]
-[ext_resource type="Script" uid="uid://cpro1ho18c7fj" path="res://view/renderer.gd" id="2_renderer"]
+[ext_resource type="PackedScene" path="res://view/gameplay.tscn" id="2_gameplay"]
 [ext_resource type="Script" uid="uid://dbyrx38wp5n1y" path="res://view/sfx.gd" id="3_sfx"]
-[ext_resource type="Script" uid="uid://cee8bk3csh6r6" path="res://view/player_input.gd" id="4_player_input"]
-[ext_resource type="Script" uid="uid://dlbtwqqplmagi" path="res://view/cast_ui.gd" id="5_cast_ui"]
-[ext_resource type="Script" uid="uid://cipeao5ffjm3r" path="res://view/round_ui.gd" id="6_round_ui"]
-[ext_resource type="Script" uid="uid://1jbxijo4vh77" path="res://view/onboarding.gd" id="7_onboarding"]
 [ext_resource type="PackedScene" path="res://view/menu_ui.tscn" id="8_menu_ui"]
-[ext_resource type="Script" uid="uid://c8r6vsb3fc7kq" path="res://view/demo_input.gd" id="9_demo_input"]
 
 [node name="Main" type="Node" unique_id=1006759249]
 script = ExtResource("1_hax36")
 
-[node name="WorldRenderer" type="Node2D" parent="."]
-script = ExtResource("2_renderer")
-
-[node name="PlayerInput" type="Node" parent="WorldRenderer"]
-script = ExtResource("4_player_input")
-
-[node name="CastUI" type="Node2D" parent="WorldRenderer"]
-script = ExtResource("5_cast_ui")
-
-[node name="RoundUI" type="Node2D" parent="WorldRenderer"]
-script = ExtResource("6_round_ui")
-
-[node name="Onboarding" type="Node2D" parent="WorldRenderer"]
-script = ExtResource("7_onboarding")
+[node name="GameplayView" parent="." instance=ExtResource("2_gameplay")]
 
 [node name="MenuLayer" type="CanvasLayer" parent="."]
 
 [node name="MenuUI" parent="MenuLayer" instance=ExtResource("8_menu_ui")]
-
-[node name="DemoInput" type="Node" parent="WorldRenderer"]
-script = ExtResource("9_demo_input")
 
 [node name="Sfx" type="Node" parent="."]
 script = ExtResource("3_sfx")

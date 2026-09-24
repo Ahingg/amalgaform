@@ -1,0 +1,26 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cpro1ho18c7fj" path="res://view/renderer.gd" id="1_renderer"]
+[ext_resource type="Script" uid="uid://cee8bk3csh6r6" path="res://view/player_input.gd" id="2_player_input"]
+[ext_resource type="Script" uid="uid://dlbtwqqplmagi" path="res://view/cast_ui.gd" id="3_cast_ui"]
+[ext_resource type="Script" uid="uid://cipeao5ffjm3r" path="res://view/round_ui.gd" id="4_round_ui"]
+[ext_resource type="Script" uid="uid://1jbxijo4vh77" path="res://view/onboarding.gd" id="5_onboarding"]
+[ext_resource type="Script" uid="uid://c8r6vsb3fc7kq" path="res://view/demo_input.gd" id="6_demo_input"]
+
+[node name="GameplayView" type="Node2D"]
+script = ExtResource("1_renderer")
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("2_player_input")
+
+[node name="CastUI" type="Node2D" parent="."]
+script = ExtResource("3_cast_ui")
+
+[node name="RoundUI" type="Node2D" parent="."]
+script = ExtResource("4_round_ui")
+
+[node name="Onboarding" type="Node2D" parent="."]
+script = ExtResource("5_onboarding")
+
+[node name="DemoInput" type="Node" parent="."]
+script = ExtResource("6_demo_input")
