@@ -65,7 +65,9 @@ jobs:
   build:
     name: macOS app
     needs: check
-    if: github.event_name != 'pull_request'
+    # The export is heavier and only useful for release candidates. Normal
+    # pushes still run the fast checks above; build manually when needed.
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
