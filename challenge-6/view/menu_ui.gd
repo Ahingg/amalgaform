@@ -1,5 +1,5 @@
 class_name MenuUI
-extends Node2D
+extends Control
 
 # ============================================================================
 # LAYAR DI LUAR RONDE — judul dan jeda
@@ -16,18 +16,29 @@ extends Node2D
 const KEY_MULAI := [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]
 const KEY_JEDA := [KEY_ESCAPE, KEY_P]
 
-var _font: Font
+@onready var _backdrop: ColorRect = $Backdrop
+@onready var _menu_content: Control = $MenuContent
+@onready var _pause_content: Control = $PauseContent
+@onready var _start_prompt: Label = $MenuContent/StartPrompt
 
 
 func _ready() -> void:
-	_font = ThemeDB.fallback_font
-	# Paling atas. HUD permainan disembunyikan sendiri saat menu terbuka, jadi
-	# tidak ada yang perlu ditimpa — tapi tirai jeda memang harus menutupi HUD.
+	# A CanvasLayer keeps this screen-space UI independent of the world camera.
 	z_index = 35
 
 
 func _process(_delta: float) -> void:
-	queue_redraw()
+	var main = _main()
+	if main == null:
+		return
+
+	var on_menu: bool = main.is_menu()
+	var paused: bool = main.mode == main.Mode.PAUSED
+	visible = on_menu or paused
+	_menu_content.visible = on_menu
+	_pause_content.visible = paused
+	_backdrop.color = Color(0.05, 0.045, 0.065, 0.93 if on_menu else 0.55)
+	_start_prompt.modulate.a = 0.55 + 0.45 * sin(float(Time.get_ticks_msec()) / 1000.0 * 2.6)
 
 
 func _main():
@@ -72,61 +83,3 @@ func _sedang_merapal(main) -> bool:
 		if antrian.get("open", false):
 			return true
 	return false
-
-
-func _draw() -> void:
-	var main = _main()
-	var r := get_parent() as WorldRenderer
-	if main == null or r == null:
-		return
-	if main.is_menu():
-		_draw_menu(r)
-	elif main.mode == main.Mode.PAUSED:
-		_draw_pause(r)
-
-
-# Tirai, bukan latar penuh. Arenanya tetap terlihat samar di belakangnya, jadi
-# pemain tahu ada permainan di balik layar ini sebelum dia menekan apa pun.
-func _tirai(r: WorldRenderer, gelap: float) -> void:
-	draw_rect(Rect2(Vector2.ZERO, r.get_viewport_rect().size),
-		Color(0.05, 0.045, 0.065, gelap), true)
-
-
-func _tengah(r: WorldRenderer, teks: String, y: float, ukuran: int, warna: Color) -> void:
-	var w := _font.get_string_size(teks, HORIZONTAL_ALIGNMENT_LEFT, -1, ukuran).x
-	draw_string(_font, Vector2(r.hud_center_x() - w * 0.5, y), teks,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, ukuran, warna)
-
-
-func _draw_menu(r: WorldRenderer) -> void:
-	var size := r.get_viewport_rect().size
-	_tirai(r, 0.93)
-	var cy: float = size.y * 0.34
-
-	_tengah(r, "AMALGAFORM", cy, 76, Color(0.97, 0.95, 0.92))
-	_tengah(r, "the first rune decides the shape  ·  the whole queue decides what is inside",
-		cy + 40.0, 17, Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 1.0))
-
-	var t := float(Time.get_ticks_msec()) / 1000.0
-	var a: float = 0.55 + 0.45 * sin(t * 2.6)
-	_tengah(r, "press SPACE to begin", cy + 130.0, 24, Color(1.0, 0.94, 0.72, a))
-
-	var baris := [
-		"WASD move        SPACE dash        ESC pause        R retry",
-		"hold SHIFT  →  J / K / L  →  release  →  left click",
-	]
-	for i in baris.size():
-		_tengah(r, baris[i], size.y * 0.78 + i * 26.0, 16,
-			Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 0.95))
-
-
-func _draw_pause(r: WorldRenderer) -> void:
-	var size := r.get_viewport_rect().size
-	# Lebih tipis daripada menu: permainan masih berlangsung di balik ini, dan
-	# pemain sering menjeda justru untuk MELIHAT keadaan lapangan.
-	_tirai(r, 0.55)
-	# Ditaruh di atas, bukan di tengah: tengah layar itu tempat pertarungan
-	# terjadi, dan pemain menjeda justru untuk MELIHAT keadaan di sana.
-	_tengah(r, "PAUSED", size.y * 0.26, 56, Color(0.97, 0.95, 0.92))
-	_tengah(r, "ESC to resume  ·  R to restart", size.y * 0.26 + 40.0, 18,
-		Color(WorldRenderer.DIM.r, WorldRenderer.DIM.g, WorldRenderer.DIM.b, 1.0))

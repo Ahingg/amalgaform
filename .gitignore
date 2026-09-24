@@ -1,5 +1,6 @@
 .DS_Store
 *.tmp
+AGENTS.md
 
 # Cache impor Godot. Dibangun ulang otomatis dari berkas aset, dan isinya
 # beda-beda per mesin — masuk repo cuma bikin konflik yang tidak ada artinya.

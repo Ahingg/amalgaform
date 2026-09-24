@@ -47,23 +47,10 @@ func toggle_pause() -> void:
 		mode = Mode.PLAYING
 
 func _ready() -> void:
-	# Godot menganggap layar ini 1x, jadi jendela seukuran viewport (1120x880)
-	# hanya memakai sepertiga layar Retina dan terlihat kecil. Jendelanya
-	# dibuat 2x, dan stretch mode "canvas_items" yang menaikkan isinya — jadi
-	# koordinat di dalam game tetap 1120x880 dan gambarnya tetap tajam.
-	DisplayServer.window_set_size(Vector2i(2240, 1760))
-	DisplayServer.window_set_position(Vector2i(40, 60))
-
 	build_round()
 
-	# View layer. Added from code to keep the scene file simple.
-	# renderer.gd only READS world, it never writes into sim/.
-	add_child(WorldRenderer.new())
-
-	# Lapisan suara. Sama seperti renderer: cuma membaca World, tidak pernah
-	# menulis. Diletakkan di main, bukan di dalam renderer, karena dia tidak
-	# butuh geometri apa pun — dia tidak peduli di mana sesuatu terjadi.
-	add_child(Sfx.new())
+	# The renderer and sound observer are explicit children in main.tscn.
+	# renderer.gd only READS world; it never writes into sim/.
 
 
 func retry() -> void:

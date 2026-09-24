@@ -104,21 +104,6 @@ func _fit_arena() -> void:
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
-	# Input layers live under the renderer so they can reuse the geometry
-	# helpers above, and so main.gd does not need to know they exist.
-	# AssemblyUI is parked: machine placement before the round no longer exists
-	# after design revision 3. The file is kept for the casting panel.
-	add_child(PlayerInput.new())
-	add_child(CastUI.new())
-	add_child(RoundUI.new())
-	# Penuntun rapalan pertama. Menghilang sendiri begitu satu spell dilempar,
-	# dan tidak pernah muncul lagi di percobaan berikutnya.
-	add_child(Onboarding.new())
-	# Layar judul dan jeda. Ditambahkan TERAKHIR supaya dia yang pertama
-	# menerima input yang belum ditangani siapa pun.
-	add_child(MenuUI.new())
-	if DemoInput.enabled():
-		add_child(DemoInput.new())
 
 
 func _process(delta: float) -> void:
