@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Terbitkan rilis baru ke GitHub.
 #
-#   ./scripts/release.sh v1.1 "catatan singkat"
+#   ./scripts/release.sh v1.1.0 "catatan singkat"
 #
 # Kenapa ini SKRIP DI MESIN SENDIRI dan bukan pekerjaan CI:
 #
@@ -27,14 +27,18 @@ fi
 
 REPO="${REPO:-Ahingg/amalgaform}"
 OUT="${OUT:-$HOME/Builds}"
-ZIP="$OUT/Amalgaform.zip"
+MAC_ZIP="$OUT/Amalgaform-macOS.zip"
+WINDOWS_ZIP="$OUT/Amalgaform-Windows.zip"
 
 echo "==> bangun + notarisasi"
 NOTARIZE=1 ./scripts/build_mac.sh
 
+echo "==> bangun Windows"
+OUT="$OUT" ./scripts/build_windows.sh
+
 echo "==> bungkus"
-rm -f "$ZIP"
-ditto -c -k --keepParent "$OUT/Amalgaform.app" "$ZIP"
+rm -f "$MAC_ZIP"
+ditto -c -k --keepParent "$OUT/Amalgaform.app" "$MAC_ZIP"
 
 # Penjagaan terakhir sebelum sesuatu jadi publik. Kalau tiketnya tidak
 # tertempel, yang akan diunduh orang adalah berkas yang ditolak macOS.
@@ -46,7 +50,7 @@ spctl -a -vvv "$OUT/Amalgaform.app" 2>&1 | grep -q "accepted" \
 echo "==> terbitkan $TAG"
 git tag -a "$TAG" -m "Amalgaform $TAG" 2>/dev/null || true
 git push origin "$TAG"
-gh release create "$TAG" "$ZIP" --repo "$REPO" \
+gh release create "$TAG" "$MAC_ZIP" "$WINDOWS_ZIP" --repo "$REPO" \
 	--title "Amalgaform $TAG" \
 	--notes "${CATATAN:-Rilis $TAG.}"
 

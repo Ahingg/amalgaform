@@ -89,18 +89,25 @@ derived from royalty-free libraries (Sonniss GDC bundle, Kenney).
 
 Two different things come out of this repo, and they are not interchangeable.
 
-| | Where | Opens on someone else's Mac? |
+| | Where | What it is |
 |---|---|---|
-| **Release** | `NOTARIZE=1 ./scripts/build_mac.sh` → `~/Builds/Amalgaform.zip` | yes, double-click |
-| **CI check** | Actions → artifact | **no** — ad-hoc signed only |
+| **Release** | `./scripts/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
+| **CI validation** | Actions → artifacts (version tags or manual runs) | temporary macOS and Windows export checks; macOS is ad-hoc signed, Windows is unsigned |
 
-The CI artifact exists to prove the project still exports. It is not signed with
-a Developer ID and not notarized, so macOS refuses it with *"Apple could not
-verify..."*. That is the correct behaviour, not a broken build.
+Pull requests and pushes to `main` run quick project checks only. Export builds
+run for version tags (`v*`) and manual workflow runs; they do not create GitHub
+releases. A real release is created locally with `scripts/release.sh`, which
+uploads both platform ZIPs. The macOS release is signed and notarized; the
+Windows executable is unsigned, so Windows SmartScreen may show its usual
+unknown-publisher warning.
 
-Note that a plain `./scripts/build_mac.sh` (without `NOTARIZE=1`) replaces the app
-and **drops the notarization ticket**. Any build meant for other people has to
-go through the notarized path again.
+The CI macOS artifact exists to prove the project still exports. It is not
+signed with a Developer ID and not notarized, so macOS refuses it with *"Apple
+could not verify..."*. That is the correct behaviour, not a broken build.
+
+Note that a plain `./scripts/build_mac.sh` (without `NOTARIZE=1`) replaces the
+app and **drops the notarization ticket**. Any Mac build meant for other people
+has to go through the notarized release path again.
 
 ## Status
 
