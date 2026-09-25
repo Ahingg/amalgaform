@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://view/rooms/room_layout.gd" id="1_room"]
+
+[node name="RoomLayout" type="Node2D"]
+script = ExtResource("1_room")
+
+[node name="Obstacles" type="Node2D" parent="."]
+
+[node name="WestPillar" type="ColorRect" parent="Obstacles"]
+offset_left = 416.0
+offset_top = 156.0
+offset_right = 520.0
+offset_bottom = 260.0
+mouse_filter = 2
+color = Color(0.26, 0.24, 0.31, 1)
+
+[node name="EastPillar" type="ColorRect" parent="Obstacles"]
+offset_left = 624.0
+offset_top = 364.0
+offset_right = 728.0
+offset_bottom = 468.0
+mouse_filter = 2
+color = Color(0.26, 0.24, 0.31, 1)
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="Northwest" type="Marker2D" parent="Spawns"]
+position = Vector2(52, 52)
+
+[node name="Northeast" type="Marker2D" parent="Spawns"]
+position = Vector2(936, 52)
+
+[node name="Southeast" type="Marker2D" parent="Spawns"]
+position = Vector2(936, 520)
+
+[node name="Southwest" type="Marker2D" parent="Spawns"]
+position = Vector2(52, 520)
+
+[node name="North" type="Marker2D" parent="Spawns"]
+position = Vector2(520, 52)
+
+[node name="South" type="Marker2D" parent="Spawns"]
+position = Vector2(520, 520)
+
+[node name="Exit" type="ColorRect" parent="."]
+offset_left = 988.0
+offset_top = 260.0
+offset_right = 1040.0
+offset_bottom = 364.0
+mouse_filter = 2
+color = Color(0.45, 0.82, 0.68, 1)

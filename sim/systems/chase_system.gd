@@ -6,6 +6,8 @@ extends RefCounted
 static func process(world: World, _delta: float) -> void:
 	var entities := world.get_entities_with_comp([Comp.CHASE, Comp.POSITION, Comp.MOVE_INTENT])
 	var player := world.get_entities_with_comp([Comp.PLAYER, Comp.POSITION])
+	var obstacles := RoundState.room_obstacles(world)
+	var room := RoundState.room_size(world)
 
 	for e in entities:
 		var intent: Vec2 = world.get_component_value(Comp.MOVE_INTENT, e)
@@ -18,7 +20,7 @@ static func process(world: World, _delta: float) -> void:
 
 		var pos: Vec2 = world.get_component_value(Comp.POSITION, e)
 		var target_pos: Vec2 = world.get_component_value(Comp.POSITION, player[0])
-		var dir := Vector2(target_pos.x - pos.x, target_pos.y - pos.y).normalized()
+		var dir := RoomPathfinder.direction(pos, target_pos, obstacles, room)
 
 		intent.x = dir.x
 		intent.y = dir.y

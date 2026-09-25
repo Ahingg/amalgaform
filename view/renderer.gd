@@ -244,6 +244,10 @@ func _draw() -> void:
 
 	_fit_arena()
 	_draw_grid()
+	var layout := get_node_or_null("RoomLayout") as RoomLayout
+	if layout != null:
+		layout.position = margin
+		layout.scale = Vector2.ONE * (tile_size / RoomLayout.EDITOR_TILE_SIZE)
 
 	var query: Array[String] = [ViewConfig.POSITION]
 	var ids: Array[int] = world.get_entities_with_comp(query)

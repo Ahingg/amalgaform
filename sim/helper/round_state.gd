@@ -18,3 +18,19 @@ static func room_size(world: World) -> Size:
 		return Size.new(Tuning.ARENA_W, Tuning.ARENA_H)
 	var size: Size = world.get_component_value(Comp.ROOM_SIZE, entities[0])
 	return size
+
+
+static func room_obstacles(world: World) -> Array[Rect2]:
+	var rounds := world.get_entities_with_comp([Comp.ROUND, Comp.ROOM_OBSTACLES])
+	if rounds.is_empty():
+		return []
+	var obstacles: Array[Rect2] = world.get_component_value(Comp.ROOM_OBSTACLES, rounds[0])
+	return obstacles
+
+
+static func room_spawns(world: World) -> Array[Vector2]:
+	var rounds := world.get_entities_with_comp([Comp.ROUND, Comp.ROOM_SPAWNS])
+	if rounds.is_empty():
+		return []
+	var spawns: Array[Vector2] = world.get_component_value(Comp.ROOM_SPAWNS, rounds[0])
+	return spawns

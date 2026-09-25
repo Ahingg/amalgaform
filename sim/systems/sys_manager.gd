@@ -19,6 +19,7 @@ static func process(world: World, delta: float) -> void:
 	SeparationSystem.process(world, sdelta)
 	MoveSystem.process(world, sdelta)
 	BoundSystem.process(world, sdelta)
+	RoomExitSystem.process(world, sdelta)
 	ContactSystem.process(world, sdelta)
 	BurstSystem.process(world, sdelta)
 	MeleeSystem.process(world, sdelta)

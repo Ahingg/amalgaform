@@ -34,6 +34,7 @@ static func enemy(
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ENEMY, e)
+	world.attach_component(Comp.BOUNDED, e)
 	world.attach_component(Comp.FACE_MOVEMENT, e)
 	world.attach_component(Comp.FACING, e, Vec2.new(1.0, 0))
 	world.attach_component(Comp.MELEE, e, Make.melee(Make.on_hit({}, {Comp.DAMAGED: Damaged.new(Tuning.MELEE_DAMAGE)})))
@@ -67,7 +68,11 @@ static func player(world: World,
 
 static func round(
 	world: World,
-	room_size: Vector2i
+	room_size: Vector2i,
+	obstacles: Array[Rect2],
+	spawns: Array[Vector2],
+	exit_area: Rect2,
+	final_room: bool
 ) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ROUND, e)
@@ -75,4 +80,9 @@ static func round(
 	world.attach_component(Comp.RUN_TIME, e, Scalar.new(0.0))
 	world.attach_component(Comp.TIME_SCALE, e, Scalar.new(1.0))
 	world.attach_component(Comp.ROOM_SIZE, e, Size.new(room_size.x, room_size.y))
+	world.attach_component(Comp.ROOM_OBSTACLES, e, obstacles.duplicate())
+	world.attach_component(Comp.ROOM_SPAWNS, e, spawns.duplicate())
+	world.attach_component(Comp.ROOM_EXIT, e, exit_area)
+	if final_room:
+		world.attach_component(Comp.FINAL_ROOM, e)
 	return e 

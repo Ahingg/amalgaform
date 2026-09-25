@@ -6,9 +6,12 @@
 [ext_resource type="Script" uid="uid://cipeao5ffjm3r" path="res://view/round_ui.gd" id="4_round_ui"]
 [ext_resource type="Script" uid="uid://1jbxijo4vh77" path="res://view/onboarding.gd" id="5_onboarding"]
 [ext_resource type="Script" uid="uid://c8r6vsb3fc7kq" path="res://view/demo_input.gd" id="6_demo_input"]
+[ext_resource type="PackedScene" path="res://view/rooms/first_room.tscn" id="7_room"]
 
 [node name="GameplayView" type="Node2D"]
 script = ExtResource("1_renderer")
+
+[node name="RoomLayout" parent="." instance=ExtResource("7_room")]
 
 [node name="PlayerInput" type="Node" parent="."]
 script = ExtResource("2_player_input")

@@ -34,12 +34,17 @@ costs you.
 | release `SHIFT` | cast |
 | left click | throw at the cursor |
 | `ESC` | pause (or cancel the rune queue while it is open) |
-| `R` | retry |
+| `R` | retry the run |
 | `F1` | component badges (ECS debug view) |
 | `F11` | fullscreen |
 
 The title menu includes Settings for audio levels and keyboard rebinding; the
 same settings are available while paused.
+
+The current run has two hand-authored rooms. Clear four waves in the first room
+and enter the green exit to reach the second; health carries over. The second
+room ends in victory after its waves. Pillars block movement, while spells pass
+through them.
 
 ## Running it
 
@@ -71,9 +76,10 @@ keep it in the view layer and derive it by comparing this frame's World to the
 last one. Death, for instance, has no component and does not need one: a dead
 enemy is an id that existed last frame and does not exist now.
 
-The gameplay scene's grid width and height define the current room size. Each
-new simulation run receives those dimensions, so player bounds and wave spawn
-positions follow the room instead of relying on fixed arena coordinates.
+Each room is an editable scene with obstacles, spawn markers, and (where
+needed) an exit. The scene's dimensions and geometry are copied into the
+simulation when the room starts. The renderer scales the authored room art to
+the current viewport.
 
 `tools/` contains project-specific helpers such as the spell-placement probe
 and map slicing. Reusable audio-processing and release scripts live in
@@ -115,6 +121,6 @@ has to go through the notarized release path again.
 
 ## Status
 
-Ten day rotation project, not a product. It is finished in the sense that it
-has a beginning, four waves, a win screen and a lose screen — and unfinished in
-every other sense.
+Originally a ten-day rotation project, now being expanded into a small dungeon
+run. Room layouts and encounters are hand-authored; procedural generation is
+not part of the current game.

@@ -4,6 +4,7 @@ extends Node
 # gameplay scripts, and saved settings all use the same InputMap actions.
 
 const SETTINGS_PATH := "user://settings.cfg"
+var settings_path: String = SETTINGS_PATH
 
 const KEYBIND_LABELS := {
 	"move_up": "Move up",
@@ -85,7 +86,7 @@ func _ensure_bus(bus_name: String) -> void:
 
 
 func _load() -> void:
-	if _config.load(SETTINGS_PATH) != OK:
+	if _config.load(settings_path) != OK:
 		return
 	for action in KEYBIND_LABELS:
 		if not _config.has_section_key("bindings", action):
@@ -131,7 +132,7 @@ func set_binding(action: String, event: InputEvent) -> void:
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, binding)
 	_config.set_value("bindings", action, _data_from_event(binding))
-	_config.save(SETTINGS_PATH)
+	_config.save(settings_path)
 
 
 func reset_bindings() -> void:
@@ -143,7 +144,7 @@ func reset_bindings() -> void:
 			InputMap.action_add_event(action, event)
 			serialized.append(_data_from_event(event))
 		_config.set_value("bindings", action, serialized)
-	_config.save(SETTINGS_PATH)
+	_config.save(settings_path)
 
 
 func binding_text(action: String) -> String:
@@ -155,7 +156,7 @@ func binding_text(action: String) -> String:
 func set_volume(bus: String, value: float) -> void:
 	_volumes[bus] = clampf(value, 0.0, 1.0)
 	_config.set_value("audio", bus, _volumes[bus])
-	_config.save(SETTINGS_PATH)
+	_config.save(settings_path)
 	_apply_volume(bus)
 
 

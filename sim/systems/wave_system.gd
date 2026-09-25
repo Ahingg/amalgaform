@@ -15,16 +15,22 @@ static func process(world: World, _delta: float) -> void:
 		var wave: Scalar = world.get_component_value(Comp.ROUND_WAVE, r)
 		if world.entity_have_component(Comp.DELAY, r) or not enemies.is_empty():
 			continue
-		if world.entity_have_component(Comp.WON, r): 
+		if world.entity_have_component(Comp.WON, r) or world.entity_have_component(Comp.ROOM_CLEARED, r):
 			continue
 		if wave.value >= Tuning.WAVE_COUNT:
-			world.attach_component(Comp.WON, r)
+			if world.entity_have_component(Comp.FINAL_ROOM, r):
+				world.attach_component(Comp.WON, r)
+			else:
+				world.attach_component(Comp.ROOM_CLEARED, r)
 			continue
 		var data: Dictionary = WAVES[wave.value]
 		var room := RoundState.room_size(world)
-		var points := _spawn_points(room, data["count"])
+		var points := RoundState.room_spawns(world)
+		if points.is_empty():
+			points = _spawn_points(room, data["count"])
 		for i in data["count"]:
-			Spawn.enemy(world, points[i].x, points[i].y, data["hp"])
+			var point := points[i % points.size()]
+			Spawn.enemy(world, point.x, point.y, data["hp"])
 		wave.value += 1
 		world.attach_component(Comp.DELAY, r, Countdown.new(Tuning.WAVE_GAP))
 

@@ -56,7 +56,13 @@ func _draw() -> void:
 		return
 
 	var attempt: int = main.get("attempt")
-	_draw_top_bar(world, attempt)
+	_draw_top_bar(world, attempt, main)
+	var cleared_query: Array[String] = [ViewConfig.ROUND, ViewConfig.ROOM_CLEARED]
+	if not world.get_entities_with_comp(cleared_query).is_empty():
+		var hint := "ROOM CLEAR — GO TO THE GREEN EXIT"
+		var width := _font.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+		draw_string(_font, Vector2((get_viewport_rect().size.x - width) * 0.5, 72),
+			hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.55, 0.92, 0.7))
 
 	# Menang dan kalah dua-duanya dibaca dari keadaan dunia, bukan dari flag yang
 	# disimpan di sini. Kalah = tidak ada entity ber-Player. Menang = entity
@@ -74,7 +80,7 @@ func _draw() -> void:
 
 # Bar atas dibagi tiga: percobaan di kiri, gelombang di tengah, waktu di kanan.
 # Semuanya redup — ini informasi yang dilirik sesekali, bukan yang dipelototi.
-func _draw_top_bar(world, attempt: int) -> void:
+func _draw_top_bar(world, attempt: int, main: Node) -> void:
 	var r := get_parent() as WorldRenderer
 	if r == null:
 		return
@@ -96,7 +102,9 @@ func _draw_top_bar(world, attempt: int) -> void:
 	var alive: int = world.get_entities_with_comp(enemy_q).size()
 	var shown: int = mini(int(wave.value), Tuning.WAVE_COUNT)
 
-	var mid := "WAVE %d / %d          ENEMIES %d" % [shown, Tuning.WAVE_COUNT, alive]
+	var run: DungeonRun = main.get("dungeon_run")
+	var mid := "ROOM %d / %d     WAVE %d / %d     ENEMIES %d" % [
+		run.room_index + 1, run.room_count, shown, Tuning.WAVE_COUNT, alive]
 	var mw := _font.get_string_size(mid, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
 	draw_string(_font, Vector2(vw * 0.5 - mw * 0.5, y), mid,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, bright)
