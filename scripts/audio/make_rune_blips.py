@@ -16,7 +16,7 @@ tinggi dan ringan.
 
 Stdlib saja.
 
-    python3 tools/make_rune_blips.py
+    python3 scripts/audio/make_rune_blips.py
 """
 import math
 import os
@@ -25,7 +25,7 @@ import struct
 import wave
 
 RATE = 44100
-KELUAR = os.path.join(os.path.dirname(__file__), "..",
+KELUAR = os.path.join(os.path.dirname(__file__), "..", "..",
                       "assets", "sfx")
 
 # Akor A mayor: apa pun urutan tekannya, tidak ada pasangan yang sumbang.

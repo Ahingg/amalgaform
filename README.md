@@ -81,9 +81,12 @@ needed) an exit. The scene's dimensions and geometry are copied into the
 simulation when the room starts. The renderer scales the authored room art to
 the current viewport.
 
-`tools/` contains project-specific helpers such as the spell-placement probe
-and map slicing. Reusable audio-processing and release scripts live in
-`scripts/`.
+Project code is grouped by role: `view/` contains `app/`, `scenes/`, `ui/`,
+`input/`, `rendering/`, `audio/`, and `rooms/`; `sim/` contains `core/`,
+`components/`, `helpers/`, and `systems/`. `tools/tests/` holds gameplay checks,
+while `tools/art/` holds asset helpers. `scripts/audio/` and `scripts/build/`
+hold reusable audio and build/release workflows respectively. Art and sound
+assets are grouped by type under `assets/`.
 
 Design notes, the deliberate debt list, and the asset spec are kept locally in
 `Docs/` and are not part of this repository. They are working notes for the
@@ -92,7 +95,7 @@ developers, not public project documentation.
 ## Assets
 
 All art is hand-drawn for this project. Monster sounds are my own voice,
-recorded and processed with the scripts in `tools/`. Some sound effects are
+recorded and processed with scripts in `scripts/audio/`. Some sound effects are
 derived from royalty-free libraries (Sonniss GDC bundle, Kenney).
 
 ## Changelog
@@ -109,12 +112,12 @@ Two different things come out of this repo, and they are not interchangeable.
 
 | | Where | What it is |
 |---|---|---|
-| **Release** | `./scripts/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
+| **Release** | `./scripts/build/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
 | **CI validation** | Actions → artifacts (version tags or manual runs) | temporary macOS and Windows export checks; macOS is ad-hoc signed, Windows is unsigned |
 
 Pull requests and pushes to `main` run quick project checks only. Export builds
 run for version tags (`v*`) and manual workflow runs; they do not create GitHub
-releases. A real release is created locally with `scripts/release.sh`, which
+releases. A real release is created locally with `scripts/build/release.sh`, which
 uploads both platform ZIPs. The macOS release is signed and notarized; the
 Windows executable is unsigned, so Windows SmartScreen may show its usual
 unknown-publisher warning.
@@ -123,7 +126,7 @@ The CI macOS artifact exists to prove the project still exports. It is not
 signed with a Developer ID and not notarized, so macOS refuses it with *"Apple
 could not verify..."*. That is the correct behaviour, not a broken build.
 
-Note that a plain `./scripts/build_mac.sh` (without `NOTARIZE=1`) replaces the
+Note that a plain `./scripts/build/build_mac.sh` (without `NOTARIZE=1`) replaces the
 app and **drops the notarization ticket**. Any Mac build meant for other people
 has to go through the notarized release path again.
 

@@ -1,11 +1,11 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://cpro1ho18c7fj" path="res://view/renderer.gd" id="1_renderer"]
-[ext_resource type="Script" uid="uid://cee8bk3csh6r6" path="res://view/player_input.gd" id="2_player_input"]
-[ext_resource type="Script" uid="uid://dlbtwqqplmagi" path="res://view/cast_ui.gd" id="3_cast_ui"]
-[ext_resource type="Script" uid="uid://cipeao5ffjm3r" path="res://view/round_ui.gd" id="4_round_ui"]
-[ext_resource type="Script" uid="uid://1jbxijo4vh77" path="res://view/onboarding.gd" id="5_onboarding"]
-[ext_resource type="Script" uid="uid://c8r6vsb3fc7kq" path="res://view/demo_input.gd" id="6_demo_input"]
+[ext_resource type="Script" uid="uid://cpro1ho18c7fj" path="res://view/rendering/renderer.gd" id="1_renderer"]
+[ext_resource type="Script" uid="uid://cee8bk3csh6r6" path="res://view/input/player_input.gd" id="2_player_input"]
+[ext_resource type="Script" uid="uid://dlbtwqqplmagi" path="res://view/ui/cast_ui.gd" id="3_cast_ui"]
+[ext_resource type="Script" uid="uid://cipeao5ffjm3r" path="res://view/ui/round_ui.gd" id="4_round_ui"]
+[ext_resource type="Script" uid="uid://1jbxijo4vh77" path="res://view/ui/onboarding.gd" id="5_onboarding"]
+[ext_resource type="Script" uid="uid://c8r6vsb3fc7kq" path="res://view/input/demo_input.gd" id="6_demo_input"]
 [ext_resource type="PackedScene" path="res://view/rooms/first_room.tscn" id="7_room"]
 
 [node name="GameplayView" type="Node2D"]

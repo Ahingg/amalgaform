@@ -4,7 +4,7 @@ extends SceneTree
 # posisi yang KITA tentukan, lempar satu Ventus ke delapan arah, lalu periksa
 # pusat dan hit area cone terhadap arah hadap pemain.
 #
-#   godot --headless --script res://tools/probe_launch.gd
+#   godot --headless --script res://tools/tests/probe_launch.gd
 #
 # Yang benar: cone mengarah ke facing, mengenai target di depan, dan tidak
 # mengenai target pada jarak sama di belakang.

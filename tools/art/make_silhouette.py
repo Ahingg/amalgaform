@@ -15,8 +15,8 @@ yang menyembul di pinggirnya jadi garis tepi.
 
 Butuh Pillow.
 
-    python3 tools/make_silhouette.py assets/enemies/humanoid_walk1.png
-    python3 tools/make_silhouette.py assets/enemies/          # semua di folder
+    python3 tools/art/make_silhouette.py assets/enemies/humanoid_walk1.png
+    python3 tools/art/make_silhouette.py assets/enemies/          # semua di folder
 """
 import os
 import sys

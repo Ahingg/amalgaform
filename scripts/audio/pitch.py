@@ -13,8 +13,8 @@ terdengar seperti tupai.
 
 Stdlib saja.
 
-    python3 tools/pitch.py rune_base.wav --nama rune --langkah 0,2,4,7
-    python3 tools/pitch.py growl.wav --nama monster_low --langkah -5
+    python3 scripts/audio/pitch.py rune_base.wav --nama rune --langkah 0,2,4,7
+    python3 scripts/audio/pitch.py growl.wav --nama monster_low --langkah -5
 """
 import argparse
 import array

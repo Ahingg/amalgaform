@@ -16,9 +16,9 @@ Puncak tetap dijaga sebagai atap supaya tidak ada yang mentok.
 Dekode m4a/mp3 lewat `afconvert` (bawaan macOS). Selain itu stdlib saja.
 
 Pakai:
-    python3 tools/sfx_prep.py rekaman.m4a --nama monster_growl_1
-    python3 tools/sfx_prep.py whoosh.mp3 --nama cast_whoosh --pisah 4
-    python3 tools/sfx_prep.py rekaman/ --keluar assets/sfx
+    python3 scripts/audio/sfx_prep.py rekaman.m4a --nama monster_growl_1
+    python3 scripts/audio/sfx_prep.py whoosh.mp3 --nama cast_whoosh --pisah 4
+    python3 scripts/audio/sfx_prep.py rekaman/ --keluar assets/sfx
 """
 import argparse
 import array

@@ -1,7 +1,7 @@
 extends SceneTree
 
 # Small end-to-end regression for the menu, room geometry, and dungeon flow.
-# Run with: godot --headless --path . --script res://tools/test_gameplay.gd
+# Run with: godot --headless --path . --script res://tools/tests/test_gameplay.gd
 
 
 func _initialize() -> void:
@@ -25,7 +25,7 @@ func _clear_wave(world: World) -> void:
 
 
 func _run() -> void:
-	var scene: PackedScene = load("res://view/main.tscn")
+	var scene: PackedScene = load("res://view/scenes/main.tscn")
 	var main := scene.instantiate()
 	root.add_child(main)
 	var menu := main.get_node("MenuLayer/MenuUI")

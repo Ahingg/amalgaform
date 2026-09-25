@@ -9,9 +9,9 @@ tidak ada di sini, dan memang tidak bisa ditambahkan.
 Cuma memakai pustaka bawaan Python: WAV saja.
 
 Pakai:
-    python3 tools/sfx_check.py rekaman/
-    python3 tools/sfx_check.py rekaman/monster1.wav
-    python3 tools/sfx_check.py rekaman/ --jenis kena     # ambang lebih ketat
+    python3 scripts/audio/sfx_check.py rekaman/
+    python3 scripts/audio/sfx_check.py rekaman/monster1.wav
+    python3 scripts/audio/sfx_check.py rekaman/ --jenis kena     # ambang lebih ketat
 """
 import argparse
 import array

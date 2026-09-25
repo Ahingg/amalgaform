@@ -59,11 +59,11 @@ jobs:
         # dibaca YAML sebagai string yang berhenti di kutip penutup, dan sisa
         # perintahnya jadi sampah yang tidak bisa diurai.
         run: |
-          "$GODOT" --headless --path . --script res://tools/probe_launch.gd
+          "$GODOT" --headless --path . --script res://tools/tests/probe_launch.gd
 
       - name: Periksa alur gameplay
         run: |
-          "$GODOT" --headless --path . --script res://tools/test_gameplay.gd
+          "$GODOT" --headless --path . --script res://tools/tests/test_gameplay.gd
 
   build:
     name: macOS app
@@ -116,7 +116,7 @@ jobs:
         # TIDAK RUSAK, bukan untuk dibagikan — kalau dibuka di Mac lain,
         # Gatekeeper menolaknya dengan "Apple could not verify...". Itu perilaku
         # yang benar, bukan kerusakan. Rilis yang dibagi ke orang lain dibuat di
-        # mesin sendiri lewat `NOTARIZE=1 ./scripts/build_mac.sh`.
+        # mesin sendiri lewat `NOTARIZE=1 ./scripts/build/build_mac.sh`.
         run: |
           xattr -cr build/Amalgaform.app
           codesign --force --deep --sign - build/Amalgaform.app
@@ -140,7 +140,7 @@ jobs:
 
           Yang dibagikan ke orang lain dibuat di mesin sendiri:
 
-              NOTARIZE=1 ./scripts/build_mac.sh
+              NOTARIZE=1 ./scripts/build/build_mac.sh
 
           Hasilnya di ~/Builds/Amalgaform.zip, dan itu bisa dibuka dengan
           klik ganda biasa di Mac mana pun.
