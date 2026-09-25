@@ -215,6 +215,17 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Compress-Archive -Path build/Amalgaform.exe -DestinationPath build/Amalgaform-Windows.zip -Force
 
+      - name: Smoke test exported Windows game
+        shell: pwsh
+        run: |
+          $game = (Resolve-Path build/Amalgaform.exe).Path
+          $process = Start-Process -FilePath $game -ArgumentList @('--headless', '--quit-after', '60') -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput build/windows-smoke-out.txt -RedirectStandardError build/windows-smoke-err.txt
+          Get-Content build/windows-smoke-out.txt
+          Get-Content build/windows-smoke-err.txt
+          if ($process.ExitCode -ne 0) { exit $process.ExitCode }
+          $output = (Get-Content build/windows-smoke-out.txt -Raw) + (Get-Content build/windows-smoke-err.txt -Raw)
+          if ($output -match 'SCRIPT ERROR|Parse Error|Compile Error|Error loading extension|No GDExtension library found') { throw 'Exported game reported a load or script error' }
+
       - uses: actions/upload-artifact@v4
         with:
           name: Amalgaform-Windows
