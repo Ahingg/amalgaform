@@ -41,10 +41,10 @@ costs you.
 The title menu includes Settings for audio levels and keyboard rebinding; the
 same settings are available while paused.
 
-The current run has two hand-authored rooms. Clear four waves in the first room
-and enter the green exit to reach the second; health carries over. The second
-room ends in victory after its waves. Pillars block movement, while spells pass
-through them.
+The current run uses both hand-authored rooms in a randomized order. Each room
+is a larger 16:9 arena; clear four waves and enter the green exit to continue,
+with health carrying over. The final room ends in victory after its waves.
+Obstacles block movement, while spells pass through them.
 
 ## Running it
 

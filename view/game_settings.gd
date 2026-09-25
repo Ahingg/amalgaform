@@ -149,7 +149,7 @@ func reset_bindings() -> void:
 
 func binding_text(action: String) -> String:
 	for event in InputMap.action_get_events(action):
-		return event.as_text().trim_suffix(" (Physical)")
+		return event.as_text().replace(" (Physical)", "").replace(" - Physical", "")
 	return "Unbound"
 
 

@@ -79,7 +79,7 @@ func build_round(player_health: float = 200.0) -> void:
 	if previous != null:
 		gameplay_view.remove_child(previous)
 		previous.queue_free()
-	var layout := ROOM_SCENES[dungeon_run.room_index].instantiate() as RoomLayout
+	var layout := ROOM_SCENES[dungeon_run.current_layout_index()].instantiate() as RoomLayout
 	layout.name = "RoomLayout"
 	gameplay_view.add_child(layout)
 	gameplay_view.grid_width = layout.room_size.x

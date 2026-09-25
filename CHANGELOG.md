@@ -17,10 +17,12 @@ uses Semantic Versioning.
 - Added gameplay regression coverage for menus, settings, rooms, obstacles,
   exits, waves, and victory; CI runs it on pushes and pull requests.
 - Added Windows x86_64 export and a CI smoke test for the exported executable.
+- Added randomized room order and larger authored room layouts for each run.
 
 ### Changed
 
 - Made the room size configurable in the simulation.
+- Simplified displayed keybind labels by hiding the physical-key indicator.
 - Changed Wind Burst into a directional cone with matching collision and visual
   shapes.
 - Kept scripted demo input behind an explicit `--demo` launch flag.

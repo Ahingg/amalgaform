@@ -61,6 +61,9 @@ func _run() -> void:
 	if not _require(settings.call("binding_text", "dash").contains("Q"),
 			"The displayed binding should update after rebinding"):
 		return
+	if not _require(not settings.call("binding_text", "dash").contains("Physical"),
+			"Displayed bindings should hide the physical-key indicator"):
+		return
 	InputMap.action_erase_events("dash")
 	for event in original_events:
 		InputMap.action_add_event("dash", event)
@@ -75,32 +78,35 @@ func _run() -> void:
 	menu.get_node("PauseContent/Center/Contents/ResumeButton").emit_signal("pressed")
 	var world: World = main.get("world")
 	var room := RoundState.room_size(world)
-	if not _require(room.w == 20.0 and room.h == 12.0,
-			"The first room should use its scene dimensions"):
+	if not _require(room.w >= 24.0 and room.h >= 14.0,
+			"Authored rooms should use the larger dimensions"):
 		return
-	if not _require(RoundState.room_obstacles(world).size() == 2,
-			"The first room should have two scene-authored obstacles"):
+	var first_layout_index: int = main.get("dungeon_run").call("current_layout_index")
+	var obstacle_rects := RoundState.room_obstacles(world)
+	if not _require(not obstacle_rects.is_empty(),
+			"The selected room should have scene-authored obstacles"):
 		return
 	var players := world.get_entities_with_comp([Comp.PLAYER, Comp.POSITION, Comp.SIZE])
 	var player := players[0]
 	var position: Vec2 = world.get_component_value(Comp.POSITION, player)
-	position.x = 8.5
-	position.y = 3.5
+	position.x = obstacle_rects[0].position.x + 0.25
+	position.y = obstacle_rects[0].position.y + 0.25
 	BoundSystem.process(world, 0.0)
-	var pillar := RoundState.room_obstacles(world)[0]
+	var pillar := obstacle_rects[0]
 	if not _require(not Rect2(position.x, position.y, 1.0, 1.0).intersects(pillar),
 			"The pillar should block the player"):
 		return
-	var detour := RoomPathfinder.direction(Vec2.new(7.0, 4.0),
-		Vec2.new(11.0, 4.0), RoundState.room_obstacles(world), room)
+	var navigation_obstacle := Rect2(8.0, 5.0, 2.0, 2.0)
+	var detour := RoomPathfinder.direction(Vec2.new(6.0, 5.5),
+		Vec2.new(12.0, 5.5), [navigation_obstacle], room)
 	if not _require(absf(detour.y) > 0.1,
 			"Enemies should route around the pillar"):
 		return
 	var navigation_world := World.new()
-	Spawn.round(navigation_world, Vector2i(20, 12),
-		RoundState.room_obstacles(world), [], Rect2(), true)
-	Spawn.player(navigation_world, 11.0, 4.0, 200)
-	var navigating_enemy := Spawn.enemy(navigation_world, 7.0, 4.0, 100)
+	Spawn.round(navigation_world, Vector2i(int(room.w), int(room.h)),
+		[navigation_obstacle], [], Rect2(), true)
+	Spawn.player(navigation_world, 12.0, 5.5, 200)
+	var navigating_enemy := Spawn.enemy(navigation_world, 6.0, 5.5, 100)
 	var navigation_started := Time.get_ticks_msec()
 	for frame in 600:
 		ChaseSystem.process(navigation_world, 0.016)
@@ -109,7 +115,7 @@ func _run() -> void:
 		BoundSystem.process(navigation_world, 0.016)
 	print("Navigation regression 600 ticks: %d ms" % (Time.get_ticks_msec() - navigation_started))
 	var enemy_after: Vec2 = navigation_world.get_component_value(Comp.POSITION, navigating_enemy)
-	if not _require(Vector2(enemy_after.x, enemy_after.y).distance_to(Vector2(11.0, 4.0)) < 1.5,
+	if not _require(Vector2(enemy_after.x, enemy_after.y).distance_to(Vector2(12.0, 5.5)) < 1.5,
 			"An enemy should reach the player by walking around a pillar"):
 		return
 	var health: Health = world.get_component_value(Comp.HEALTH, player)
@@ -137,8 +143,9 @@ func _run() -> void:
 	if not _require(not world.entity_have_component(Comp.ROOM_EXITED, rounds[0]),
 			"The exit should require the player to enter it"):
 		return
-	position.x = 19.0
-	position.y = 5.5
+	var exit_rect: Rect2 = world.get_component_value(Comp.ROOM_EXIT, rounds[0])
+	position.x = exit_rect.position.x
+	position.y = exit_rect.position.y
 	RoomExitSystem.process(world, 0.0)
 	if not _require(world.entity_have_component(Comp.ROOM_EXITED, rounds[0]),
 			"The open exit should recognize the player"):
@@ -146,8 +153,12 @@ func _run() -> void:
 	main.call("_physics_process", 0.0)
 	world = main.get("world")
 	room = RoundState.room_size(world)
-	if not _require(room.w == 16.0 and room.h == 10.0,
-			"The exit should load the second room scene"):
+	if not _require(room.w >= 24.0 and room.h >= 14.0,
+			"The exit should load the other larger room scene"):
+		return
+	var run: DungeonRun = main.get("dungeon_run")
+	if not _require(run.current_layout_index() != first_layout_index,
+			"A run should visit each room layout once in randomized order"):
 		return
 	players = world.get_entities_with_comp([Comp.PLAYER, Comp.HEALTH])
 	health = world.get_component_value(Comp.HEALTH, players[0])
