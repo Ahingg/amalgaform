@@ -95,6 +95,14 @@ All art is hand-drawn for this project. Monster sounds are my own voice,
 recorded and processed with the scripts in `tools/`. Some sound effects are
 derived from royalty-free libraries (Sonniss GDC bundle, Kenney).
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history. It follows [Keep a
+Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and Semantic Versioning.
+New user-facing changes belong under `Unreleased`; updating that section does
+not bump the game version or create a release. The `1.0.0` entry summarizes the
+existing `v1.0` rotation tag without changing that tag.
+
 ## Builds
 
 Two different things come out of this repo, and they are not interchangeable.
