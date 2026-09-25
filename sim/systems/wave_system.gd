@@ -2,10 +2,10 @@ class_name WaveSystem
 extends RefCounted
 
 const WAVES := [
-	{ "count": 3, "hp": 100, "at": [[0,0], [20, 0], [20, 12]]},
-	{ "count": 4, "hp": 120, "at": [[0,0], [20, 0], [20, 12], [0, 12]]},
-	{ "count": 5, "hp": 140, "at": [[0,0], [20, 0], [20, 12], [19, 11], [19, 0]]},
-	{ "count": 6, "hp": 160, "at": [[0,0], [20, 0], [20, 12], [19, 11], [19, 0], [1, 1], [19, 0], [1, 11]]},
+	{ "count": 3, "hp": 100},
+	{ "count": 4, "hp": 120},
+	{ "count": 5, "hp": 140},
+	{ "count": 6, "hp": 160},
 ]
 
 static func process(world: World, _delta: float) -> void:
@@ -21,8 +21,27 @@ static func process(world: World, _delta: float) -> void:
 			world.attach_component(Comp.WON, r)
 			continue
 		var data: Dictionary = WAVES[wave.value]
+		var room := RoundState.room_size(world)
+		var points := _spawn_points(room, data["count"])
 		for i in data["count"]:
-			Spawn.enemy(world, data["at"][i][0], data["at"][i][1], data["hp"])
+			Spawn.enemy(world, points[i].x, points[i].y, data["hp"])
 		wave.value += 1
 		world.attach_component(Comp.DELAY, r, Countdown.new(Tuning.WAVE_GAP))
+
+
+static func _spawn_points(room: Size, count: int) -> Array[Vector2]:
+	var right := maxf(0.0, room.w - 1.0)
+	var bottom := maxf(0.0, room.h - 1.0)
+	var mid_x := right * 0.5
+	var mid_y := bottom * 0.5
+	var positions: Array[Vector2] = [
+		Vector2(0.0, 0.0), Vector2(right, 0.0),
+		Vector2(right, bottom), Vector2(0.0, bottom),
+		Vector2(mid_x, 0.0), Vector2(right, mid_y),
+		Vector2(mid_x, bottom), Vector2(0.0, mid_y),
+	]
+	var result: Array[Vector2] = []
+	for i in count:
+		result.append(positions[i % positions.size()])
+	return result
 		

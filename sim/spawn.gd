@@ -65,10 +65,14 @@ static func player(world: World,
 	return e
 	
 
-static func round(world: World) -> int:
+static func round(
+	world: World,
+	room_size: Vector2i
+) -> int:
 	var e := world.add_entity()
 	world.attach_component(Comp.ROUND, e)
 	world.attach_component(Comp.ROUND_WAVE, e, Scalar.new(0))
 	world.attach_component(Comp.RUN_TIME, e, Scalar.new(0.0))
 	world.attach_component(Comp.TIME_SCALE, e, Scalar.new(1.0))
+	world.attach_component(Comp.ROOM_SIZE, e, Size.new(room_size.x, room_size.y))
 	return e 

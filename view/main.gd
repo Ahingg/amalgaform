@@ -65,9 +65,13 @@ func return_to_menu() -> void:
 # cleanup, no reset pass — nothing in sim/ ever kept state outside the World.
 func build_round() -> void:
 	world = World.new()
-	Spawn.round(world)
+	var room_size := Vector2i(Tuning.ARENA_W, Tuning.ARENA_H)
+	var gameplay_view := get_node_or_null("GameplayView") as WorldRenderer
+	if gameplay_view != null:
+		room_size = Vector2i(gameplay_view.grid_width, gameplay_view.grid_height)
+	Spawn.round(world, room_size)
 		
-	Spawn.player(world, 3.0, 2.0, 200)
+	Spawn.player(world, room_size.x * 0.15, room_size.y / 6.0, 200)
 	#Spawn.enemy(world, 0.5, 0.5, 100)
 	#Spawn.enemy(world, 10.0, 1.0, 100)
 	#Spawn.enemy(world, 6.0, 6.0, 100)

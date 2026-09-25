@@ -4,15 +4,13 @@ extends RefCounted
 # ============================================================================
 # GAME NUMBERS — one source of truth
 #
-# Every number here changes how the game FEELS. They live in sim/ because they
-# are rules, not presentation. The view layer reads them so it can display them
-# honestly (a cast-time readout that disagrees with the real cast time is worse
-# than no readout at all).
+# Shared simulation defaults and balance values live here. Per-room layout
+# settings come from the gameplay scene and are copied into each new World.
 #
-# Rule: if a number appears in more than one file, it belongs here.
+# Rule: if a balance value appears in more than one file, it belongs here.
 # ============================================================================
 
-# world data
+# Default room size, used when a gameplay scene does not provide dimensions.
 const ARENA_W := 20
 const ARENA_H := 12
 

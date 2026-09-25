@@ -38,8 +38,8 @@ const SHADOW := Color(0.045, 0.040, 0.060)   # musuh: hampir hitam
 const PAPER := BG
 const INK := LINE
 
-@export var grid_width: int = 20
-@export var grid_height: int = 12
+@export_range(6, 40, 1) var grid_width: int = 20
+@export_range(6, 40, 1) var grid_height: int = 12
 # Daftar komponen di bawah tiap entity: alat debug ECS paling berguna selama
 # ngoding, tapi bikin layar berantakan dan tidak terbaca. Default mati, F1 untuk
 # menyalakan.

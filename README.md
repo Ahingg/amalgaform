@@ -71,13 +71,17 @@ keep it in the view layer and derive it by comparing this frame's World to the
 last one. Death, for instance, has no component and does not need one: a dead
 enemy is an id that existed last frame and does not exist now.
 
+The gameplay scene's grid width and height define the current room size. Each
+new simulation run receives those dimensions, so player bounds and wave spawn
+positions follow the room instead of relying on fixed arena coordinates.
+
 `tools/` contains project-specific helpers such as the spell-placement probe
 and map slicing. Reusable audio-processing and release scripts live in
 `scripts/`.
 
 Design notes, the deliberate debt list, and the asset spec are kept locally in
-`Docs/` and are not part of this repository — they are working notes in
-Indonesian, written for one reader.
+`Docs/` and are not part of this repository. They are working notes for the
+developers, not public project documentation.
 
 ## Assets
 
