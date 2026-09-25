@@ -25,7 +25,8 @@ static var FORM := {
 	Comp.VENTUS: func() -> Dictionary:
 		return {
 			Comp.POSITION: Vec2.new(0.0, 0.0),
-			Comp.SIZE: Size.new(Tuning.BURST_SIZE, Tuning.BURST_SIZE),
+			Comp.SIZE: Size.new(Tuning.BURST_REACH * 2.0, Tuning.BURST_REACH * 2.0),
+			Comp.CONE: Cone.new(Tuning.BURST_REACH, Tuning.BURST_HALF_ANGLE),
 			Comp.LIFETIME: Countdown.new(Tuning.BURST_LIFETIME, {Comp.DEAD: {}}),
 		},
 }

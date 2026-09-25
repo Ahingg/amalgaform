@@ -81,11 +81,12 @@ const WATERBALL_SIZE := 0.6
 const PUDDLE_SIZE := 2.0
 const PUDDLE_LIFETIME := 3.0
 
-# A box, not a cone: Helper.overlap is axis-aligned, so a cone at 37 degrees
-# cannot be expressed. Debt, deliberately taken.
-const BURST_SIZE := 4.0
+# Directional wind burst. The visible triangle and collision use the same
+# cone vertices so the player sees the actual hit area.
+const BURST_REACH := 4.0
+const BURST_HALF_ANGLE := 35.0
 const BURST_LIFETIME := 0.3
-const BURST_OFFSET := 1.5
+const PROJECTILE_LAUNCH_OFFSET := 1.5
 
 const SPAWN_OFFSET := 0.7
 

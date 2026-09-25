@@ -30,6 +30,7 @@ const SIZE := "Size"
 const HEALTH := "Health"
 
 const BURST := "Burst"
+const CONE := "Cone"
 const INVULNERABLE := "Invulnerable"
 const DAMAGED := "Damaged"
 

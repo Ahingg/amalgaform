@@ -17,6 +17,7 @@ extends RefCounted
 
 const POSITION := "Position"
 const SIZE := "Size"
+const CONE := "Cone"
 const HEALTH := "Health"
 const DELAY := "Delay"
 const INVULNERABLE := "Invulnerable"
@@ -82,7 +83,7 @@ const BADGE_ORDER := [
 	"Position", "Velocity", "Size", "Delay", "Fire", "Water", "Wind",
 	"Burn", "Damaged", "Health", "Invulnerable", "Wet",
 	"Machine", "Recipe", "Lifetime", "Dead", 
-	"Player", "Enemy", "MoveIntent", "Facing", "HeldSpell", "Chase",
+	"Player", "Enemy", "MoveIntent", "Facing", "Cone", "HeldSpell", "Chase",
 	"Ignis", "Aqua", "Ventus", "Runes", "Damage", "Wet", "Knocked", "Dash", "DashCooldown", "OnHit", "Burst", "CastQueue", "CastRelease", "Knockback",
 ]
 

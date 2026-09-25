@@ -743,9 +743,16 @@ func _draw_spell(world, id: int, rect: Rect2, t: float) -> bool:
 			var lt: Countdown = world.get_component_value(ViewConfig.LIFETIME, id)
 			if lt.duration > 0.0:
 				ratio = clampf(lt.elapsed / lt.duration, 0.0, 1.0)
-		var wc := _blend_runes(runes)
-		_blit(Sprites.burst_frame(ratio), rect, Sprites.BURST_SCALE, false,
-			Color(wc.r, wc.g, wc.b, 1.0 - ratio * 0.5), Rect2(), false)
+		if world.entity_have_component(ViewConfig.CONE, id):
+			var cone: Cone = world.get_component_value(ViewConfig.CONE, id)
+			var vertices := Helper.cone_vertices(cone)
+			var points := PackedVector2Array()
+			for point in vertices:
+				points.append(screen_of_tile(Vector2i.ZERO) + point * tile_size)
+			var wc := _blend_runes(runes)
+			draw_colored_polygon(points, Color(wc.r, wc.g, wc.b, 0.48 * (1.0 - ratio)))
+			points.append(points[0])
+			draw_polyline(points, Color(wc.r, wc.g, wc.b, 0.8 * (1.0 - ratio)), 2.0)
 		return true
 
 	_draw_orb(rect, t, runes)

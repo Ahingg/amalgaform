@@ -16,8 +16,16 @@ static func process(world: World, _delta: float) -> void:
 		for t in targets:
 			var pos_t: Vec2 = world.get_component_value(Comp.POSITION, t)
 			var size_t: Size = world.get_component_value(Comp.SIZE, t)
-			if not Helper.overlap(pos_s, size_s, pos_t, size_t):
+			var source_center := Helper.center(pos_s, size_s)
+			if world.entity_have_component(Comp.CONE, s):
+				var cone: Cone = world.get_component_value(Comp.CONE, s)
+				if not Helper.cone_overlap(cone, pos_t, size_t):
+					continue
+				var vertices := Helper.cone_vertices(cone)
+				var middle := (vertices[1] + vertices[2]) * 0.5
+				source_center = Vec2.new(middle.x, middle.y)
+			elif not Helper.overlap(pos_s, size_s, pos_t, size_t):
 				continue
-			Inflict.apply(world, action, s, t, Helper.center(pos_s, size_s), Helper.center(pos_t, size_t))
+			Inflict.apply(world, action, s, t, source_center, Helper.center(pos_t, size_t))
 			if world.entity_have_component(Comp.SINGLE_TARGET, s):
 				break

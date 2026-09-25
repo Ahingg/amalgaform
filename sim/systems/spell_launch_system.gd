@@ -21,10 +21,17 @@ static func process(world: World, _delta: float) -> void:
 		var recipe: Dictionary = held["recipe"]
 			
 		var origin := Vec2.new()
-		if recipe.has(Comp.SIZE):
+		if recipe.has(Comp.CONE):
+			var cone: Cone = recipe[Comp.CONE]
+			cone.origin_x = centered.x
+			cone.origin_y = centered.y
+			cone.direction_x = facing.x
+			cone.direction_y = facing.y
+			origin = Vec2.new(centered.x - cone.reach, centered.y - cone.reach)
+		elif recipe.has(Comp.SIZE):
 			var s: Size = recipe.get(Comp.SIZE, 1)
-			origin.x = (centered.x - (s.w / 2) + facing.x * Tuning.BURST_OFFSET)
-			origin.y = (centered.y - (s.h / 2) + facing.y * Tuning.BURST_OFFSET)
+			origin.x = centered.x - s.w / 2 + facing.x * Tuning.PROJECTILE_LAUNCH_OFFSET
+			origin.y = centered.y - s.h / 2 + facing.y * Tuning.PROJECTILE_LAUNCH_OFFSET
 			
 		if recipe.has(Comp.POSITION):
 			recipe[Comp.POSITION] = origin

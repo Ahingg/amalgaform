@@ -117,7 +117,6 @@ static func rune_mark(rune: String) -> Texture2D:
 
 const SPELL_SCALE := 2.6      # peluru: kecil, jadi butuh perbesaran lebih
 const PUDDLE_SCALE := 1.5
-const BURST_SCALE := 1.25
 
 # Bola api bertumpuk: bg -> dua lapis berdenyut -> fg. Dua lapis tengah punya
 # dua frame masing-masing, jadi apinya bergolak tanpa perlu spritesheet penuh.
@@ -142,12 +141,6 @@ static func puddle_layers(t: float) -> Array:
 		tex("puddle/ripple%d.png" % r),
 		tex("puddle/highlight%d.png" % h),
 	]
-
-
-# Ledakan cuma hidup 0.3 detik, jadi dua frame itu pas: satu untuk mengembang,
-# satu untuk memudar. Dipilih dari umurnya sendiri, bukan dari jam.
-static func burst_frame(ratio: float) -> Texture2D:
-	return tex("burst/burst%d.png" % (1 if ratio < 0.45 else 2))
 
 
 # --- bola di tangan ---------------------------------------------------------
