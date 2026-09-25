@@ -175,7 +175,7 @@ static func cast_circle(rune: String) -> Texture2D:
 # Dua lapis goresan untuk lantai. Yang satu lebih lembut, yang satu lebih tajam;
 # ditumpuk dengan skala berbeda supaya polanya tidak pernah berulang serempak.
 static func floor_layer(i: int) -> Texture2D:
-	return tex("background%d.PNG" % (1 if i == 0 else 2))
+	return tex("backgrounds/background%d.PNG" % (1 if i == 0 else 2))
 
 
 # Siluet putih, dibuat oleh tools/make_silhouette.py. Ada karena modulate itu
@@ -193,10 +193,10 @@ static func enemy_silhouette(id: int, t: float) -> Texture2D:
 # serempak.
 static func impact_layers(ratio: float) -> Array:
 	var i: int = clampi(int(ratio * 4.0) + 1, 1, 4)
-	return [tex("Impact/frame%d_1.PNG" % i), tex("Impact/frame%d_2.PNG" % i)]
+	return [tex("impact/frame%d_1.PNG" % i), tex("impact/frame%d_2.PNG" % i)]
 
 
 # --- tetesan basah -----------------------------------------------------------
 
 static func wet_drops(t: float, phase: float) -> Texture2D:
-	return tex("Wet/wet%d.PNG" % (1 if fmod(t * 3.4 + phase, 2.0) < 1.0 else 2))
+	return tex("wet/wet%d.PNG" % (1 if fmod(t * 3.4 + phase, 2.0) < 1.0 else 2))

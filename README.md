@@ -81,12 +81,12 @@ needed) an exit. The scene's dimensions and geometry are copied into the
 simulation when the room starts. The renderer scales the authored room art to
 the current viewport.
 
-Project code is grouped by role: `view/` contains `app/`, `scenes/`, `ui/`,
-`input/`, `rendering/`, `audio/`, and `rooms/`; `sim/` contains `core/`,
-`components/`, `helpers/`, and `systems/`. `tools/tests/` holds gameplay checks,
-while `tools/art/` holds asset helpers. `scripts/audio/` and `scripts/export/`
-hold reusable audio and build/release workflows respectively. Art and sound
-assets are grouped by type under `assets/`.
+Project code is grouped by role: `view/` contains `app/`, `scenes/`,
+`ui/menu/`, `ui/gameplay/`, `input/`, `rendering/`, `audio/`, and `rooms/`;
+`sim/` contains `core/`, `components/`, `helpers/`, and `systems/`.
+`tools/tests/` holds gameplay checks, while `tools/art/` holds asset helpers.
+`scripts/audio/` and `scripts/export/` hold audio and build/release workflows.
+Art and sound assets are grouped by type under `assets/`.
 
 Design notes, the deliberate debt list, and the asset spec are kept locally in
 `Docs/` and are not part of this repository. They are working notes for the
