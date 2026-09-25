@@ -5,10 +5,8 @@ const ROOM_SCENES := [
 	preload("res://view/rooms/second_room.tscn"),
 ]
 
-# Bootstrap. Owns the World and hands it to the systems every physics tick.
-# The World lives here — not inside SystemManager — because "start the round
-# over" belongs to whoever owns the session, and because view/ needs to read
-# the World to draw it.
+# Session bootstrap. Keeps a reference to the current World and hands it to the
+# systems each physics tick. Room and entity initialization belongs to sim/.
 
 var world: World
 
@@ -71,7 +69,7 @@ func return_to_menu() -> void:
 # Everything that describes one attempt at the room lives here. Retrying is
 # literally this function again: throw the World away, build a new one. No
 # cleanup, no reset pass — nothing in sim/ ever kept state outside the World.
-func build_round(player_health: float = 200.0) -> void:
+func build_round(player_health: float = Tuning.PLAYER_HEALTH) -> void:
 	if dungeon_run == null:
 		dungeon_run = DungeonRun.new(ROOM_SCENES.size())
 	var gameplay_view := get_node("GameplayView") as WorldRenderer
@@ -84,12 +82,15 @@ func build_round(player_health: float = 200.0) -> void:
 	gameplay_view.add_child(layout)
 	gameplay_view.grid_width = layout.room_size.x
 	gameplay_view.grid_height = layout.room_size.y
-	world = World.new()
-	Spawn.round(world, layout.room_size, layout.obstacle_rects(),
-		layout.spawn_points(), layout.exit_rect(), dungeon_run.is_final_room())
-	var player := Spawn.player(world, layout.player_spawn.x, layout.player_spawn.y, 200)
-	var health: Health = world.get_component_value(Comp.HEALTH, player)
-	health.current = clampf(player_health, 1.0, health.max)
+	world = RoomFactory.build_world(
+		layout.room_size,
+		layout.obstacle_rects(),
+		layout.spawn_points(),
+		layout.exit_rect(),
+		dungeon_run.is_final_room(),
+		layout.player_spawn,
+		player_health
+	)
 
 
 func _physics_process(delta: float) -> void:

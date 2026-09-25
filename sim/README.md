@@ -13,13 +13,16 @@ straightforward structure until profiling or a concrete feature requires more.
 Simulation code must not depend on the scene tree, `Node` lifecycle, signals,
 input, rendering, audio playback, or wall-clock engine state. Godot value types
 such as `Rect2` are fine when useful to the rules. The view may read the `World`
-and translate authored room-scene data into simulation setup input; it must not
-edit components or apply gameplay rules.
+and translate authored room-scene data into simulation setup input. Input/UI
+adapters may submit transient player-intent components (movement, cast, and
+launch requests); only simulation systems should turn those intents into
+gameplay outcomes. Other view code must not edit components or apply gameplay
+rules.
 
-Known boundary to tighten: `view/app/main.gd` currently creates the per-room
-`World`, calls `Spawn`, and sets carried health. Keep that orchestration narrow;
-new simulation initialization or state changes should go through a
-simulation-owned setup API instead of expanding mutations in the view.
+`view/app/main.gd` owns the current-World reference and session lifecycle, but
+passes room-scene data to `RoomFactory` for World/entity initialization. Keep
+that boundary: new simulation initialization and state changes should go
+through simulation-owned APIs, not direct view-side gameplay-state mutation.
 
 Resetting a room should remain cheap: discard its `World` and construct another
 one. Run-level progression may live outside a room's `World`, but it stays in

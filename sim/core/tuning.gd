@@ -14,6 +14,8 @@ extends RefCounted
 const ARENA_W := 20
 const ARENA_H := 12
 
+const PLAYER_HEALTH := 200
+
 # round manager
 const WAVE_COUNT := 4
 const WAVE_GAP := 3.0

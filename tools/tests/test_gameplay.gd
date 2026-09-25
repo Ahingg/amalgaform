@@ -88,6 +88,10 @@ func _run() -> void:
 		return
 	var players := world.get_entities_with_comp([Comp.PLAYER, Comp.POSITION, Comp.SIZE])
 	var player := players[0]
+	var health: Health = world.get_component_value(Comp.HEALTH, player)
+	if not _require(is_equal_approx(health.current, Tuning.PLAYER_HEALTH),
+			"Simulation room setup should initialize player health"):
+		return
 	var position: Vec2 = world.get_component_value(Comp.POSITION, player)
 	position.x = obstacle_rects[0].position.x + 0.25
 	position.y = obstacle_rects[0].position.y + 0.25
@@ -118,7 +122,6 @@ func _run() -> void:
 	if not _require(Vector2(enemy_after.x, enemy_after.y).distance_to(Vector2(12.0, 5.5)) < 1.5,
 			"An enemy should reach the player by walking around a pillar"):
 		return
-	var health: Health = world.get_component_value(Comp.HEALTH, player)
 	health.current = 143.0
 	WaveSystem.process(world, 0.0)
 	var spawned := world.get_entities_with_comp([Comp.ENEMY, Comp.POSITION])
