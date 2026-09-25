@@ -1,29 +1,19 @@
-# assets/
+# Asset library
 
-Nama berkas dipakai langsung oleh kode, jadi harus persis. Semua PNG transparan.
+Game assets live here, grouped by the visual or audio role that uses them.
+Keep filenames and directory casing consistent with references in
+`view/rendering/sprites.gd` and `view/audio/sfx.gd`.
 
-## sprites/
-    player_idle.png        256x256   penyihir, diam
-    player_move.png        256x256   penyihir, bergerak / dash
-    player_cast.png        256x256   penyihir, merapal (tangan terangkat)
-    enemy_blob.png         256x256   gumpalan bermata
-    enemy_walker.png       256x256   makhluk berkaki panjang, frame 1
-    enemy_walker_b.png     256x256   frame 2 (kaki bergantian) — opsional
+- `player/`, `enemies/` — character poses and enemy animation frames, including
+  silhouette variants used for outlines.
+- `runes/`, `misc/` — rune stones, rune marks, and cast-circle symbols.
+- `fireball/`, `puddle/`, `burst/`, `Impact/`, `Wet/`, `held/` — spell, hit,
+  status, and held-spell effects.
+- `background1.PNG`, `background2.PNG` — arena floor textures.
+- `sfx/` — music and sound effects loaded by the view audio controller.
+- `icon.PNG` — project icon source configured in `project.godot`. The root
+  `icon.svg` is an additional vector asset and is not the configured app icon.
 
-Titik jangkar harus sama di semua frame karakter, kalau tidak spritenya akan
-melompat saat berganti pose.
-
-## runes/
-    ignis_stone.png   ignis_mark.png
-    aqua_stone.png    aqua_mark.png
-    ventus_stone.png  ventus_mark.png
-
-Semua 256x256. `_stone` bertinta hitam; `_mark` PUTIH di atas transparan supaya
-bisa diwarnai lewat kode.
-
-## fx/
-    cast_ring.png          256x256   LINGKARAN penuh (bukan elips), putih.
-                                     Dipipihkan dan diputar lewat kode.
-
-## sfx/
-    rune.wav  cast.wav  launch.wav  hit.wav  death.wav  hurt.wav
+Godot `.import` sidecars are generated metadata associated with source assets;
+keep them alongside their source files and let Godot update them when assets
+change.
