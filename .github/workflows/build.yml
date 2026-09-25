@@ -22,140 +22,57 @@ env:
 
 jobs:
   check:
-    name: parse & import
-    runs-on: macos-latest
+    name: Windows checks
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Ambil Godot
+      - name: Download Godot
+        shell: pwsh
         run: |
-          curl -sL -o godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip"
-          unzip -q godot.zip
-          echo "GODOT=$PWD/Godot.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
+          $base = "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION-stable"
+          Invoke-WebRequest "$base/Godot_v$env:GODOT_VERSION-stable_win64.exe.zip" -OutFile godot.zip
+          Expand-Archive godot.zip -DestinationPath godot
+          $godotPath = Join-Path (Resolve-Path godot).Path "Godot_v$($env:GODOT_VERSION)-stable_win64_console.exe"
+          if (-not (Test-Path $godotPath)) { throw 'Godot console executable was not found in the downloaded archive' }
+          Add-Content $env:GITHUB_ENV "GODOT=$godotPath"
 
-      - name: Impor aset
+      - name: Import assets
+        shell: pwsh
         # Impor pertama selalu melaporkan "resource not found" untuk berkas yang
         # belum sempat dibuat saat berkas lain memuatnya. Jalan dua kali
         # menyelesaikannya, dan itu memang cara yang dianjurkan Godot.
         run: |
-          "$GODOT" --headless --import --path . || true
-          "$GODOT" --headless --import --path .
+          & $env:GODOT --headless --import --path .
+          & $env:GODOT --headless --import --path .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Periksa skrip terurai
+      - name: Check scripts parse
+        shell: pwsh
         run: |
-          out=$("$GODOT" --headless --quit-after 120 --path . 2>&1) || true
-          echo "$out"
+          $output = & $env:GODOT --headless --quit-after 120 --path . 2>&1
+          $output | ForEach-Object { Write-Output $_ }
           # "resources still in use at exit" itu peringatan saat menutup, bukan
           # kesalahan proyek — muncul karena pemutar audio masih memegang
           # streamnya waktu pohon node dibongkar.
-          if echo "$out" | grep -E "SCRIPT ERROR|Parse Error|Compile Error"; then
-            echo "::error::ada skrip yang gagal terurai"
-            exit 1
-          fi
+          if (($output -join "`n") -match 'SCRIPT ERROR|Parse Error|Compile Error') {
+            throw 'A project script failed to parse or compile'
+          }
 
-      - name: Periksa penempatan spell
+      - name: Check spell placement
         # Blok, bukan satu baris: nilai `run:` yang diawali tanda kutip akan
         # dibaca YAML sebagai string yang berhenti di kutip penutup, dan sisa
         # perintahnya jadi sampah yang tidak bisa diurai.
+        shell: pwsh
         run: |
-          "$GODOT" --headless --path . --script res://tools/tests/probe_launch.gd
+          & $env:GODOT --headless --path . --script res://tools/tests/probe_launch.gd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Periksa alur gameplay
+      - name: Check gameplay flow
+        shell: pwsh
         run: |
-          "$GODOT" --headless --path . --script res://tools/tests/test_gameplay.gd
-
-  build:
-    name: macOS app
-    needs: check
-    # The export is heavier and only useful for release candidates. Normal
-    # pushes still run the fast checks above; build manually when needed.
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Ambil Godot
-        run: |
-          curl -sL -o godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip"
-          unzip -q godot.zip
-          echo "GODOT=$PWD/Godot.app/Contents/MacOS/Godot" >> "$GITHUB_ENV"
-
-      - name: Cache export template
-        id: tpl
-        uses: actions/cache@v6
-        with:
-          path: ~/Library/Application Support/Godot/export_templates
-          key: godot-templates-${{ env.GODOT_VERSION }}
-
-      - name: Ambil export template
-        if: steps.tpl.outputs.cache-hit != 'true'
-        run: |
-          curl -sL -o templates.tpz \
-            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
-          unzip -q templates.tpz
-          DEST="$HOME/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable"
-          mkdir -p "$DEST"
-          mv templates/* "$DEST/"
-
-      - name: Impor aset
-        run: |
-          "$GODOT" --headless --import --path . || true
-          "$GODOT" --headless --import --path .
-
-      - name: Ekspor
-        run: |
-          mkdir -p build
-          "$GODOT" --headless --path . \
-            --export-release "macOS" "$PWD/build/Amalgaform.app"
-
-      - name: Tanda tangan ad-hoc
-        # Runner tidak punya Developer ID milik Xaviero, dan kunci pribadi tidak
-        # akan ditaruh di sini. Jadi hasil CI ini untuk memeriksa bahwa build-nya
-        # TIDAK RUSAK, bukan untuk dibagikan — kalau dibuka di Mac lain,
-        # Gatekeeper menolaknya dengan "Apple could not verify...". Itu perilaku
-        # yang benar, bukan kerusakan. Rilis yang dibagi ke orang lain dibuat di
-        # mesin sendiri lewat `NOTARIZE=1 ./scripts/export/build_mac.sh`.
-        run: |
-          xattr -cr build/Amalgaform.app
-          codesign --force --deep --sign - build/Amalgaform.app
-          codesign --verify --deep --strict build/Amalgaform.app
-
-      - name: Bungkus
-        run: |
-          # Catatan ikut masuk ke dalam paket. Nama artifact saja tidak cukup:
-          # GitHub membungkus ulang unduhan jadi zip bersarang, dan nama luarnya
-          # hilang begitu orang mengekstrak yang pertama.
-          cat > build/BACA-DULU.txt <<'CATATAN'
-          Build ini dari CI, dan SENGAJA TIDAK DINOTARISASI.
-
-          Dia hanya ditandatangani ad-hoc, jadi kalau dibuka di Mac lain macOS
-          akan menolaknya:
-
-              "Apple could not verify Amalgaform is free of malware"
-
-          Itu perilaku yang benar, bukan build yang rusak. Gunanya build ini
-          cuma satu: membuktikan bahwa proyeknya masih bisa diekspor.
-
-          Yang dibagikan ke orang lain dibuat di mesin sendiri:
-
-              NOTARIZE=1 ./scripts/export/build_mac.sh
-
-          Hasilnya di ~/Builds/Amalgaform.zip, dan itu bisa dibuka dengan
-          klik ganda biasa di Mac mana pun.
-          CATATAN
-          ditto -c -k --keepParent build/Amalgaform.app build/Amalgaform.zip
-
-      - uses: actions/upload-artifact@v7
-        with:
-          # Namanya menyebut statusnya. Artifact ini sudah pernah membingungkan
-          # sekali; nama netral seperti "Amalgaform-macOS" terbaca seperti rilis.
-          name: Amalgaform-macOS-UNSIGNED-ci-check-only
-          path: |
-            build/Amalgaform.zip
-            build/BACA-DULU.txt
-          retention-days: 14
+          & $env:GODOT --headless --path . --script res://tools/tests/test_gameplay.gd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
   windows:
     name: Windows x86_64
