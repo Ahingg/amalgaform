@@ -84,7 +84,7 @@ the current viewport.
 Project code is grouped by role: `view/` contains `app/`, `scenes/`, `ui/`,
 `input/`, `rendering/`, `audio/`, and `rooms/`; `sim/` contains `core/`,
 `components/`, `helpers/`, and `systems/`. `tools/tests/` holds gameplay checks,
-while `tools/art/` holds asset helpers. `scripts/audio/` and `scripts/build/`
+while `tools/art/` holds asset helpers. `scripts/audio/` and `scripts/export/`
 hold reusable audio and build/release workflows respectively. Art and sound
 assets are grouped by type under `assets/`.
 
@@ -112,12 +112,12 @@ Two different things come out of this repo, and they are not interchangeable.
 
 | | Where | What it is |
 |---|---|---|
-| **Release** | `./scripts/build/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
+| **Release** | `./scripts/export/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
 | **CI validation** | Actions → artifacts (version tags or manual runs) | temporary macOS and Windows export checks; macOS is ad-hoc signed, Windows is unsigned |
 
 Pull requests and pushes to `main` run quick project checks only. Export builds
 run for version tags (`v*`) and manual workflow runs; they do not create GitHub
-releases. A real release is created locally with `scripts/build/release.sh`, which
+releases. A real release is created locally with `scripts/export/release.sh`, which
 uploads both platform ZIPs. The macOS release is signed and notarized; the
 Windows executable is unsigned, so Windows SmartScreen may show its usual
 unknown-publisher warning.
@@ -126,7 +126,7 @@ The CI macOS artifact exists to prove the project still exports. It is not
 signed with a Developer ID and not notarized, so macOS refuses it with *"Apple
 could not verify..."*. That is the correct behaviour, not a broken build.
 
-Note that a plain `./scripts/build/build_mac.sh` (without `NOTARIZE=1`) replaces the
+Note that a plain `./scripts/export/build_mac.sh` (without `NOTARIZE=1`) replaces the
 app and **drops the notarization ticket**. Any Mac build meant for other people
 has to go through the notarized release path again.
 
