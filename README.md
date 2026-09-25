@@ -112,23 +112,20 @@ Two different things come out of this repo, and they are not interchangeable.
 
 | | Where | What it is |
 |---|---|---|
-| **Release** | `./scripts/export/release.sh v1.1.0 "release notes"` | notarized macOS ZIP and playable Windows x86_64 ZIP |
-| **CI validation** | Actions → artifacts (version tags or manual runs) | temporary macOS and Windows export checks; macOS is ad-hoc signed, Windows is unsigned |
+| **Release** | GitHub Releases → `Amalgaform-Windows.zip` | playable Windows x86_64 build; unsigned |
+| **CI validation** | Actions → artifacts (manual runs) | temporary Windows export check; unsigned |
 
-Pull requests and pushes to `main` run quick project checks only. Export builds
-run for version tags (`v*`) and manual workflow runs; they do not create GitHub
-releases. A real release is created locally with `scripts/export/release.sh`, which
-uploads both platform ZIPs. The macOS release is signed and notarized; the
-Windows executable is unsigned, so Windows SmartScreen may show its usual
-unknown-publisher warning.
+Pull requests and pushes to `main` run the Windows project checks. Pushing an
+explicit version tag (`v*`) runs the Windows export and smoke test, then creates
+a GitHub Release with the playable ZIP. Ordinary code pushes never create a
+release. Manually running the workflow exports a validation artifact only.
 
-The CI macOS artifact exists to prove the project still exports. It is not
-signed with a Developer ID and not notarized, so macOS refuses it with *"Apple
-could not verify..."*. That is the correct behaviour, not a broken build.
+The Windows executable is unsigned, so Windows SmartScreen may show its usual
+unknown-publisher warning. macOS CI and public builds are paused while the Mac
+developer is away; the Mac export scripts and preset are retained for later.
 
-Note that a plain `./scripts/export/build_mac.sh` (without `NOTARIZE=1`) replaces the
-app and **drops the notarization ticket**. Any Mac build meant for other people
-has to go through the notarized release path again.
+The old local `scripts/export/release.sh` path includes macOS notarization and is
+not used for the current Windows-only releases.
 
 ## Status
 

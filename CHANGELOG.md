@@ -6,6 +6,8 @@ uses Semantic Versioning.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-25
+
 ### Added
 
 - Added a standalone title menu, pause screen, and settings for audio and
@@ -33,6 +35,7 @@ uses Semantic Versioning.
 
 - Updated displayed gameplay hints when key bindings change.
 - Excluded the editor-only Git plugin from macOS and Windows game exports.
+- Paused macOS CI and public builds; this release is Windows-only.
 
 ## [1.0.0] - 2026-09-09
 

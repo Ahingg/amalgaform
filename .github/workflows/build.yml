@@ -7,8 +7,8 @@ name: build
 # kesalahan yang paling sering terjadi dan paling mahal kalau baru ketahuan
 # saat mau build.
 #
-# Platform exports are heavier, so they run only for version tags and manual
-# validation. They produce artifacts, not GitHub releases.
+# Windows exports run only for version tags and manual validation. A pushed
+# version tag publishes a Windows-only GitHub Release after the smoke test.
 
 on:
   push:
@@ -19,6 +19,9 @@ on:
 
 env:
   GODOT_VERSION: 4.7.2
+
+permissions:
+  contents: read
 
 jobs:
   check:
@@ -79,6 +82,8 @@ jobs:
     needs: check
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
 
@@ -147,7 +152,19 @@ jobs:
           if ($output -match 'SCRIPT ERROR|Parse Error|Compile Error|Error loading extension|No GDExtension library found') { throw 'Exported game reported a load or script error' }
 
       - uses: actions/upload-artifact@v7
+        if: github.event_name == 'workflow_dispatch'
         with:
-          name: Amalgaform-Windows
+          name: Amalgaform-Windows-CI-validation
           path: build/Amalgaform-Windows.zip
           retention-days: 14
+
+      - name: Publish Windows GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $notes = 'Windows x86_64 playable build. This release is Windows-only while macOS distribution is paused. The executable is unsigned; SmartScreen may show an unknown-publisher warning.'
+          gh release create $tag build/Amalgaform-Windows.zip --repo $env:GITHUB_REPOSITORY --title "Amalgaform $tag" --notes $notes --generate-notes --verify-tag
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
