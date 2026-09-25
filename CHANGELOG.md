@@ -24,6 +24,8 @@ uses Semantic Versioning.
 - Changed Wind Burst into a directional cone with matching collision and visual
   shapes.
 - Kept scripted demo input behind an explicit `--demo` launch flag.
+- Updated GitHub Actions runtimes and use Godot's console executable for
+  synchronous Windows export checks.
 
 ### Fixed
 
